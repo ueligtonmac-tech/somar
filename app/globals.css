@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ug-blue: #000FFF;
+  --ug-blue-light: #e6e8ff;
+  --ug-blue-dark: #0009cc;
+  --ug-gray-50: #f5f5f5;
+  --ug-gray-100: #ebebeb;
+  --ug-gray-500: #737373;
+  --ug-gray-900: #111111;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--ug-gray-50);
+  color: var(--ug-gray-900);
+}

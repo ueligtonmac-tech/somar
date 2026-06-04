@@ -1,0 +1,21 @@
+import type { Metadata } from 'next'
+import './globals.css'
+
+export const metadata: Metadata = {
+  title: 'HUB Somar — Ultragaz',
+  description: 'Plataforma de onboarding para consultores de canais digitais Ultragaz',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="pt-BR">
+      <body className="antialiased">
+        {children}
+      </body>
+    </html>
+  )
+}
