@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useTransition } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { deleteLibraryFile, toggleLibraryFile } from './actions'
 
 interface LibraryFile {
@@ -46,13 +47,30 @@ export default function BibliotecaAdmin({ initialFiles }: { initialFiles: Librar
     setSuccess(null)
 
     try {
-      const formData = new FormData()
-      formData.append('file', selectedFile)
-      formData.append('title', title.trim())
-      formData.append('description', description.trim())
-      formData.append('category', category.trim())
+      // 1. Upload direto ao Supabase Storage (sem passar pelo servidor — sem limite de 4.5MB)
+      const supabase = createClient()
+      const timestamp = Date.now()
+      const safeName = selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+      const storagePath = `${timestamp}_${safeName}`
 
-      const res = await fetch('/api/biblioteca/upload', { method: 'POST', body: formData })
+      const { error: uploadError } = await supabase.storage
+        .from('biblioteca')
+        .upload(storagePath, selectedFile, { contentType: 'application/pdf', upsert: false })
+
+      if (uploadError) throw new Error(uploadError.message)
+
+      // 2. Salva metadados via API
+      const res = await fetch('/api/biblioteca/save-metadata', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim(),
+          description: description.trim(),
+          category: category.trim(),
+          storagePath,
+          fileSize: selectedFile.size,
+        }),
+      })
       let data: { error?: string; file?: LibraryFile } = {}
       try { data = await res.json() } catch { /* não era JSON */ }
       if (!res.ok) throw new Error(data.error || `Erro HTTP ${res.status}`)
