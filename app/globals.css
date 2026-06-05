@@ -2,6 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Fonte oficial Ultragaz: Mangueira ── */
+@font-face {
+  font-family: 'Mangueira';
+  src: url('/fonts/Mangueira-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Mangueira';
+  src: url('/fonts/Mangueira-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Mangueira';
+  src: url('/fonts/Mangueira-SemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Mangueira';
+  src: url('/fonts/Mangueira-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Mangueira';
+  src: url('/fonts/Mangueira-Heavy.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Mangueira';
+  src: url('/fonts/Mangueira-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --ug-blue: #000FFF;
   --ug-blue-light: #e6e8ff;
@@ -12,11 +56,10 @@
   --ug-gray-900: #111111;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
+  font-family: 'Mangueira', system-ui, sans-serif;
   background-color: var(--ug-gray-50);
   color: var(--ug-gray-900);
 }

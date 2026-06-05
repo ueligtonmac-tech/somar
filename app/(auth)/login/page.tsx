@@ -29,33 +29,46 @@ function LoginForm() {
     <div className="min-h-screen bg-[#000FFF] flex">
 
       {/* ── Painel esquerdo ── */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 px-12 py-10 relative overflow-hidden">
+      <div className="hidden lg:flex flex-col justify-between w-1/2 relative overflow-hidden px-12 py-10">
 
-        {/* Blob decorativo teal */}
-        <div
-          className="absolute -bottom-32 -left-32 w-[520px] h-[520px] rounded-full opacity-40"
-          style={{ background: 'radial-gradient(circle, #00e5a0 0%, #00b8d4 60%, transparent 100%)' }}
-        />
-
-        {/* Logo */}
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full overflow-hidden">
-            <Image src="/ug-icon.jpg" alt="Ultragaz" width={40} height={40} className="w-full h-full object-cover" />
-          </div>
-          <div>
-            <p className="text-white font-extrabold text-lg leading-none">ultragaz</p>
-            <p className="text-blue-200 text-xs">somando energias</p>
-          </div>
+        {/* Background: Forma Onda oficial */}
+        <div className="absolute inset-0">
+          <Image
+            src="/onda-bg.png"
+            alt=""
+            fill
+            className="object-cover object-right"
+            priority
+          />
         </div>
 
-        {/* Texto central */}
-        <div className="relative z-10 mb-16">
-          <h1 className="text-white font-black text-4xl leading-tight mb-4">
-            HUB Somar
-          </h1>
-          <p className="text-blue-100 text-lg font-medium leading-relaxed max-w-sm">
-            Plataforma de onboarding para consultores de canais digitais Ultragaz.
+        {/* Overlay para legibilidade */}
+        <div className="absolute inset-0 bg-[#000FFF]/60" />
+
+        {/* Logo wordmark oficial */}
+        <div className="relative z-10">
+          <Image
+            src="/ultragaz-wordmark.webp"
+            alt="Ultragaz somando energias"
+            width={220}
+            height={80}
+            className="brightness-0 invert"
+            priority
+          />
+        </div>
+
+        {/* Título principal */}
+        <div className="relative z-10 mb-12">
+          <p className="text-white/70 text-sm font-semibold uppercase tracking-widest mb-3">
+            Plataforma de onboarding
           </p>
+          <h1 className="text-white font-black text-6xl leading-none mb-4">
+            HUB<br />Somar
+          </h1>
+          <p className="text-blue-100 text-base font-medium leading-relaxed max-w-xs">
+            Capacitação para consultores de canais digitais Ultragaz.
+          </p>
+
           <div className="mt-8 flex flex-col gap-3">
             {[
               'Trilha de aprendizado guiada',
@@ -68,43 +81,56 @@ function LoginForm() {
                     <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <span className="text-blue-100 text-sm">{item}</span>
+                <span className="text-blue-100 text-sm font-medium">{item}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* ── Painel direito (card branco) ── */}
-      <div className="flex-1 flex items-center justify-center px-6 py-10">
-        <div className="w-full max-w-sm">
+      {/* ── Painel direito ── */}
+      <div className="flex-1 flex items-center justify-center px-6 py-10 relative">
+        {/* Onda verde no canto inferior direito */}
+        <div className="absolute bottom-0 right-0 w-2/3 pointer-events-none select-none opacity-30">
+          <Image
+            src="/onda-verde.png"
+            alt=""
+            width={800}
+            height={280}
+            className="w-full"
+          />
+        </div>
 
-          {/* Logo mobile (só aparece em telas pequenas) */}
-          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-full overflow-hidden">
-              <Image src="/ug-icon.jpg" alt="Ultragaz" width={48} height={48} className="w-full h-full object-cover" />
-            </div>
+        <div className="w-full max-w-sm relative z-10">
+
+          {/* Logo mobile */}
+          <div className="lg:hidden flex justify-center mb-8">
+            <Image
+              src="/ultragaz-wordmark.webp"
+              alt="Ultragaz"
+              width={180}
+              height={65}
+              className="brightness-0 invert"
+            />
           </div>
 
           <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-            {/* Topo do card */}
-            <div className="px-8 pt-8 pb-6 border-b border-gray-100">
-              <h2 className="text-[#000FFF] font-black text-2xl">Entrar</h2>
-              <p className="text-gray-500 text-sm mt-1">
+            {/* Topo */}
+            <div className="bg-[#000FFF] px-8 py-6">
+              <h2 className="text-white font-black text-2xl">Bem-vindo(a)</h2>
+              <p className="text-blue-200 text-sm font-medium mt-0.5">
                 Acesse com sua conta Google corporativa
               </p>
             </div>
 
             {/* Corpo */}
             <div className="px-8 py-8">
-              {/* Erro */}
               {error && (
                 <div className="mb-5 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm text-center">
                   {errorMessages[error] ?? 'Erro desconhecido. Tente novamente.'}
                 </div>
               )}
 
-              {/* Botão Google */}
               <button
                 onClick={handleGoogleLogin}
                 className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-[#000FFF] hover:bg-blue-50 text-gray-700 font-semibold py-3.5 px-6 rounded-2xl transition-all duration-200 group shadow-sm"
@@ -120,7 +146,7 @@ function LoginForm() {
                   Problemas de acesso?{' '}
                   <a
                     href="https://wa.me/5565999999999"
-                    className="text-[#000FFF] hover:underline font-medium"
+                    className="text-[#000FFF] hover:underline font-semibold"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -131,7 +157,7 @@ function LoginForm() {
             </div>
           </div>
 
-          <p className="text-center text-xs text-blue-200/60 mt-6">
+          <p className="text-center text-xs text-blue-200/50 mt-6">
             Ultragaz · Gerência de Venda Direta e Atendimento B2C
           </p>
         </div>
