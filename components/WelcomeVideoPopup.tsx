@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react'
 
 const STORAGE_KEY = 'hub_somar_welcome_seen'
+const VIDEO_ID = 'Cpw2eXnaOoc'
 
 export default function WelcomeVideoPopup() {
   const [open, setOpen] = useState(false)
+  const [playing, setPlaying] = useState(false)
 
   useEffect(() => {
     const seen = localStorage.getItem(STORAGE_KEY)
@@ -17,12 +19,16 @@ export default function WelcomeVideoPopup() {
     setOpen(false)
   }
 
+  function startVideo() {
+    setPlaying(true)
+  }
+
   if (!open) return null
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+      style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}
       onClick={close}
     >
       <div
@@ -56,18 +62,47 @@ export default function WelcomeVideoPopup() {
 
         {/* Vídeo */}
         <div className="relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
-          <iframe
-            src="https://www.youtube-nocookie.com/embed/Cpw2eXnaOoc?autoplay=1&mute=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&controls=1"
-            title="Apresentação HUB Somar"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="absolute inset-0 w-full h-full"
-          />
-          {/* Cobre o overlay de título/canal do YouTube (faixa preta no topo) */}
-          <div
-            className="absolute top-0 left-0 right-0 pointer-events-none"
-            style={{ height: '72px', background: 'linear-gradient(to bottom, #000 60%, transparent)' }}
-          />
+          {playing ? (
+            <>
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${VIDEO_ID}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1`}
+                title="Apresentação HUB Somar"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+              />
+              {/* Cobre o overlay de título/canal */}
+              <div
+                className="absolute top-0 left-0 right-0 pointer-events-none"
+                style={{ height: '68px', background: 'linear-gradient(to bottom, #000 55%, transparent)' }}
+              />
+            </>
+          ) : (
+            /* Thumbnail com botão play — ao clicar inicia COM SOM */
+            <button
+              onClick={startVideo}
+              className="absolute inset-0 w-full h-full group"
+              style={{
+                backgroundImage: `url(https://img.youtube.com/vi/${VIDEO_ID}/maxresdefault.jpg)`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              {/* Overlay escuro */}
+              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors" />
+              {/* Botão play */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-[#000FFF] flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                </div>
+              </div>
+              <p className="absolute bottom-4 left-0 right-0 text-center text-white text-sm font-semibold drop-shadow">
+                Clique para assistir com som 🔊
+              </p>
+            </button>
+          )}
         </div>
 
         {/* Footer */}
