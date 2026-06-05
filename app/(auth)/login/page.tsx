@@ -1,16 +1,99 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import QRCode from 'react-qr-code'
 
+// ── Balão do Bot João com efeito typewriter ──
+const BOT_LINES = [
+  '✓ Trilha de aprendizado guiada',
+  '✓ Conteúdo sobre canais digitais',
+  '✓ Assistente IA integrado',
+]
+
+function BotBubble() {
+  const [visibleLines, setVisibleLines] = useState<string[]>([])
+  const [currentLine, setCurrentLine] = useState(0)
+  const [currentChar, setCurrentChar] = useState(0)
+  const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    if (done) return
+    if (currentLine >= BOT_LINES.length) { setDone(true); return }
+    const line = BOT_LINES[currentLine]
+    if (currentChar < line.length) {
+      const t = setTimeout(() => setCurrentChar(c => c + 1), 42)
+      return () => clearTimeout(t)
+    } else {
+      const t = setTimeout(() => {
+        setVisibleLines(prev => [...prev, line])
+        setCurrentLine(l => l + 1)
+        setCurrentChar(0)
+      }, 380)
+      return () => clearTimeout(t)
+    }
+  }, [currentLine, currentChar, done])
+
+  const typing = currentLine < BOT_LINES.length ? BOT_LINES[currentLine].slice(0, currentChar) : ''
+  const hasContent = visibleLines.length > 0 || typing.length > 0
+
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      {/* Balão */}
+      <div style={{
+        background: 'white',
+        borderRadius: '1.25rem',
+        borderBottomLeftRadius: '0.3rem',
+        padding: '0.9rem 1.1rem',
+        width: '215px',
+        boxShadow: '0 10px 40px rgba(0,0,80,0.28)',
+        minHeight: hasContent ? undefined : '72px',
+        position: 'relative',
+      }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.55rem' }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} />
+          <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#000FFF', letterSpacing: '0.01em' }}>Bot João</span>
+        </div>
+        {/* Texto digitado */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.38rem' }}>
+          {visibleLines.map((line, i) => (
+            <p key={i} style={{ fontSize: '0.8rem', color: '#111827', fontWeight: 600, lineHeight: 1.45, margin: 0 }}>{line}</p>
+          ))}
+          {!done && (
+            <p style={{ fontSize: '0.8rem', color: '#111827', fontWeight: 600, lineHeight: 1.45, margin: 0, minHeight: '1.1rem' }}>
+              {typing}
+              <span style={{ display: 'inline-block', width: '2px', height: '0.8em', background: '#000FFF', marginLeft: '1px', verticalAlign: 'text-bottom', animation: 'blink 0.75s step-end infinite' }} />
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Triângulo apontando para baixo-esquerda (para a cabeça do bot) */}
+      <div style={{
+        position: 'absolute',
+        bottom: -13,
+        left: 18,
+        width: 0, height: 0,
+        borderLeft: '9px solid transparent',
+        borderRight: '9px solid transparent',
+        borderTop: '14px solid white',
+      }} />
+
+      <style>{`
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+      `}</style>
+    </div>
+  )
+}
+
 const S = {
   page: { height: '100vh', background: '#000FFF', display: 'flex', position: 'relative' as const, overflow: 'hidden', fontFamily: 'Mangueira, system-ui, sans-serif' },
   wave: { position: 'absolute' as const, bottom: '-80px', left: '-2%', width: '104%', pointerEvents: 'none' as const, zIndex: 0, opacity: 0.5, transform: 'rotate(-2deg)' },
-  left: { flex: '0 0 52%', display: 'flex', flexDirection: 'column' as const, justifyContent: 'space-between', padding: '2.25rem 3.5rem', position: 'relative' as const, zIndex: 1, overflow: 'hidden' },
+  left: { flex: '0 0 52%', display: 'flex', flexDirection: 'column' as const, justifyContent: 'space-between', padding: '2.25rem 3.5rem', position: 'relative' as const, zIndex: 1, overflow: 'visible' },
   right: { flex: 1, display: 'flex', alignItems: 'center' as const, justifyContent: 'center' as const, padding: '1.25rem 2.5rem', position: 'relative' as const, zIndex: 1, overflowY: 'auto' as const },
   card: { background: 'white', borderRadius: '1.75rem', boxShadow: '0 32px 80px rgba(0,0,80,0.4)', padding: '1.75rem 1.75rem', width: '100%', maxWidth: '370px' },
   input: { width: '100%', border: '2px solid #e5e7eb', borderRadius: '0.75rem', padding: '0.85rem 1rem', fontSize: '0.9rem', fontFamily: 'inherit', outline: 'none', color: '#111', background: 'white', boxSizing: 'border-box' as const },
@@ -83,53 +166,56 @@ function LoginForm() {
 
       {/* ── Esquerda ── */}
       <div style={S.left} className="login-left">
-        <Image src="/logo.png" alt="Ultragaz" width={180} height={55} style={{ filter: 'brightness(0) invert(1)', height: 'auto' }} priority />
-        <div style={{ paddingBottom: '4rem' }}>
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '1rem' }}>
+        {/* Logo no topo */}
+        <div>
+          <Image src="/logo.png" alt="Ultragaz" width={160} height={48} style={{ filter: 'brightness(0) invert(1)', height: 'auto', display: 'block' }} priority />
+          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: '0.35rem', width: '160px' }}>
             Plataforma de onboarding
           </p>
-          <h1 style={{ color: 'white', fontSize: 'clamp(4rem, 7vw, 6.5rem)', fontWeight: 900, lineHeight: 0.95, marginBottom: '1.5rem' }}>
-            HUB<br />Somar
-          </h1>
-          <p style={{ color: 'rgba(200,215,255,0.8)', fontSize: '1rem', fontWeight: 500, maxWidth: '300px', lineHeight: 1.65 }}>
-            Capacitação para consultores de canais digitais Ultragaz.
-          </p>
-          <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
-            {['Trilha de aprendizado guiada', 'Conteúdo sobre canais digitais', 'Assistente IA integrado'].map(item => (
-              <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-                <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </div>
-                <span style={{ color: 'rgba(200,215,255,0.85)', fontSize: '0.875rem', fontWeight: 500 }}>{item}</span>
+        </div>
+
+        {/* Área principal: título (esquerda) + Bot João grande (direita) */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1, marginTop: '1.5rem', gap: '0' }}>
+
+          {/* Esquerda: título + QR */}
+          <div style={{ flex: '0 0 auto', paddingBottom: '2.5rem', maxWidth: '180px' }}>
+            <h1 style={{ color: 'white', fontSize: 'clamp(2.75rem, 5vw, 4.25rem)', fontWeight: 900, lineHeight: 0.92, marginBottom: '2.5rem' }}>
+              HUB<br />Somar
+            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+              <div style={{ background: 'white', borderRadius: '0.875rem', padding: '8px', flexShrink: 0, boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
+                <QRCode value="https://somar-tawny.vercel.app/login" size={70} bgColor="white" fgColor="#000FFF" level="M" style={{ display: 'block' }} />
               </div>
-            ))}
+              <div>
+                <p style={{ color: 'white', fontSize: '0.75rem', fontWeight: 800, marginBottom: '0.15rem' }}>Celular</p>
+                <p style={{ color: 'rgba(200,215,255,0.65)', fontSize: '0.65rem', lineHeight: 1.4 }}>Aponte a câmera<br />para acessar</p>
+              </div>
+            </div>
           </div>
 
-          {/* QR Code de acesso rápido */}
-          <div style={{ marginTop: '2.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-            <div style={{
-              background: 'white',
-              borderRadius: '1rem',
-              padding: '10px',
-              flexShrink: 0,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
-            }}>
-              <QRCode
-                value="https://somar-tawny.vercel.app/login"
-                size={88}
-                bgColor="white"
-                fgColor="#000FFF"
-                level="M"
-                style={{ borderRadius: '4px', display: 'block' }}
+          {/* Direita: Bot João + balão acima da cabeça */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flexShrink: 0 }}>
+              {/*
+                Imagem original: bot aponta para direita, cabeça centrada em ~x:120px da esquerda.
+                Triângulo do balão está em left:18 do BotBubble.
+                marginLeft = 120 - 18 = 102px → alinha o triângulo sobre a cabeça.
+              */}
+              <div style={{ marginLeft: '102px', marginBottom: '8px', position: 'relative', zIndex: 10 }}>
+                <BotBubble />
+              </div>
+              <Image
+                src="/bot-joao-login.png"
+                alt="Bot João"
+                width={370}
+                height={460}
+                style={{
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 28px 56px rgba(0,0,80,0.4))',
+                  marginBottom: '-3rem',
+                }}
+                priority
               />
-            </div>
-            <div>
-              <p style={{ color: 'white', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.2rem' }}>
-                Acesse pelo celular
-              </p>
-              <p style={{ color: 'rgba(200,215,255,0.65)', fontSize: '0.72rem', fontWeight: 500, lineHeight: 1.5 }}>
-                Aponte a câmera para<br />acessar a plataforma
-              </p>
             </div>
           </div>
         </div>

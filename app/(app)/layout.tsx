@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Sidebar from '@/components/sidebar'
 import TopBar from '@/components/TopBar'
+import BotJoao from '@/components/BotJoao'
 
 export default async function AppLayout({
   children,
@@ -47,6 +48,14 @@ export default async function AppLayout({
         <TopBar profile={safeProfile} />
         {/* pt-14 = espaço para header mobile fixo | pb-16 = espaço para barra inferior mobile */}
         <main className="flex-1 overflow-auto pt-14 pb-16 md:pt-0 md:pb-0">{children}</main>
+      </div>
+      {/* Bot João desktop — chat flutuante */}
+      <div className="hidden md:block">
+        <BotJoao mobile={false} />
+      </div>
+      {/* Bot João mobile — navega para /chat */}
+      <div className="md:hidden">
+        <BotJoao mobile={true} />
       </div>
     </div>
   )

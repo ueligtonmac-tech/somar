@@ -29,7 +29,7 @@ export default async function ModulePage({ params }: Props) {
     await Promise.all([
       supabase
         .from('cards')
-        .select('id, title, scenario, challenge, explanation, action_hint, order_index')
+        .select('id, title, scenario, challenge, explanation, action_hint, order_index, video_url, pdf_url, pdf_name')
         .eq('module_id', mod.id)
         .eq('published', true)
         .order('order_index'),

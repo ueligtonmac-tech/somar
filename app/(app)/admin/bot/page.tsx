@@ -1,0 +1,269 @@
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import Image from 'next/image'
+import FeedbackCard from './FeedbackCard'
+import EscalationCard from './EscalationCard'
+import KnowledgeItem from './KnowledgeItem'
+import AddKnowledgeTab from './AddKnowledgeTab'
+
+export default async function BotAdminPage({
+  searchParams,
+}: {
+  searchParams: { tab?: string }
+}) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!me || !['admin', 'builder'].includes(me.role)) redirect('/trilha')
+
+  const tab = searchParams.tab || 'learning'
+
+  // Buscar contadores (resiliente a tabelas/colunas ausentes)
+  const [r1, r2, r3, r4] = await Promise.all([
+    supabase.from('bot_feedback').select('*', { count: 'exact', head: true })
+      .eq('escalated', false).eq('reviewed', false).gte('score', 7),
+    supabase.from('bot_feedback').select('*', { count: 'exact', head: true })
+      .eq('escalated', true).eq('reviewed', false),
+    supabase.from('bot_knowledge').select('*', { count: 'exact', head: true }).eq('approved', true),
+    supabase.from('bot_messages').select('*', { count: 'exact', head: true }).eq('role', 'user'),
+  ])
+  const pendingLearning = r1.count
+  const pendingEscalations = r2.count
+  const totalKnowledge = r3.count
+  const totalMessages = r4.count
+
+  // Buscar dados da aba ativa (sem join profiles para evitar erro de FK)
+  type FeedbackRow = { id: string; question: string; answer: string; score: number; created_at: string; conversation_id: string; user_id: string }
+  let feedbackItems: FeedbackRow[] = []
+  let escalationItems: FeedbackRow[] = []
+  let knowledgeItems: { id: string; question: string; answer: string; created_at: string }[] = []
+  // Mapa userId → nome (busca separada)
+  const userNames = new Map<string, string>()
+
+  if (tab === 'learning') {
+    const { data } = await supabase
+      .from('bot_feedback')
+      .select('id, question, answer, score, created_at, conversation_id, user_id')
+      .eq('escalated', false)
+      .eq('reviewed', false)
+      .gte('score', 7)
+      .order('score', { ascending: false })
+      .limit(50)
+    feedbackItems = data || []
+    // Buscar nomes dos usuários
+    const uids1: string[] = Array.from(new Set(feedbackItems.map(f => f.user_id))).filter(Boolean) as string[]
+    if (uids1.length > 0) {
+      const { data: ps } = await supabase.from('profiles').select('id, full_name').in('id', uids1)
+      ps?.forEach(p => p.full_name && userNames.set(p.id, p.full_name))
+    }
+  } else if (tab === 'escalations') {
+    const { data } = await supabase
+      .from('bot_feedback')
+      .select('id, question, answer, score, created_at, conversation_id, user_id')
+      .eq('escalated', true)
+      .eq('reviewed', false)
+      .order('score', { ascending: true })
+      .limit(50)
+    escalationItems = data || []
+    const uids2 = Array.from(new Set(escalationItems.map(f => f.user_id).filter((id): id is string => Boolean(id))))
+    if (uids2.length > 0) {
+      const { data: ps } = await supabase.from('profiles').select('id, full_name').in('id', uids2)
+      ps?.forEach(p => p.full_name && userNames.set(p.id, p.full_name))
+    }
+  } else if (tab === 'knowledge') {
+    const { data } = await supabase
+      .from('bot_knowledge')
+      .select('id, question, answer, created_at')
+      .eq('approved', true)
+      .order('created_at', { ascending: false })
+      .limit(100)
+    knowledgeItems = data || []
+  }
+
+  const tabs = [
+    { key: 'learning', label: 'Aprendizado', icon: '🧠', count: pendingLearning ?? 0, color: 'text-green-600' },
+    { key: 'escalations', label: 'Escalonamentos', icon: '🚨', count: pendingEscalations ?? 0, color: 'text-red-500' },
+    { key: 'knowledge', label: 'Base de Conhecimento', icon: '📚', count: totalKnowledge ?? 0, color: 'text-blue-600' },
+    { key: 'add', label: 'Adicionar', icon: '➕', count: 0, color: 'text-purple-600' },
+  ]
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-6">
+        <Link href="/admin" className="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+        </Link>
+        <div className="flex items-center gap-3 flex-1">
+          <div className="w-10 h-10 rounded-2xl overflow-hidden bg-[#000FFF] flex-shrink-0">
+            <Image src="/bot-joao.webp" alt="Bot João" width={40} height={40} className="object-contain scale-110" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-gray-900">Painel Bot João</h1>
+            <p className="text-gray-400 text-sm mt-0.5">
+              <span className="text-[#000FFF] font-bold">{totalMessages ?? 0}</span> perguntas respondidas ·{' '}
+              <span className="text-green-600 font-bold">{totalKnowledge ?? 0}</span> conhecimentos aprovados
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats rápidos */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        {[
+          { label: 'Aguardando aprovação', value: pendingLearning ?? 0, color: 'bg-green-50 border-green-100', text: 'text-green-700', icon: '🧠' },
+          { label: 'Escalonamentos abertos', value: pendingEscalations ?? 0, color: 'bg-red-50 border-red-100', text: 'text-red-600', icon: '🚨' },
+          { label: 'Base de conhecimento', value: totalKnowledge ?? 0, color: 'bg-blue-50 border-blue-100', text: 'text-blue-700', icon: '📚' },
+        ].map(s => (
+          <div key={s.label} className={`rounded-2xl border p-4 ${s.color}`}>
+            <p className="text-2xl mb-1">{s.icon}</p>
+            <p className={`text-3xl font-black ${s.text}`}>{s.value}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6">
+        {tabs.map(t => (
+          <Link
+            key={t.key}
+            href={`/admin/bot?tab=${t.key}`}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              tab === t.key
+                ? 'bg-[#000FFF] text-white shadow-sm'
+                : 'bg-white text-gray-500 border border-gray-100 hover:border-gray-300'
+            }`}
+          >
+            <span>{t.icon}</span>
+            <span>{t.label}</span>
+            {t.count > 0 && (
+              <span className={`text-xs px-1.5 py-0.5 rounded-full font-black ${
+                tab === t.key ? 'bg-white/20 text-white' : `bg-gray-100 ${t.color}`
+              }`}>
+                {t.count}
+              </span>
+            )}
+          </Link>
+        ))}
+      </div>
+
+      {/* ─── ABA: APRENDIZADO ─── */}
+      {tab === 'learning' && (
+        <div>
+          {feedbackItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+              <span className="text-5xl mb-4">🧠</span>
+              <p className="font-semibold text-gray-500">Nenhuma resposta aguardando aprovação</p>
+              <p className="text-sm mt-1">Quando usuários avaliarem respostas com ≥ 7, elas aparecerão aqui</p>
+            </div>
+          ) : (
+            <>
+              <div className="bg-blue-50 border border-blue-100 rounded-2xl px-5 py-3 mb-5 flex items-start gap-3">
+                <span className="text-blue-500 text-lg mt-0.5">ℹ️</span>
+                <div>
+                  <p className="text-sm font-semibold text-blue-800">Como funciona o aprendizado</p>
+                  <p className="text-xs text-blue-600 mt-0.5">Respostas aprovadas são adicionadas à base de conhecimento e o Bot João passa a usar esse conteúdo como contexto nas próximas conversas. Você pode editar a resposta antes de aprovar.</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {feedbackItems.map(item => (
+                  <FeedbackCard
+                    key={item.id}
+                    item={{
+                      ...item,
+                      user_name: userNames.get(item.user_id) ?? undefined,
+                    }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ─── ABA: ESCALONAMENTOS ─── */}
+      {tab === 'escalations' && (
+        <div>
+          {escalationItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+              <span className="text-5xl mb-4">✅</span>
+              <p className="font-semibold text-gray-500">Nenhum escalonamento pendente</p>
+              <p className="text-sm mt-1">Quando usuários avaliarem respostas com &lt; 7, elas aparecerão aqui</p>
+            </div>
+          ) : (
+            <>
+              <div className="bg-red-50 border border-red-100 rounded-2xl px-5 py-3 mb-5 flex items-start gap-3">
+                <span className="text-red-500 text-lg mt-0.5">🚨</span>
+                <div>
+                  <p className="text-sm font-semibold text-red-800">Respostas insatisfatórias</p>
+                  <p className="text-xs text-red-500 mt-0.5">Essas perguntas não foram bem respondidas pelo bot. Escreva a resposta correta para enviar ao consultor. Itens mais urgentes (score menor) aparecem primeiro.</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {escalationItems.map(item => (
+                  <EscalationCard
+                    key={item.id}
+                    item={{
+                      ...item,
+                      user_name: userNames.get(item.user_id) ?? undefined,
+                    }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ─── ABA: ADICIONAR CONHECIMENTO ─── */}
+      {tab === 'add' && (
+        <div>
+          <div className="bg-purple-50 border border-purple-100 rounded-2xl px-5 py-3 mb-5 flex items-start gap-3">
+            <span className="text-purple-500 text-lg mt-0.5">➕</span>
+            <div>
+              <p className="text-sm font-semibold text-purple-800">Adicionar conhecimento manualmente</p>
+              <p className="text-xs text-purple-600 mt-0.5">Insira pares de pergunta/resposta diretamente, importe via CSV ou extraia conteúdo de uma URL.</p>
+            </div>
+          </div>
+          <AddKnowledgeTab />
+        </div>
+      )}
+
+      {/* ─── ABA: BASE DE CONHECIMENTO ─── */}
+      {tab === 'knowledge' && (
+        <div>
+          {knowledgeItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+              <span className="text-5xl mb-4">📚</span>
+              <p className="font-semibold text-gray-500">Base de conhecimento vazia</p>
+              <p className="text-sm mt-1">Aprove respostas na aba Aprendizado para começar a treinar o bot</p>
+            </div>
+          ) : (
+            <>
+              <div className="bg-green-50 border border-green-100 rounded-2xl px-5 py-3 mb-5 flex items-start gap-3">
+                <span className="text-green-500 text-lg mt-0.5">📚</span>
+                <div>
+                  <p className="text-sm font-semibold text-green-800">Base de conhecimento ativa</p>
+                  <p className="text-xs text-green-600 mt-0.5">
+                    O Bot João usa esses <strong>{knowledgeItems.length} pares</strong> de pergunta/resposta como contexto em cada conversa. Quanto mais aprovações, mais preciso ele fica.
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {knowledgeItems.map(item => (
+                  <KnowledgeItem key={item.id} item={item} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}

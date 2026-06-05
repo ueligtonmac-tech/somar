@@ -19,8 +19,13 @@ export default function Sidebar({ profile, modules, progress }: SidebarProps) {
 
   const progressMap = new Map(progress.map((p) => [p.module_id, p]))
   const completedCount = progress.filter((p) => p.completed).length
+  // Conta módulos iniciados (qualquer card visto) OU concluídos — reflete o avanço real
+  const startedCount = progress.filter((p) => p.completed || (p.cards_seen ?? 0) > 0).length
   const totalCount = modules.length
-  const progressPct = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
+  // Barra de progresso: módulos totalmente concluídos somados com metade dos iniciados
+  const progressPct = totalCount > 0
+    ? ((completedCount + (startedCount - completedCount) * 0.5) / totalCount) * 100
+    : 0
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -28,8 +33,6 @@ export default function Sidebar({ profile, modules, progress }: SidebarProps) {
     router.push('/login')
   }
 
-  const displayName = profile.full_name ?? profile.email
-  const initials = displayName.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase()
 
   const SidebarContent = ({ onNavigate }: { onNavigate?: (() => void) | undefined }) => (
     <aside className="w-64 flex-shrink-0 bg-white flex flex-col h-full">
@@ -51,22 +54,13 @@ export default function Sidebar({ profile, modules, progress }: SidebarProps) {
         </div>
       </div>
 
-      {/* Usuário */}
-      <div className="px-4 py-4 border-b border-gray-100">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-[#000FFF]/10 flex items-center justify-center flex-shrink-0">
-            <span className="text-[#000FFF] font-extrabold text-xs">{initials}</span>
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs font-bold text-gray-900 truncate">{displayName}</p>
-            <p className="text-xs text-gray-400 capitalize">{profile.role}</p>
-          </div>
-        </div>
+      {/* Usuário — apenas progresso, sem nome redundante */}
+      <div className="px-4 py-3 border-b border-gray-100">
         {totalCount > 0 && (
-          <div className="mt-3">
+          <div>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs text-gray-400">Seu progresso</span>
-              <span className="text-xs font-bold text-[#000FFF]">{completedCount}/{totalCount}</span>
+              <span className="text-xs text-gray-400 font-medium">Seu progresso</span>
+              <span className="text-xs font-bold text-[#000FFF]">{startedCount}/{totalCount}</span>
             </div>
             <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div className="h-full bg-[#000FFF] rounded-full transition-all duration-500" style={{ width: `${progressPct}%` }} />
@@ -109,11 +103,11 @@ export default function Sidebar({ profile, modules, progress }: SidebarProps) {
         </ul>
         <div className="mt-4 px-2">
           <p className="px-3 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Assistente</p>
-          <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-400 cursor-not-allowed opacity-50">
+          <Link href="/chat" onClick={onNavigate} className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors ${pathname === '/chat' ? 'bg-[#000FFF]/10 text-[#000FFF] font-bold' : 'text-gray-500 hover:bg-gray-50 font-medium'}`}>
             <ChatIcon />
-            <span className="font-medium">Chat IA</span>
-            <span className="ml-auto text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full font-bold">Em breve</span>
-          </div>
+            <span>Bot João</span>
+            <span className="ml-auto text-[10px] bg-[#000FFF]/10 text-[#000FFF] px-2 py-0.5 rounded-full font-bold">IA</span>
+          </Link>
         </div>
       </nav>
 
@@ -180,10 +174,10 @@ export default function Sidebar({ profile, modules, progress }: SidebarProps) {
           <HomeIcon active={pathname === '/trilha'} />
           <span className="text-[10px] font-bold">Trilha</span>
         </Link>
-        <div className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl opacity-40 cursor-not-allowed">
+        <Link href="/chat" className={`flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-colors ${pathname === '/chat' ? 'text-[#000FFF]' : 'text-gray-400 hover:text-[#000FFF]'}`}>
           <ChatIcon />
-          <span className="text-[10px] font-bold text-gray-400">Chat IA</span>
-        </div>
+          <span className="text-[10px] font-bold">Bot João</span>
+        </Link>
         <button onClick={handleLogout} className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl text-gray-400 hover:text-red-500 transition-colors">
           <LogoutIcon />
           <span className="text-[10px] font-bold">Sair</span>
