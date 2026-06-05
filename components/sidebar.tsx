@@ -30,7 +30,7 @@ export default function Sidebar({ profile, modules, progress }: SidebarProps) {
   const displayName = profile.full_name ?? profile.email
   const initials = displayName.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase()
 
-  const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => (
+  const SidebarContent = ({ onNavigate }: { onNavigate?: (() => void) | undefined }) => (
     <aside className="w-64 flex-shrink-0 bg-white flex flex-col h-full">
       {/* Header */}
       <div className="bg-[#000FFF] px-5 py-5">
@@ -38,10 +38,15 @@ export default function Sidebar({ profile, modules, progress }: SidebarProps) {
           <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/20 flex-shrink-0">
             <Image src="/ug-icon.jpg" alt="Ultragaz" width={40} height={40} className="w-full h-full object-cover" />
           </div>
-          <div>
+          <div className="flex-1">
             <p className="text-white font-extrabold text-sm leading-tight">ultragaz</p>
             <p className="text-blue-200 text-xs font-medium">HUB Somar</p>
           </div>
+          {onNavigate && (
+            <button onClick={onNavigate} className="md:hidden text-white/70 hover:text-white p-1">
+              <CloseIcon />
+            </button>
+          )}
         </div>
       </div>
 
@@ -159,12 +164,6 @@ export default function Sidebar({ profile, modules, progress }: SidebarProps) {
       {/* ── Mobile: drawer lateral ── */}
       <div className={`md:hidden fixed top-0 left-0 h-full z-50 transition-transform duration-300 ease-in-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="relative h-full shadow-2xl">
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="absolute top-4 right-[-48px] z-10 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg"
-          >
-            <CloseIcon />
-          </button>
           <SidebarContent onNavigate={() => setMobileOpen(false)} />
         </div>
       </div>
