@@ -39,7 +39,8 @@ export default async function AppLayout({
         modules={modules ?? []}
         progress={progress ?? []}
       />
-      <main className="flex-1 overflow-auto">{children}</main>
+      {/* pt-14 = espaço para header mobile fixo | pb-16 = espaço para barra inferior mobile */}
+      <main className="flex-1 overflow-auto pt-14 pb-16 md:pt-0 md:pb-0">{children}</main>
     </div>
   )
 }
