@@ -231,9 +231,9 @@ function BotJoaoDesktop() {
       {showBubble && !open && (
         <div
           className="fixed z-40"
-          style={{ bottom: '130px', right: '120px', animation: 'fadeInUp 0.4s ease forwards' }}
+          style={{ bottom: '136px', right: '16px', animation: 'fadeInUp 0.4s ease forwards' }}
         >
-          <div className="relative bg-white rounded-2xl rounded-br-none shadow-xl border border-gray-100 px-4 py-3 max-w-[200px]">
+          <div className="relative bg-white rounded-2xl rounded-br-sm shadow-xl border border-gray-100 px-4 py-3 max-w-[210px]">
             <p className="text-xs font-black text-[#000FFF] mb-0.5">Bot João 🤖</p>
             <p className="text-xs text-gray-600 leading-snug">Fale comigo! Estou aqui para ajudar 💬</p>
             <button
@@ -241,8 +241,8 @@ function BotJoaoDesktop() {
               className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-gray-500 text-white text-[10px] flex items-center justify-center hover:bg-gray-700"
             >×</button>
           </div>
-          {/* Triângulo alinhado com a cabeça do bot (bot: right-4=16px, width 112px → head center ~right: 70px; bubble right-4=16px → tail offset = 70-16=54px) */}
-          <div className="absolute -bottom-2 w-4 h-4 bg-white border-b border-r border-gray-100 rotate-45" style={{ right: '54px' }} />
+          {/* Triângulo: mascote right:16px, width:112px, cabeça ~centro = 56px do right da imagem = 56px do right do bubble */}
+          <div className="absolute -bottom-2 w-4 h-4 bg-white border-b border-r border-gray-100 rotate-45" style={{ right: '48px' }} />
         </div>
       )}
 
