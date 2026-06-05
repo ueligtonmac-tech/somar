@@ -6,6 +6,7 @@ import FeedbackCard from './FeedbackCard'
 import EscalationCard from './EscalationCard'
 import KnowledgeItem from './KnowledgeItem'
 import AddKnowledgeTab from './AddKnowledgeTab'
+import KnowledgeThermometer from './KnowledgeThermometer'
 
 export default async function BotAdminPage({
   searchParams,
@@ -40,6 +41,9 @@ export default async function BotAdminPage({
   let feedbackItems: FeedbackRow[] = []
   let escalationItems: FeedbackRow[] = []
   let knowledgeItems: { id: string; question: string; answer: string; created_at: string }[] = []
+  // Termômetro
+  type AreaScore = { area: string; icon: string; knowledgeCount: number; avgScore: number | null; totalFeedback: number }
+  let thermometerAreas: AreaScore[] = []
   // Mapa userId → nome (busca separada)
   const userNames = new Map<string, string>()
 
@@ -81,6 +85,35 @@ export default async function BotAdminPage({
       .order('created_at', { ascending: false })
       .limit(100)
     knowledgeItems = data || []
+  } else if (tab === 'thermometer') {
+    // Busca todos os conhecimentos e feedbacks para calcular o termômetro
+    const AREAS = [
+      { area: 'Canais Digitais', icon: '📱', keywords: ['canal', 'digital', 'app', 'whatsapp', 'aplicativo', 'site'] },
+      { area: 'Vale Gás', icon: '🔵', keywords: ['vale', 'gás', 'gas', 'benefício', 'mapa', 'validação', 'map'] },
+      { area: 'HUB Somar', icon: '🏪', keywords: ['hub', 'somar', 'pedido', 'gestão', 'roteirização', 'entregador'] },
+      { area: 'AmigU', icon: '🤝', keywords: ['amigu', 'fidelidade', 'programa', 'pontos', 'revendedor'] },
+      { area: 'Precificação', icon: '💰', keywords: ['preço', 'precific', 'faturamento', 'custo', 'margem', 'valor'] },
+      { area: 'Ultragaz Geral', icon: '🏢', keywords: ['ultragaz', 'empresa', 'missão', 'valor', 'cultura', 'história'] },
+    ]
+
+    const [{ data: allKnowledge }, { data: allFeedback }] = await Promise.all([
+      supabase.from('bot_knowledge').select('question, answer').eq('approved', true).limit(300),
+      supabase.from('bot_feedback').select('question, score').limit(500),
+    ])
+
+    thermometerAreas = AREAS.map(({ area, icon, keywords }) => {
+      const kItems = (allKnowledge || []).filter(k =>
+        keywords.some(kw => (k.question + ' ' + k.answer).toLowerCase().includes(kw))
+      )
+      const fItems = (allFeedback || []).filter(f =>
+        keywords.some(kw => (f.question || '').toLowerCase().includes(kw))
+      )
+      const avgScore = fItems.length > 0
+        ? fItems.reduce((s, f) => s + (f.score || 0), 0) / fItems.length
+        : null
+
+      return { area, icon, knowledgeCount: kItems.length, avgScore, totalFeedback: fItems.length }
+    })
   }
 
   const tabs = [
@@ -88,6 +121,7 @@ export default async function BotAdminPage({
     { key: 'escalations', label: 'Escalonamentos', icon: '🚨', count: pendingEscalations ?? 0, color: 'text-red-500' },
     { key: 'knowledge', label: 'Base de Conhecimento', icon: '📚', count: totalKnowledge ?? 0, color: 'text-blue-600' },
     { key: 'add', label: 'Adicionar', icon: '➕', count: 0, color: 'text-purple-600' },
+    { key: 'thermometer', label: 'Termômetro', icon: '🌡️', count: 0, color: 'text-orange-500' },
   ]
 
   return (
@@ -262,6 +296,20 @@ export default async function BotAdminPage({
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {/* ─── ABA: TERMÔMETRO ─── */}
+      {tab === 'thermometer' && (
+        <div>
+          <div className="bg-orange-50 border border-orange-100 rounded-2xl px-5 py-3 mb-5 flex items-start gap-3">
+            <span className="text-orange-500 text-lg mt-0.5">🌡️</span>
+            <div>
+              <p className="text-sm font-semibold text-orange-800">Termômetro de Conhecimento</p>
+              <p className="text-xs text-orange-600 mt-0.5">Visualize o nível de preparo do Bot João por área. O score combina quantidade de conhecimentos aprovados (50%) com as avaliações dos usuários (50%). Áreas em vermelho precisam de mais material.</p>
+            </div>
+          </div>
+          <KnowledgeThermometer areas={thermometerAreas} />
         </div>
       )}
     </div>
