@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
@@ -33,10 +34,16 @@ function LoginForm() {
 
           {/* Header azul Ultragaz */}
           <div className="bg-[#000FFF] px-8 py-10 text-center">
-            <div className="inline-flex items-center justify-center mb-4">
-              {/* Logo placeholder — substituir pelo logo real */}
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                <span className="text-[#000FFF] font-black text-lg">UG</span>
+            <div className="inline-flex items-center justify-center mb-5">
+              <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/20">
+                <Image
+                  src="/ug-icon.jpg"
+                  alt="Ultragaz"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover"
+                  priority
+                />
               </div>
             </div>
             <h1 className="text-white text-2xl font-bold tracking-tight">

@@ -59,7 +59,7 @@ export default function Sidebar({ profile, modules, progress }: SidebarProps) {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-ug-blue rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-white/20">
             <Image
-              src="/ug-logo.jpeg"
+              src="/ug-icon.jpg"
               alt="Ultragaz"
               width={40}
               height={40}
