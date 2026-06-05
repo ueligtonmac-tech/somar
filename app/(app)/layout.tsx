@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Sidebar from '@/components/sidebar'
+import TopBar from '@/components/TopBar'
 
 export default async function AppLayout({
   children,
@@ -32,15 +33,21 @@ export default async function AppLayout({
         .eq('user_id', user.id),
     ])
 
+  const safeProfile = profile ?? { full_name: null, email: user.email ?? '', role: 'consultant' }
+
   return (
     <div className="flex h-screen bg-ug-gray-50 overflow-hidden">
       <Sidebar
-        profile={profile ?? { full_name: null, email: user.email ?? '', role: 'consultant' }}
+        profile={safeProfile}
         modules={modules ?? []}
         progress={progress ?? []}
       />
-      {/* pt-14 = espaço para header mobile fixo | pb-16 = espaço para barra inferior mobile */}
-      <main className="flex-1 overflow-auto pt-14 pb-16 md:pt-0 md:pb-0">{children}</main>
+      {/* Coluna principal: TopBar (desktop) + conteúdo */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <TopBar profile={safeProfile} />
+        {/* pt-14 = espaço para header mobile fixo | pb-16 = espaço para barra inferior mobile */}
+        <main className="flex-1 overflow-auto pt-14 pb-16 md:pt-0 md:pb-0">{children}</main>
+      </div>
     </div>
   )
 }

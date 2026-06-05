@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import UserMenu from './UserMenu'
 
 interface Module { id: string; slug: string; title: string; order_index: number }
 interface Progress { module_id: string; completed: boolean; cards_seen: number }
@@ -148,9 +149,14 @@ export default function Sidebar({ profile, modules, progress }: SidebarProps) {
             <p className="text-blue-200 text-[10px]">Ultragaz</p>
           </div>
         </div>
-        <button onClick={() => setMobileOpen(true)} className="text-white p-1.5 rounded-lg bg-white/15 hover:bg-white/25 transition-colors">
-          <HamburgerIcon />
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="bg-white/10 rounded-xl">
+            <UserMenu profile={profile} />
+          </div>
+          <button onClick={() => setMobileOpen(true)} className="text-white p-1.5 rounded-lg bg-white/15 hover:bg-white/25 transition-colors">
+            <HamburgerIcon />
+          </button>
+        </div>
       </div>
 
       {/* ── Mobile: overlay escuro ── */}
