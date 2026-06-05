@@ -44,6 +44,12 @@ export default async function AdminPage() {
         </div>
         <div className="flex items-center gap-2">
           <Link
+            href="/admin/biblioteca"
+            className="flex items-center gap-2 bg-white border-2 border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-bold hover:border-[#000FFF] hover:text-[#000FFF] transition-colors"
+          >
+            📚 Biblioteca
+          </Link>
+          <Link
             href="/admin/bot"
             className="flex items-center gap-2 bg-white border-2 border-[#000FFF] text-[#000FFF] px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-50 transition-colors"
           >
