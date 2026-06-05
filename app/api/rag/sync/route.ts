@@ -1,14 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { generateEmbedding, generateEmbeddingsBatch } from '@/lib/embeddings'
-// Rota admin: indexa todo o conteúdo existente gerando embeddings
+
+// Rota admin/builder: indexa todo o conteúdo gerando embeddings
 export async function POST() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return Response.json({ error: 'Não autenticado' }, { status: 401 })
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') return Response.json({ error: 'Sem permissão' }, { status: 403 })
+  if (!profile || !['admin', 'builder'].includes(profile.role ?? '')) {
+    return Response.json({ error: 'Sem permissão' }, { status: 403 })
+  }
 
   const service = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,72 +21,81 @@ export async function POST() {
   // Verificar se a chave Google está configurada
   const googleKey = process.env.GOOGLE_GENERATIVE_AI_KEY
   if (!googleKey || googleKey === 'your_gemini_key') {
-    return Response.json({ ok: false, message: 'Erro: GOOGLE_GENERATIVE_AI_KEY não configurada no ambiente.' }, { status: 400 })
+    return Response.json({ ok: false, message: 'Erro: GOOGLE_GENERATIVE_AI_KEY não configurada.' }, { status: 400 })
   }
 
-  // Testar a chave gerando um embedding de teste
-  const testEmb = await generateEmbedding('teste')
+  // Testar a chave
+  const testEmb = await generateEmbedding('teste de conexão')
   if (!testEmb) {
-    return Response.json({ ok: false, message: 'Erro: chave Google inválida ou sem acesso à API de embeddings.' }, { status: 400 })
+    return Response.json({ ok: false, message: 'Erro: chave Google inválida ou API desabilitada.' }, { status: 400 })
   }
 
   const results = { knowledge: 0, cards: 0, errors: 0 }
 
-  // ── 1. Indexar bot_knowledge sem embedding ──
-  const { data: knowledge } = await service
+  // ── 1. Indexar TODOS os bot_knowledge aprovados ──
+  const { data: knowledge, error: kErr } = await service
     .from('bot_knowledge')
-    .select('id, question, answer')
+    .select('id, question, answer, embedding')
     .eq('approved', true)
-    .is('embedding', null)
+
+  if (kErr) console.error('[rag/sync] knowledge query error:', kErr)
 
   if (knowledge && knowledge.length > 0) {
-    const texts = knowledge.map(k => `${k.question}\n${k.answer}`)
-    const embeddings = await generateEmbeddingsBatch(texts)
+    // Só os que ainda não têm embedding
+    const pending = knowledge.filter(k => !k.embedding)
+    if (pending.length > 0) {
+      const texts = pending.map(k => `${k.question}\n${k.answer}`)
+      const embeddings = await generateEmbeddingsBatch(texts)
 
-    for (let i = 0; i < knowledge.length; i++) {
-      if (!embeddings[i]) { results.errors++; continue }
-      const { error } = await service
-        .from('bot_knowledge')
-        .update({ embedding: JSON.stringify(embeddings[i]) })
-        .eq('id', knowledge[i].id)
-      if (error) results.errors++
-      else results.knowledge++
+      for (let i = 0; i < pending.length; i++) {
+        if (!embeddings[i]) { results.errors++; continue }
+        const { error } = await service
+          .from('bot_knowledge')
+          .update({ embedding: embeddings[i] as unknown as string })
+          .eq('id', pending[i].id)
+        if (error) { console.error('[rag/sync] update knowledge error:', error); results.errors++ }
+        else results.knowledge++
+      }
     }
   }
 
-  // ── 2. Indexar cards sem embedding ──
-  const { data: cards } = await service
+  // ── 2. Indexar TODOS os cards ──
+  const { data: cards, error: cErr } = await service
     .from('cards')
-    .select('id, title, scenario, challenge, explanation, action_hint')
-    .is('embedding', null)
+    .select('id, title, scenario, challenge, explanation, action_hint, embedding')
+
+  if (cErr) console.error('[rag/sync] cards query error:', cErr)
 
   if (cards && cards.length > 0) {
-    const texts = cards.map(c => [
-      c.title,
-      c.scenario && `Cenário: ${c.scenario}`,
-      c.challenge && `Desafio: ${c.challenge}`,
-      c.explanation && `Explicação: ${c.explanation}`,
-      c.action_hint && `Dica: ${c.action_hint}`,
-    ].filter(Boolean).join('\n'))
+    const pending = cards.filter(c => !c.embedding)
+    if (pending.length > 0) {
+      const texts = pending.map(c => [
+        c.title,
+        c.scenario && `Cenário: ${c.scenario}`,
+        c.challenge && `Desafio: ${c.challenge}`,
+        c.explanation && `Explicação: ${c.explanation}`,
+        c.action_hint && `Dica: ${c.action_hint}`,
+      ].filter(Boolean).join('\n'))
 
-    const embeddings = await generateEmbeddingsBatch(texts)
+      const embeddings = await generateEmbeddingsBatch(texts)
 
-    for (let i = 0; i < cards.length; i++) {
-      if (!embeddings[i]) { results.errors++; continue }
-      const { error } = await service
-        .from('cards')
-        .update({ embedding: JSON.stringify(embeddings[i]) })
-        .eq('id', cards[i].id)
-      if (error) results.errors++
-      else results.cards++
+      for (let i = 0; i < pending.length; i++) {
+        if (!embeddings[i]) { results.errors++; continue }
+        const { error } = await service
+          .from('cards')
+          .update({ embedding: embeddings[i] as unknown as string })
+          .eq('id', pending[i].id)
+        if (error) { console.error('[rag/sync] update card error:', error); results.errors++ }
+        else results.cards++
+      }
     }
   }
 
-  return Response.json({
-    ok: true,
-    indexed: results,
-    message: `Indexados: ${results.knowledge} conhecimentos, ${results.cards} cards. Erros: ${results.errors}`,
-  })
+  const msg = results.errors > 0
+    ? `Indexados: ${results.knowledge} conhecimentos, ${results.cards} cards. Falhas: ${results.errors}`
+    : `✅ Indexados com sucesso: ${results.knowledge} conhecimentos e ${results.cards} cards!`
+
+  return Response.json({ ok: true, indexed: results, message: msg })
 }
 
 // Retorna status atual da indexação
@@ -97,16 +109,18 @@ export async function GET() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const [{ count: kTotal }, { count: kIndexed }, { count: cTotal }, { count: cIndexed }] =
-    await Promise.all([
-      service.from('bot_knowledge').select('*', { count: 'exact', head: true }).eq('approved', true),
-      service.from('bot_knowledge').select('*', { count: 'exact', head: true }).eq('approved', true).not('embedding', 'is', null),
-      service.from('cards').select('*', { count: 'exact', head: true }),
-      service.from('cards').select('*', { count: 'exact', head: true }).not('embedding', 'is', null),
-    ])
+  const [kAll, cAll] = await Promise.all([
+    service.from('bot_knowledge').select('id, embedding').eq('approved', true),
+    service.from('cards').select('id, embedding'),
+  ])
+
+  const kTotal = kAll.data?.length ?? 0
+  const kIndexed = kAll.data?.filter(k => k.embedding).length ?? 0
+  const cTotal = cAll.data?.length ?? 0
+  const cIndexed = cAll.data?.filter(c => c.embedding).length ?? 0
 
   return Response.json({
-    knowledge: { total: kTotal ?? 0, indexed: kIndexed ?? 0 },
-    cards: { total: cTotal ?? 0, indexed: cIndexed ?? 0 },
+    knowledge: { total: kTotal, indexed: kIndexed },
+    cards: { total: cTotal, indexed: cIndexed },
   })
 }
