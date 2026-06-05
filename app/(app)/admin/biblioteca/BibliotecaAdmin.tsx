@@ -53,10 +53,11 @@ export default function BibliotecaAdmin({ initialFiles }: { initialFiles: Librar
       formData.append('category', category.trim())
 
       const res = await fetch('/api/biblioteca/upload', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Erro ao fazer upload')
+      let data: { error?: string; file?: LibraryFile } = {}
+      try { data = await res.json() } catch { /* não era JSON */ }
+      if (!res.ok) throw new Error(data.error || `Erro HTTP ${res.status}`)
 
-      setFiles(prev => [data.file, ...prev])
+      if (data.file) setFiles(prev => [data.file!, ...prev])
       setSuccess(`✓ "${title}" enviado com sucesso!`)
       setTitle('')
       setDescription('')
