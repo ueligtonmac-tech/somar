@@ -34,7 +34,8 @@ export default function CardEditor({ card, index }: { card: Card; index: number 
   const [saved, setSaved] = useState(false)
   const [pending, startTransition] = useTransition()
 
-  const isDirty = Object.keys(values).some(k => values[k] !== ((card as Record<string, unknown>)[k] ?? ''))
+  const cardAny = card as unknown as Record<string, unknown>
+  const isDirty = Object.keys(values).some(k => values[k] !== (cardAny[k] ?? ''))
 
   const handleSave = () => {
     startTransition(async () => {
