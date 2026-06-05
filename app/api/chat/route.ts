@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest } from 'next/server'
+import { generateEmbedding } from '@/lib/embeddings'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -67,37 +68,57 @@ export async function POST(req: NextRequest) {
     }
     messages.push({ role: 'user', content: message })
 
-    // ── RAG: buscar conhecimento aprovado relevante ──
+    // ── RAG: busca semântica (embeddings) com fallback para keywords ──
     let knowledgeContext = ''
     try {
-      const { data: knowledge } = await supabase
-        .from('bot_knowledge')
-        .select('question, answer')
-        .eq('approved', true)
-        .order('created_at', { ascending: false })
-        .limit(60)
+      // Tenta busca semântica primeiro
+      const queryEmbedding = await generateEmbedding(message)
 
-      if (knowledge && knowledge.length > 0) {
-        const stopwords = new Set(['que', 'com', 'para', 'por', 'uma', 'uns', 'umas', 'dos', 'das', 'nos', 'nas', 'seu', 'sua', 'seus', 'suas', 'isso', 'esse', 'esta', 'este', 'como', 'mais', 'mas', 'nem', 'não', 'sim', 'vai', 'tem', 'ter', 'ser', 'foi', 'são', 'pode', 'qual', 'quais', 'quando', 'onde'])
-        const msgWords = message.toLowerCase()
-          .replace(/[^a-záéíóúãõâêîôûàèìòùç\s]/gi, ' ')
-          .split(/\s+/)
-          .filter((w: string) => w.length >= 3 && !stopwords.has(w))
+      if (queryEmbedding) {
+        // Busca semântica em bot_knowledge
+        const { data: semanticKnowledge } = await supabase.rpc('match_knowledge', {
+          query_embedding: JSON.stringify(queryEmbedding),
+          match_threshold: 0.6,
+          match_count: 6,
+        })
 
-        const scored = knowledge.map(k => {
-          const text = (k.question + ' ' + k.answer).toLowerCase()
-          const hits = msgWords.filter((w: string) => text.includes(w)).length
-          return { ...k, hits }
-        }).filter(k => k.hits > 0)
-          .sort((a, b) => b.hits - a.hits)
-          .slice(0, 6)
+        if (semanticKnowledge && semanticKnowledge.length > 0) {
+          knowledgeContext = `\n\nCONHECIMENTO VALIDADO PELA EQUIPE ULTRAGAZ — use estas respostas como referência PRIORITÁRIA e definitiva:\n` +
+            semanticKnowledge.map((k: { question: string; answer: string; similarity: number }, i: number) =>
+              `${i + 1}. Pergunta: ${k.question}\n   Resposta: ${k.answer}`
+            ).join('\n\n')
+        }
+      } else {
+        // Fallback: busca por keywords
+        const { data: knowledge } = await supabase
+          .from('bot_knowledge')
+          .select('question, answer')
+          .eq('approved', true)
+          .order('created_at', { ascending: false })
+          .limit(60)
 
-        if (scored.length > 0) {
-          knowledgeContext = `\n\nCONHECIMENTO VALIDADO PELA EQUIPE ULTRAGAZ — use estas respostas como referência PRIORITÁRIA e definitiva. Se a pergunta se encaixar aqui, prefira esta resposta ao invés de gerar uma nova:\n` +
-            scored.map((k, i) => `${i + 1}. Pergunta: ${k.question}\n   Resposta: ${k.answer}`).join('\n\n')
+        if (knowledge && knowledge.length > 0) {
+          const stopwords = new Set(['que', 'com', 'para', 'por', 'uma', 'uns', 'umas', 'dos', 'das', 'nos', 'nas', 'seu', 'sua', 'seus', 'suas', 'isso', 'esse', 'esta', 'este', 'como', 'mais', 'mas', 'nem', 'não', 'sim', 'vai', 'tem', 'ter', 'ser', 'foi', 'são', 'pode', 'qual', 'quais', 'quando', 'onde'])
+          const msgWords = message.toLowerCase()
+            .replace(/[^a-záéíóúãõâêîôûàèìòùç\s]/gi, ' ')
+            .split(/\s+/)
+            .filter((w: string) => w.length >= 3 && !stopwords.has(w))
+
+          const scored = knowledge.map(k => {
+            const text = (k.question + ' ' + k.answer).toLowerCase()
+            const hits = msgWords.filter((w: string) => text.includes(w)).length
+            return { ...k, hits }
+          }).filter(k => k.hits > 0)
+            .sort((a, b) => b.hits - a.hits)
+            .slice(0, 6)
+
+          if (scored.length > 0) {
+            knowledgeContext = `\n\nCONHECIMENTO VALIDADO PELA EQUIPE ULTRAGAZ — use estas respostas como referência PRIORITÁRIA e definitiva:\n` +
+              scored.map((k, i) => `${i + 1}. Pergunta: ${k.question}\n   Resposta: ${k.answer}`).join('\n\n')
+          }
         }
       }
-    } catch { /* ignora se tabela não existir */ }
+    } catch { /* ignora */ }
 
     // ── BIBLIOTECA: materiais da biblioteca de PDFs ──
     let bibliotecaContext = ''
@@ -128,31 +149,53 @@ export async function POST(req: NextRequest) {
       }
     } catch { /* ignora */ }
 
-    // ── CARDS: conteúdo dos módulos da trilha ──
+    // ── CARDS: busca semântica nos módulos da trilha ──
     let cardsContext = ''
     try {
-      const { data: cards } = await supabase
-        .from('cards')
-        .select('title, scenario, challenge, explanation, action_hint')
-        .not('explanation', 'is', null)
-        .limit(40)
+      const queryEmbedding = await generateEmbedding(message)
 
-      if (cards && cards.length > 0) {
-        const msgWords = message.toLowerCase().replace(/[^a-záéíóúãõâêîôûç\s]/gi, ' ').split(/\s+/).filter((w: string) => w.length >= 3)
-        const relevantCards = cards.filter(c => {
-          const text = [c.title, c.scenario, c.challenge, c.explanation, c.action_hint].filter(Boolean).join(' ').toLowerCase()
-          return msgWords.some((w: string) => text.includes(w))
-        }).slice(0, 4)
+      if (queryEmbedding) {
+        const { data: semanticCards } = await supabase.rpc('match_cards', {
+          query_embedding: JSON.stringify(queryEmbedding),
+          match_threshold: 0.55,
+          match_count: 4,
+        })
 
-        if (relevantCards.length > 0) {
+        if (semanticCards && semanticCards.length > 0) {
           cardsContext = `\n\nCONTEÚDO DOS MÓDULOS DE TREINAMENTO (use para responder dúvidas sobre os temas da trilha):\n` +
-            relevantCards.map((c, i) => {
+            semanticCards.map((c: { title: string; scenario: string; challenge: string; explanation: string }, i: number) => {
               const parts = [`Módulo: ${c.title}`]
               if (c.scenario) parts.push(`Cenário: ${c.scenario}`)
               if (c.challenge) parts.push(`Desafio: ${c.challenge}`)
               if (c.explanation) parts.push(`Explicação: ${c.explanation}`)
               return `${i + 1}. ${parts.join(' | ')}`
             }).join('\n')
+        }
+      } else {
+        // Fallback: keyword search
+        const { data: cards } = await supabase
+          .from('cards')
+          .select('title, scenario, challenge, explanation, action_hint')
+          .not('explanation', 'is', null)
+          .limit(40)
+
+        if (cards && cards.length > 0) {
+          const msgWords = message.toLowerCase().replace(/[^a-záéíóúãõâêîôûç\s]/gi, ' ').split(/\s+/).filter((w: string) => w.length >= 3)
+          const relevantCards = cards.filter(c => {
+            const text = [c.title, c.scenario, c.challenge, c.explanation, c.action_hint].filter(Boolean).join(' ').toLowerCase()
+            return msgWords.some((w: string) => text.includes(w))
+          }).slice(0, 4)
+
+          if (relevantCards.length > 0) {
+            cardsContext = `\n\nCONTEÚDO DOS MÓDULOS DE TREINAMENTO (use para responder dúvidas sobre os temas da trilha):\n` +
+              relevantCards.map((c, i) => {
+                const parts = [`Módulo: ${c.title}`]
+                if (c.scenario) parts.push(`Cenário: ${c.scenario}`)
+                if (c.challenge) parts.push(`Desafio: ${c.challenge}`)
+                if (c.explanation) parts.push(`Explicação: ${c.explanation}`)
+                return `${i + 1}. ${parts.join(' | ')}`
+              }).join('\n')
+          }
         }
       }
     } catch { /* ignora */ }

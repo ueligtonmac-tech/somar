@@ -7,6 +7,7 @@ import EscalationCard from './EscalationCard'
 import KnowledgeItem from './KnowledgeItem'
 import AddKnowledgeTab from './AddKnowledgeTab'
 import KnowledgeThermometer from './KnowledgeThermometer'
+import RagIndexPanel from '@/components/RagIndexPanel'
 
 export default async function BotAdminPage({
   searchParams,
@@ -122,6 +123,7 @@ export default async function BotAdminPage({
     { key: 'knowledge', label: 'Base de Conhecimento', icon: '📚', count: totalKnowledge ?? 0, color: 'text-blue-600' },
     { key: 'add', label: 'Adicionar', icon: '➕', count: 0, color: 'text-purple-600' },
     { key: 'thermometer', label: 'Termômetro', icon: '🌡️', count: 0, color: 'text-orange-500' },
+    { key: 'rag', label: 'Busca Semântica', icon: '🔬', count: 0, color: 'text-indigo-600' },
   ]
 
   return (
@@ -296,6 +298,20 @@ export default async function BotAdminPage({
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {/* ─── ABA: BUSCA SEMÂNTICA / RAG ─── */}
+      {tab === 'rag' && (
+        <div>
+          <div className="bg-indigo-50 border border-indigo-100 rounded-2xl px-5 py-3 mb-5 flex items-start gap-3">
+            <span className="text-indigo-500 text-lg mt-0.5">🔬</span>
+            <div>
+              <p className="text-sm font-semibold text-indigo-800">Busca Semântica com Embeddings</p>
+              <p className="text-xs text-indigo-600 mt-0.5">Indexe o conteúdo para que o Bot João use inteligência vetorial. Em vez de buscar por palavras-chave, ele entende o <em>significado</em> da pergunta e encontra as respostas mais relevantes.</p>
+            </div>
+          </div>
+          <RagIndexPanel />
         </div>
       )}
 

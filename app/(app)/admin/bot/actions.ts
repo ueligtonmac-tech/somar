@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
+import { generateEmbedding } from '@/lib/embeddings'
 
 async function assertAdmin() {
   const supabase = await createClient()
@@ -47,7 +48,22 @@ export async function approveFeedback(feedbackId: string, question: string, answ
     if (error) throw new Error('Erro ao salvar: ' + error.message)
   }
 
-  // Marcar feedback como revisado (não usamos 'approved' pois pode não existir na tabela)
+  // Gerar embedding em background (não bloqueia aprovação)
+  generateEmbedding(`${question}\n${finalAnswer}`).then(async (embedding) => {
+    if (!embedding) return
+    const { data: saved } = await service
+      .from('bot_knowledge')
+      .select('id')
+      .eq('source_feedback_id', feedbackId)
+      .maybeSingle()
+    if (saved) {
+      await service.from('bot_knowledge')
+        .update({ embedding: JSON.stringify(embedding) })
+        .eq('id', saved.id)
+    }
+  }).catch(() => { /* ignora erro de embedding */ })
+
+  // Marcar feedback como revisado
   const { error: fbError } = await service
     .from('bot_feedback')
     .update({ reviewed: true })
@@ -120,12 +136,23 @@ export async function addManualKnowledge(question: string, answer: string) {
 
   if (existing) throw new Error('Já existe uma entrada com essa pergunta')
 
-  const { error } = await service.from('bot_knowledge').insert({
+  const { data: inserted, error } = await service.from('bot_knowledge').insert({
     question: question.trim(),
     answer: answer.trim(),
     approved: true,
-  })
+  }).select('id').single()
   if (error) throw new Error('Erro ao salvar: ' + error.message)
+
+  // Gerar embedding em background
+  if (inserted) {
+    generateEmbedding(`${question.trim()}\n${answer.trim()}`).then(async (embedding) => {
+      if (!embedding) return
+      await service.from('bot_knowledge')
+        .update({ embedding: JSON.stringify(embedding) })
+        .eq('id', inserted.id)
+    }).catch(() => { /* ignora */ })
+  }
+
   revalidatePath('/admin/bot')
 }
 
