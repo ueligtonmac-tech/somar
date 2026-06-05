@@ -96,11 +96,15 @@ export default function ChatPage() {
             const parsed = JSON.parse(line.slice(6))
 
             if (parsed.type === 'chunk') {
-              fullText += parsed.text
-              const snapshot = fullText
-              setMessages(prev =>
-                prev.map(m => m.id === botMsgId ? { ...m, content: snapshot } : m)
-              )
+              const chars = parsed.text.split('')
+              for (const char of chars) {
+                fullText += char
+                const snapshot = fullText
+                setMessages(prev =>
+                  prev.map(m => m.id === botMsgId ? { ...m, content: snapshot } : m)
+                )
+                await new Promise(r => setTimeout(r, 28))
+              }
             } else if (parsed.type === 'done') {
               finalConvId = parsed.conversationId
               setConversationId(parsed.conversationId)

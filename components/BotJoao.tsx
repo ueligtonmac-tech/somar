@@ -174,11 +174,16 @@ function BotJoaoDesktop() {
             const parsed = JSON.parse(line.slice(6))
 
             if (parsed.type === 'chunk') {
-              fullText += parsed.text
-              const snapshot = fullText
-              setMessages(prev =>
-                prev.map(m => m.id === botMsgId ? { ...m, content: snapshot } : m)
-              )
+              // Anima char a char com delay humano (~28ms por char)
+              const chars = parsed.text.split('')
+              for (const char of chars) {
+                fullText += char
+                const snapshot = fullText
+                setMessages(prev =>
+                  prev.map(m => m.id === botMsgId ? { ...m, content: snapshot } : m)
+                )
+                await new Promise(r => setTimeout(r, 28))
+              }
             } else if (parsed.type === 'done') {
               finalConvId = parsed.conversationId
               setConversationId(parsed.conversationId)
@@ -236,8 +241,8 @@ function BotJoaoDesktop() {
               className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-gray-500 text-white text-[10px] flex items-center justify-center hover:bg-gray-700"
             >×</button>
           </div>
-          {/* Triângulo alinhado com a cabeça do bot (bot: right-4, width 112px → head ~right: 60px) */}
-          <div className="absolute -bottom-2 right-1 w-4 h-4 bg-white border-b border-r border-gray-100 rotate-45" />
+          {/* Triângulo alinhado com a cabeça do bot (bot: right-4=16px, width 112px → head center ~right: 70px; bubble right-4=16px → tail offset = 70-16=54px) */}
+          <div className="absolute -bottom-2 w-4 h-4 bg-white border-b border-r border-gray-100 rotate-45" style={{ right: '54px' }} />
         </div>
       )}
 
