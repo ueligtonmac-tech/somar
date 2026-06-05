@@ -41,6 +41,8 @@ const BOT_AVATAR = (
 
 export default function BibliotecaClient({ files }: { files: LibraryFile[] }) {
   const [search, setSearch] = useState('')
+  const [chatOpen, setChatOpen] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(6)
 
   // Filtro de busca
   const filtered = files.filter(f => {
@@ -53,7 +55,11 @@ export default function BibliotecaClient({ files }: { files: LibraryFile[] }) {
     )
   })
 
-  const categories = Array.from(new Set(filtered.map(f => f.category).filter(Boolean))) as string[]
+  // Paginação: reset ao filtrar
+  const visibleFiles = filtered.slice(0, visibleCount)
+  const hasMore = filtered.length > visibleCount
+
+  const categories = Array.from(new Set(visibleFiles.map(f => f.category).filter(Boolean))) as string[]
 
   // ── Chat embutido ──
   const WELCOME: Message = {
@@ -135,6 +141,12 @@ export default function BibliotecaClient({ files }: { files: LibraryFile[] }) {
     }
   }, [input, loading, conversationId, messages])
 
+  // Reset paginação ao filtrar
+  const handleSearch = (val: string) => {
+    setSearch(val)
+    setVisibleCount(6)
+  }
+
   return (
     <div className="space-y-6">
       {/* ── Busca ── */}
@@ -144,14 +156,101 @@ export default function BibliotecaClient({ files }: { files: LibraryFile[] }) {
         </svg>
         <input
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => handleSearch(e.target.value)}
           placeholder="Buscar materiais por título, categoria ou descrição..."
           className="w-full pl-10 pr-4 py-3 border-2 border-gray-100 rounded-2xl text-sm focus:border-[#000FFF] focus:outline-none bg-white shadow-sm"
         />
         {search && (
-          <button onClick={() => setSearch('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <button onClick={() => handleSearch('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
+        )}
+      </div>
+
+      {/* ── Chat com Bot João (colapsável) ── */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        {/* Header clicável */}
+        <button
+          onClick={() => setChatOpen(o => !o)}
+          className="w-full bg-[#000FFF] px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-blue-700 transition-colors"
+        >
+          <div className="w-9 h-9 rounded-full overflow-hidden bg-white/10 flex-shrink-0">
+            <Image src="/bot-joao.webp" alt="Bot João" width={36} height={36} className="object-contain scale-110" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-white font-bold text-sm">Bot João</p>
+            <p className="text-blue-200 text-xs">
+              {chatOpen ? 'Pergunte sobre qualquer material da biblioteca' : 'Clique para perguntar ao Bot João sobre os materiais'}
+            </p>
+          </div>
+          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse mr-2" />
+          <svg
+            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"
+            style={{ transform: chatOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
+          >
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+
+        {chatOpen && (
+          <>
+            {/* Mensagens */}
+            <div className="h-72 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
+              {messages.map(msg => (
+                <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  {msg.role === 'assistant' && BOT_AVATAR}
+                  <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
+                    msg.role === 'user'
+                      ? 'bg-[#000FFF] text-white rounded-tr-none'
+                      : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none shadow-sm'
+                  }`}>
+                    {formatMessage(msg.content)}
+                  </div>
+                </div>
+              ))}
+
+              {loading && messages[messages.length - 1]?.content === '' && (
+                <div className="flex gap-2">
+                  {BOT_AVATAR}
+                  <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
+                    <div className="flex gap-1.5 items-center">
+                      <span className="w-2 h-2 bg-[#000FFF]/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 bg-[#000FFF]/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-[#000FFF]/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <span className="text-xs text-gray-400 ml-1 font-medium">Digitando...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input */}
+            <div className="p-3 border-t border-gray-100 bg-white">
+              <div className="flex gap-2 items-center">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+                  placeholder="Pergunte sobre os materiais da biblioteca..."
+                  className="flex-1 border-2 border-gray-100 rounded-xl px-3 py-2 text-sm focus:border-[#000FFF] focus:outline-none transition-colors"
+                  disabled={loading}
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={!input.trim() || loading}
+                  className="w-9 h-9 rounded-xl bg-[#000FFF] text-white flex items-center justify-center disabled:opacity-40 hover:bg-blue-700 transition-colors flex-shrink-0"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </>
         )}
       </div>
 
@@ -164,17 +263,17 @@ export default function BibliotecaClient({ files }: { files: LibraryFile[] }) {
                 <div key={cat}>
                   <h2 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-3">{cat}</h2>
                   <div className="grid gap-3">
-                    {filtered.filter(f => f.category === cat).map(file => (
+                    {visibleFiles.filter(f => f.category === cat).map(file => (
                       <FileCard key={file.id} file={file} />
                     ))}
                   </div>
                 </div>
               ))}
-              {filtered.filter(f => !f.category).length > 0 && (
+              {visibleFiles.filter(f => !f.category).length > 0 && (
                 <div>
                   <h2 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-3">Outros</h2>
                   <div className="grid gap-3">
-                    {filtered.filter(f => !f.category).map(file => (
+                    {visibleFiles.filter(f => !f.category).map(file => (
                       <FileCard key={file.id} file={file} />
                     ))}
                   </div>
@@ -183,7 +282,22 @@ export default function BibliotecaClient({ files }: { files: LibraryFile[] }) {
             </>
           ) : (
             <div className="grid gap-3">
-              {filtered.map(file => <FileCard key={file.id} file={file} />)}
+              {visibleFiles.map(file => <FileCard key={file.id} file={file} />)}
+            </div>
+          )}
+
+          {/* ── Ver mais ── */}
+          {hasMore && (
+            <div className="text-center">
+              <button
+                onClick={() => setVisibleCount(c => c + 6)}
+                className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-[#000FFF] text-[#000FFF] rounded-xl text-sm font-bold hover:bg-[#000FFF] hover:text-white transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+                Ver mais ({filtered.length - visibleCount} restantes)
+              </button>
             </div>
           )}
         </div>
@@ -195,78 +309,6 @@ export default function BibliotecaClient({ files }: { files: LibraryFile[] }) {
           </p>
         </div>
       )}
-
-      {/* ── Chat com Bot João ── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        {/* Header */}
-        <div className="bg-[#000FFF] px-4 py-3 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full overflow-hidden bg-white/10 flex-shrink-0">
-            <Image src="/bot-joao.webp" alt="Bot João" width={36} height={36} className="object-contain scale-110" />
-          </div>
-          <div className="flex-1">
-            <p className="text-white font-bold text-sm">Bot João</p>
-            <p className="text-blue-200 text-xs">Pergunte sobre qualquer material da biblioteca</p>
-          </div>
-          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-        </div>
-
-        {/* Mensagens */}
-        <div className="h-72 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
-          {messages.map(msg => (
-            <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-              {msg.role === 'assistant' && BOT_AVATAR}
-              <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
-                msg.role === 'user'
-                  ? 'bg-[#000FFF] text-white rounded-tr-none'
-                  : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none shadow-sm'
-              }`}>
-                {formatMessage(msg.content)}
-              </div>
-            </div>
-          ))}
-
-          {loading && messages[messages.length - 1]?.content === '' && (
-            <div className="flex gap-2">
-              {BOT_AVATAR}
-              <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
-                <div className="flex gap-1.5 items-center">
-                  <span className="w-2 h-2 bg-[#000FFF]/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-2 h-2 bg-[#000FFF]/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-2 h-2 bg-[#000FFF]/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  <span className="text-xs text-gray-400 ml-1 font-medium">Digitando...</span>
-                </div>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Input */}
-        <div className="p-3 border-t border-gray-100 bg-white">
-          <div className="flex gap-2 items-center">
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-              placeholder="Pergunte sobre os materiais da biblioteca..."
-              className="flex-1 border-2 border-gray-100 rounded-xl px-3 py-2 text-sm focus:border-[#000FFF] focus:outline-none transition-colors"
-              disabled={loading}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={!input.trim() || loading}
-              className="w-9 h-9 rounded-xl bg-[#000FFF] text-white flex items-center justify-center disabled:opacity-40 hover:bg-blue-700 transition-colors flex-shrink-0"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
