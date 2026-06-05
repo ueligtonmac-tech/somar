@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest } from 'next/server'
-import { generateEmbedding } from '@/lib/embeddings'
+import { generateQueryEmbedding as generateEmbedding } from '@/lib/embeddings'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 

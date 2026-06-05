@@ -19,9 +19,9 @@ export async function POST() {
   )
 
   // Verificar se a chave Google está configurada
-  const googleKey = process.env.GOOGLE_GENERATIVE_AI_KEY
-  if (!googleKey || googleKey === 'your_gemini_key') {
-    return Response.json({ ok: false, message: 'Erro: GOOGLE_GENERATIVE_AI_KEY não configurada.' }, { status: 400 })
+  const openaiKey = process.env.OPENAI_API_KEY
+  if (!openaiKey || openaiKey === 'your_openai_key' || !openaiKey.startsWith('sk-')) {
+    return Response.json({ ok: false, message: 'Erro: OPENAI_API_KEY não configurada no Vercel.' }, { status: 400 })
   }
 
   // Testar a chave
