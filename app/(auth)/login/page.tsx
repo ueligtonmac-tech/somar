@@ -26,80 +26,115 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-[#000FFF] flex">
 
-        {/* Card principal */}
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+      {/* ── Painel esquerdo ── */}
+      <div className="hidden lg:flex flex-col justify-between w-1/2 px-12 py-10 relative overflow-hidden">
 
-          {/* Header azul Ultragaz */}
-          <div className="bg-[#000FFF] px-8 py-10 text-center">
-            <div className="inline-flex items-center justify-center mb-5">
-              <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/20">
-                <Image
-                  src="/ug-icon.jpg"
-                  alt="Ultragaz"
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-cover"
-                  priority
-                />
-              </div>
-            </div>
-            <h1 className="text-white text-2xl font-bold tracking-tight">
-              HUB Somar
-            </h1>
-            <p className="text-blue-200 text-sm mt-1">
-              Plataforma de onboarding · Canais Digitais
-            </p>
+        {/* Blob decorativo teal */}
+        <div
+          className="absolute -bottom-32 -left-32 w-[520px] h-[520px] rounded-full opacity-40"
+          style={{ background: 'radial-gradient(circle, #00e5a0 0%, #00b8d4 60%, transparent 100%)' }}
+        />
+
+        {/* Logo */}
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full overflow-hidden">
+            <Image src="/ug-icon.jpg" alt="Ultragaz" width={40} height={40} className="w-full h-full object-cover" />
           </div>
-
-          {/* Corpo */}
-          <div className="px-8 py-10">
-            <p className="text-gray-500 text-sm text-center mb-8">
-              Acesso exclusivo para consultores Ultragaz.<br />
-              Use sua conta Google corporativa.
-            </p>
-
-            {/* Erro */}
-            {error && (
-              <div className="mb-6 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm text-center">
-                {errorMessages[error] ?? 'Erro desconhecido. Tente novamente.'}
-              </div>
-            )}
-
-            {/* Botão Google */}
-            <button
-              onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-[#000FFF] hover:bg-blue-50 text-gray-700 font-medium py-3 px-6 rounded-xl transition-all duration-200 group"
-            >
-              <GoogleIcon />
-              <span className="group-hover:text-[#000FFF] transition-colors">
-                Entrar com Google
-              </span>
-            </button>
-
-            {/* Divisor */}
-            <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-              <p className="text-xs text-gray-400">
-                Problemas de acesso? Contate{' '}
-                <a
-                  href="https://wa.me/5565999999999"
-                  className="text-[#000FFF] hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  o administrador
-                </a>
-              </p>
-            </div>
+          <div>
+            <p className="text-white font-extrabold text-lg leading-none">ultragaz</p>
+            <p className="text-blue-200 text-xs">somando energias</p>
           </div>
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-xs text-gray-400 mt-6">
-          Ultragaz · Gerência de Venda Direta e Atendimento B2C
-        </p>
+        {/* Texto central */}
+        <div className="relative z-10 mb-16">
+          <h1 className="text-white font-black text-4xl leading-tight mb-4">
+            HUB Somar
+          </h1>
+          <p className="text-blue-100 text-lg font-medium leading-relaxed max-w-sm">
+            Plataforma de onboarding para consultores de canais digitais Ultragaz.
+          </p>
+          <div className="mt-8 flex flex-col gap-3">
+            {[
+              'Trilha de aprendizado guiada',
+              'Conteúdo sobre canais digitais',
+              'Assistente IA integrado',
+            ].map((item) => (
+              <div key={item} className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <span className="text-blue-100 text-sm">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Painel direito (card branco) ── */}
+      <div className="flex-1 flex items-center justify-center px-6 py-10">
+        <div className="w-full max-w-sm">
+
+          {/* Logo mobile (só aparece em telas pequenas) */}
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
+            <div className="w-12 h-12 rounded-full overflow-hidden">
+              <Image src="/ug-icon.jpg" alt="Ultragaz" width={48} height={48} className="w-full h-full object-cover" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            {/* Topo do card */}
+            <div className="px-8 pt-8 pb-6 border-b border-gray-100">
+              <h2 className="text-[#000FFF] font-black text-2xl">Entrar</h2>
+              <p className="text-gray-500 text-sm mt-1">
+                Acesse com sua conta Google corporativa
+              </p>
+            </div>
+
+            {/* Corpo */}
+            <div className="px-8 py-8">
+              {/* Erro */}
+              {error && (
+                <div className="mb-5 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm text-center">
+                  {errorMessages[error] ?? 'Erro desconhecido. Tente novamente.'}
+                </div>
+              )}
+
+              {/* Botão Google */}
+              <button
+                onClick={handleGoogleLogin}
+                className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-[#000FFF] hover:bg-blue-50 text-gray-700 font-semibold py-3.5 px-6 rounded-2xl transition-all duration-200 group shadow-sm"
+              >
+                <GoogleIcon />
+                <span className="group-hover:text-[#000FFF] transition-colors text-sm">
+                  Continuar com Google
+                </span>
+              </button>
+
+              <div className="mt-6 pt-5 border-t border-gray-100 text-center">
+                <p className="text-xs text-gray-400">
+                  Problemas de acesso?{' '}
+                  <a
+                    href="https://wa.me/5565999999999"
+                    className="text-[#000FFF] hover:underline font-medium"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Contate o administrador
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-center text-xs text-blue-200/60 mt-6">
+            Ultragaz · Gerência de Venda Direta e Atendimento B2C
+          </p>
+        </div>
       </div>
     </div>
   )
@@ -118,7 +153,7 @@ function GoogleIcon() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f5f5f5]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#000FFF]" />}>
       <LoginForm />
     </Suspense>
   )

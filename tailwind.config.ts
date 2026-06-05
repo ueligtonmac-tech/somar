@@ -18,7 +18,8 @@ const config: Config = {
         "ug-gray-900": "var(--ug-gray-900)",
       },
       fontFamily: {
-        sans: ["system-ui", "sans-serif"],
+        sans: ["var(--font-nunito)", "system-ui", "sans-serif"],
+        nunito: ["var(--font-nunito)", "system-ui", "sans-serif"],
       },
     },
   },
