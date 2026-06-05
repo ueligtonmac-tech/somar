@@ -26,60 +26,87 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#000FFF] flex">
+    <div style={{ minHeight: '100vh', background: '#000FFF', display: 'flex', position: 'relative', overflow: 'hidden' }}>
+
+      {/* ── Onda verde atravessando a tela inteira ── */}
+      <div style={{
+        position: 'absolute',
+        bottom: '-60px',
+        left: '-5%',
+        width: '110%',
+        pointerEvents: 'none',
+        zIndex: 1,
+        opacity: 0.45,
+      }}>
+        <Image
+          src="/onda-verde.png"
+          alt=""
+          width={1600}
+          height={550}
+          style={{ width: '100%', height: 'auto' }}
+        />
+      </div>
 
       {/* ── Painel esquerdo ── */}
-      <div className="hidden lg:flex flex-col justify-between w-[55%] relative overflow-hidden px-14 py-12">
+      <div style={{
+        display: 'none',
+        flex: '0 0 55%',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        padding: '3rem 3.5rem',
+        position: 'relative',
+        zIndex: 2,
+      }} className="lg-flex-col">
 
-        {/* Forma Onda como background */}
-        <Image
-          src="/onda-bg.png"
-          alt=""
-          fill
-          className="object-cover object-center opacity-80"
-          priority
-        />
-
-        {/* Logo wordmark em texto — idêntico ao site oficial */}
-        <div className="relative z-10">
-          <p
-            className="text-white leading-none"
-            style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.01em' }}
-          >
-            ultragaz
-          </p>
-          <p className="text-blue-200 text-xs font-medium mt-0.5 tracking-widest">
-            somando energias
-          </p>
+        {/* Logo PNG branca (RGBA transparente + invert) */}
+        <div>
+          <Image
+            src="/logo.png"
+            alt="Ultragaz somando energias"
+            width={200}
+            height={60}
+            style={{ filter: 'brightness(0) invert(1)', width: '200px', height: 'auto' }}
+            priority
+          />
         </div>
 
-        {/* Título + descrição */}
-        <div className="relative z-10 mb-8">
-          <p className="text-white/70 text-xs font-semibold uppercase tracking-[0.2em] mb-4">
+        {/* Título */}
+        <div style={{ marginBottom: '5rem' }}>
+          <p style={{
+            color: 'rgba(255,255,255,0.6)',
+            fontSize: '0.7rem',
+            fontWeight: 700,
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            marginBottom: '1rem',
+          }}>
             Plataforma de onboarding
           </p>
-          <h1
-            className="text-white leading-none mb-5"
-            style={{ fontSize: '5.5rem', fontWeight: 900, lineHeight: 1 }}
-          >
+          <h1 style={{
+            color: 'white',
+            fontSize: '5.5rem',
+            fontWeight: 900,
+            lineHeight: 1,
+            marginBottom: '1.25rem',
+          }}>
             HUB<br />Somar
           </h1>
-          <p className="text-blue-100 text-base font-medium leading-relaxed max-w-xs">
+          <p style={{ color: '#bfcfff', fontSize: '1rem', fontWeight: 500, maxWidth: '280px', lineHeight: 1.6 }}>
             Capacitação para consultores de canais digitais Ultragaz.
           </p>
-          <div className="mt-8 flex flex-col gap-3">
-            {[
-              'Trilha de aprendizado guiada',
-              'Conteúdo sobre canais digitais',
-              'Assistente IA integrado',
-            ].map((item) => (
-              <div key={item} className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+          <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {['Trilha de aprendizado guiada', 'Conteúdo sobre canais digitais', 'Assistente IA integrado'].map(item => (
+              <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{
+                  width: 20, height: 20, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.15)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
                   <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
                     <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <span className="text-blue-100 text-sm font-medium">{item}</span>
+                <span style={{ color: '#bfcfff', fontSize: '0.875rem', fontWeight: 500 }}>{item}</span>
               </div>
             ))}
           </div>
@@ -87,74 +114,137 @@ function LoginForm() {
       </div>
 
       {/* ── Painel direito ── */}
-      <div className="flex-1 flex items-center justify-center px-8 py-10 relative bg-[#0009e6]">
-
-        {/* Onda verde no canto inferior */}
-        <div className="absolute bottom-0 right-0 left-0 pointer-events-none select-none opacity-25">
-          <Image src="/onda-verde.png" alt="" width={700} height={240} className="w-full" />
-        </div>
-
-        <div className="w-full max-w-sm relative z-10">
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2.5rem 2rem',
+        position: 'relative',
+        zIndex: 2,
+      }}>
+        <div style={{ width: '100%', maxWidth: '380px' }}>
 
           {/* Logo mobile */}
-          <div className="lg:hidden text-center mb-8">
-            <p className="text-white font-black text-3xl">ultragaz</p>
-            <p className="text-blue-200 text-xs tracking-widest">somando energias</p>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }} className="show-mobile">
+            <Image
+              src="/logo.png"
+              alt="Ultragaz"
+              width={160}
+              height={50}
+              style={{ filter: 'brightness(0) invert(1)', margin: '0 auto', height: 'auto' }}
+            />
           </div>
 
           {/* Card branco */}
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-
-            {/* Topo do card */}
-            <div className="px-8 pt-8 pb-6">
-              <h2 className="text-[#000FFF] font-black text-2xl leading-tight">
+          <div style={{
+            background: 'white',
+            borderRadius: '1.5rem',
+            boxShadow: '0 25px 60px rgba(0,0,60,0.35)',
+            overflow: 'hidden',
+          }}>
+            {/* Header do card */}
+            <div style={{ padding: '2rem 2rem 1.5rem' }}>
+              <Image
+                src="/logo.png"
+                alt="Ultragaz"
+                width={140}
+                height={42}
+                style={{ height: 'auto', marginBottom: '1.25rem' }}
+              />
+              <h2 style={{
+                color: '#000FFF',
+                fontSize: '1.5rem',
+                fontWeight: 900,
+                marginBottom: '0.25rem',
+              }}>
                 Bem-vindo(a)
               </h2>
-              <p className="text-gray-400 text-sm font-medium mt-1">
+              <p style={{ color: '#9ca3af', fontSize: '0.875rem', fontWeight: 500 }}>
                 Acesse com sua conta Google corporativa
               </p>
             </div>
 
-            <div className="px-8 pb-8">
-              <div className="h-px bg-gray-100 mb-6" />
+            {/* Divider */}
+            <div style={{ height: 1, background: '#f3f4f6', margin: '0 2rem' }} />
 
+            {/* Body */}
+            <div style={{ padding: '1.5rem 2rem 2rem' }}>
               {error && (
-                <div className="mb-5 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm text-center">
+                <div style={{
+                  marginBottom: '1.25rem',
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '0.75rem',
+                  padding: '0.75rem 1rem',
+                  color: '#b91c1c',
+                  fontSize: '0.875rem',
+                  textAlign: 'center',
+                }}>
                   {errorMessages[error] ?? 'Erro desconhecido. Tente novamente.'}
                 </div>
               )}
 
               <button
                 onClick={handleGoogleLogin}
-                className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-[#000FFF] hover:bg-blue-50 text-gray-700 font-semibold py-4 px-6 rounded-2xl transition-all duration-200 group shadow-sm"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.75rem',
+                  background: 'white',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '0.875rem',
+                  padding: '1rem 1.5rem',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: '#374151',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = '#000FFF'
+                  ;(e.currentTarget as HTMLButtonElement).style.color = '#000FFF'
+                  ;(e.currentTarget as HTMLButtonElement).style.background = '#f0f0ff'
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = '#e5e7eb'
+                  ;(e.currentTarget as HTMLButtonElement).style.color = '#374151'
+                  ;(e.currentTarget as HTMLButtonElement).style.background = 'white'
+                }}
               >
                 <GoogleIcon />
-                <span className="group-hover:text-[#000FFF] transition-colors">
-                  Continuar com Google
-                </span>
+                Continuar com Google
               </button>
 
-              <div className="mt-6 text-center">
-                <p className="text-xs text-gray-400">
-                  Problemas de acesso?{' '}
-                  <a
-                    href="https://wa.me/5565999999999"
-                    className="text-[#000FFF] hover:underline font-semibold"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Contate o administrador
-                  </a>
-                </p>
-              </div>
+              <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.75rem', color: '#9ca3af' }}>
+                Problemas de acesso?{' '}
+                <a
+                  href="https://wa.me/5565999999999"
+                  style={{ color: '#000FFF', fontWeight: 600, textDecoration: 'none' }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Contate o administrador
+                </a>
+              </p>
             </div>
           </div>
 
-          <p className="text-center text-xs text-blue-200/40 mt-6">
+          <p style={{ textAlign: 'center', fontSize: '0.7rem', color: 'rgba(191,207,255,0.4)', marginTop: '1.5rem' }}>
             Ultragaz · Gerência de Venda Direta e Atendimento B2C
           </p>
         </div>
       </div>
+
+      <style>{`
+        @media (min-width: 1024px) {
+          .lg-flex-col { display: flex !important; }
+          .show-mobile { display: none !important; }
+        }
+      `}</style>
     </div>
   )
 }
@@ -172,7 +262,7 @@ function GoogleIcon() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#000FFF]" />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#000FFF' }} />}>
       <LoginForm />
     </Suspense>
   )
