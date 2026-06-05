@@ -73,10 +73,13 @@ export default function BibliotecaClient({ files }: { files: LibraryFile[] }) {
   const [loading, setLoading] = useState(false)
   const [conversationId, setConversationId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const container = messagesContainerRef.current
+    if (!container) return
+    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
   }, [messages, loading])
 
   const sendMessage = useCallback(async () => {
@@ -195,7 +198,7 @@ export default function BibliotecaClient({ files }: { files: LibraryFile[] }) {
         {chatOpen && (
           <>
             {/* Mensagens */}
-            <div className="h-72 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
+            <div ref={messagesContainerRef} className="h-72 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
               {messages.map(msg => (
                 <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                   {msg.role === 'assistant' && BOT_AVATAR}

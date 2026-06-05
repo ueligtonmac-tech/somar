@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import WelcomeVideoPopup from '@/components/WelcomeVideoPopup'
 
 export default async function TrilhaPage() {
   const supabase = await createClient()
@@ -29,6 +30,7 @@ export default async function TrilhaPage() {
 
   return (
     <div className="p-8">
+      <WelcomeVideoPopup />
       <div className="max-w-3xl mx-auto">
 
         {/* Header */}
