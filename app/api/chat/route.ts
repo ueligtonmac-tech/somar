@@ -99,6 +99,35 @@ export async function POST(req: NextRequest) {
       }
     } catch { /* ignora se tabela não existir */ }
 
+    // ── BIBLIOTECA: materiais da biblioteca de PDFs ──
+    let bibliotecaContext = ''
+    try {
+      const { data: libFiles } = await supabase
+        .from('library_files')
+        .select('title, description, category')
+        .eq('active', true)
+        .not('title', 'is', null)
+        .limit(30)
+
+      if (libFiles && libFiles.length > 0) {
+        const msgWords = message.toLowerCase().replace(/[^a-záéíóúãõâêîôûç\s]/gi, ' ').split(/\s+/).filter((w: string) => w.length >= 3)
+        const relevantFiles = libFiles.filter(f => {
+          const text = [f.title, f.description, f.category].filter(Boolean).join(' ').toLowerCase()
+          return msgWords.some((w: string) => text.includes(w))
+        }).slice(0, 5)
+
+        if (relevantFiles.length > 0) {
+          bibliotecaContext = `\n\nMATERIAIS DISPONÍVEIS NA BIBLIOTECA (informe ao consultor que pode baixar esses materiais na seção Biblioteca do HUB Somar):\n` +
+            relevantFiles.map((f, i) => {
+              const parts = [`"${f.title}"`]
+              if (f.category) parts.push(`(${f.category})`)
+              if (f.description) parts.push(`— ${f.description}`)
+              return `${i + 1}. ${parts.join(' ')}`
+            }).join('\n')
+        }
+      }
+    } catch { /* ignora */ }
+
     // ── CARDS: conteúdo dos módulos da trilha ──
     let cardsContext = ''
     try {
@@ -133,6 +162,7 @@ export async function POST(req: NextRequest) {
       profile?.full_name ? `\nO nome do consultor que está conversando com você é: ${profile.full_name}.` : '',
       knowledgeContext,
       cardsContext,
+      bibliotecaContext,
     ].filter(Boolean).join('')
 
     const cId = conversationId || crypto.randomUUID()

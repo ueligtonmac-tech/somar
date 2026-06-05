@@ -4,7 +4,7 @@ import { useState, useTransition, useRef } from 'react'
 import { addManualKnowledge, bulkImportKnowledge } from './actions'
 
 export default function AddKnowledgeTab() {
-  const [tab, setTab] = useState<'manual' | 'csv' | 'url'>('manual')
+  const [tab, setTab] = useState<'manual' | 'csv' | 'arquivo' | 'url'>('manual')
   const [pending, startTransition] = useTransition()
   const [success, setSuccess] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -18,6 +18,12 @@ export default function AddKnowledgeTab() {
   // CSV
   const [csvPreview, setCsvPreview] = useState<{question: string; answer: string}[]>([])
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // Arquivo (TXT / DOCX)
+  const [arquivoContent, setArquivoContent] = useState('')
+  const [arquivoTitle, setArquivoTitle] = useState('')
+  const [arquivoLoading, setArquivoLoading] = useState(false)
+  const arquivoRef = useRef<HTMLInputElement>(null)
 
   // URL
   const [url, setUrl] = useState('')
@@ -75,7 +81,6 @@ export default function AddKnowledgeTab() {
       const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
       const items: {question: string; answer: string}[] = []
       for (const line of lines) {
-        // Support comma or semicolon separator, handle quoted fields
         const parts = line.split(/[;,](?=(?:[^"]*"[^"]*")*[^"]*$)/)
         if (parts.length >= 2) {
           const q = parts[0].replace(/^"|"$/g, '').trim()
@@ -98,6 +103,58 @@ export default function AddKnowledgeTab() {
         if (fileRef.current) fileRef.current.value = ''
       } catch (e: unknown) {
         setError(e instanceof Error ? e.message : 'Erro ao importar')
+      }
+    })
+  }
+
+  // ── Arquivo TXT / DOCX ──
+  const handleArquivoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setArquivoLoading(true)
+    setArquivoContent('')
+    setError(null)
+
+    const ext = file.name.split('.').pop()?.toLowerCase()
+    // Auto-título pelo nome do arquivo
+    setArquivoTitle(file.name.replace(/\.(txt|docx)$/i, '').replace(/[-_]/g, ' '))
+
+    try {
+      if (ext === 'txt') {
+        // TXT: lê direto
+        const text = await file.text()
+        setArquivoContent(text.slice(0, 8000))
+      } else if (ext === 'docx') {
+        // DOCX: envia ao servidor para extrair texto com mammoth
+        const formData = new FormData()
+        formData.append('file', file)
+        const res = await fetch('/api/bot/extract-docx', { method: 'POST', body: formData })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Erro ao ler DOCX')
+        setArquivoContent(data.text.slice(0, 8000))
+      }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Erro ao ler arquivo')
+    } finally {
+      setArquivoLoading(false)
+    }
+  }
+
+  const handleSaveArquivo = () => {
+    reset()
+    if (!arquivoTitle.trim() || !arquivoContent.trim()) {
+      setError('Preencha o título e verifique o conteúdo extraído')
+      return
+    }
+    startTransition(async () => {
+      try {
+        await addManualKnowledge(arquivoTitle, arquivoContent)
+        setSuccess('✓ Conteúdo do arquivo salvo como conhecimento!')
+        setArquivoContent('')
+        setArquivoTitle('')
+        if (arquivoRef.current) arquivoRef.current.value = ''
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : 'Erro ao salvar')
       }
     })
   }
@@ -157,9 +214,10 @@ export default function AddKnowledgeTab() {
   return (
     <div>
       {/* Tabs internas */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
         <button style={tabBtnStyle(tab === 'manual')} onClick={() => { reset(); setTab('manual') }}>✍️ Manual</button>
-        <button style={tabBtnStyle(tab === 'csv')} onClick={() => { reset(); setTab('csv') }}>📄 CSV</button>
+        <button style={tabBtnStyle(tab === 'csv')} onClick={() => { reset(); setTab('csv') }}>📊 CSV</button>
+        <button style={tabBtnStyle(tab === 'arquivo')} onClick={() => { reset(); setTab('arquivo') }}>📄 TXT / DOCX</button>
         <button style={tabBtnStyle(tab === 'url')} onClick={() => { reset(); setTab('url') }}>🔗 URL</button>
       </div>
 
@@ -239,16 +297,14 @@ export default function AddKnowledgeTab() {
             <p className="text-xs text-blue-600 font-mono">Como funciona o Vale Gás?,O Vale Gás é um benefício...</p>
             <p className="text-xs text-blue-500 mt-1">Separador: vírgula ou ponto-e-vírgula. Encoding: UTF-8.</p>
           </div>
-          <div>
-            <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#000FFF] transition-colors">
-              <span className="text-2xl">📄</span>
-              <div>
-                <p className="text-sm font-bold text-gray-700">Clique para escolher o arquivo CSV</p>
-                <p className="text-xs text-gray-400">Arquivos .csv ou .txt</p>
-              </div>
-              <input ref={fileRef} type="file" accept=".csv,.txt" onChange={handleFileChange} className="hidden" />
-            </label>
-          </div>
+          <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#000FFF] transition-colors">
+            <span className="text-2xl">📊</span>
+            <div>
+              <p className="text-sm font-bold text-gray-700">Clique para escolher o arquivo CSV</p>
+              <p className="text-xs text-gray-400">Arquivos .csv ou .txt</p>
+            </div>
+            <input ref={fileRef} type="file" accept=".csv,.txt" onChange={handleFileChange} className="hidden" />
+          </label>
           {csvPreview.length > 0 && (
             <div>
               <p className="text-xs font-bold text-gray-500 mb-2">{csvPreview.length} itens detectados — pré-visualização:</p>
@@ -267,6 +323,61 @@ export default function AddKnowledgeTab() {
                 className="mt-3 flex items-center gap-2 px-5 py-2.5 bg-[#000FFF] text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors disabled:opacity-40"
               >
                 {pending ? 'Importando...' : `⬆️ Importar ${csvPreview.length} itens`}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── TXT / DOCX ── */}
+      {tab === 'arquivo' && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+          <div className="bg-violet-50 border border-violet-100 rounded-xl px-4 py-3">
+            <p className="text-xs font-bold text-violet-800 mb-0.5">Como funciona</p>
+            <p className="text-xs text-violet-700">Faça upload de um arquivo <strong>.txt</strong> ou <strong>.docx</strong>. O texto será extraído e salvo como conhecimento do Bot João.</p>
+          </div>
+          <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#000FFF] transition-colors">
+            <span className="text-2xl">{arquivoLoading ? '⏳' : '📄'}</span>
+            <div>
+              <p className="text-sm font-bold text-gray-700">{arquivoLoading ? 'Extraindo texto...' : 'Clique para escolher o arquivo'}</p>
+              <p className="text-xs text-gray-400">Formatos aceitos: .txt, .docx</p>
+            </div>
+            <input
+              ref={arquivoRef}
+              type="file"
+              accept=".txt,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              onChange={handleArquivoChange}
+              className="hidden"
+              disabled={arquivoLoading}
+            />
+          </label>
+          {arquivoContent && (
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs font-bold text-gray-500 mb-1.5">Título / Tema do documento</p>
+                <input
+                  value={arquivoTitle}
+                  onChange={e => setArquivoTitle(e.target.value)}
+                  placeholder="Ex: Manual de Validação Vale Gás"
+                  className="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 text-sm focus:border-[#000FFF] focus:outline-none"
+                />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-gray-500 mb-1.5">Conteúdo extraído — edite se necessário</p>
+                <textarea
+                  value={arquivoContent}
+                  onChange={e => setArquivoContent(e.target.value)}
+                  rows={8}
+                  className="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 text-sm focus:border-[#000FFF] focus:outline-none resize-none leading-relaxed font-mono text-xs"
+                />
+                <p className="text-xs text-gray-400 mt-1">{arquivoContent.length} caracteres</p>
+              </div>
+              <button
+                onClick={handleSaveArquivo}
+                disabled={pending || !arquivoTitle.trim()}
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#000FFF] text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors disabled:opacity-40"
+              >
+                {pending ? 'Salvando...' : '✓ Salvar como conhecimento'}
               </button>
             </div>
           )}
