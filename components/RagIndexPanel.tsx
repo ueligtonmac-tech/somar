@@ -83,7 +83,7 @@ export default function RagIndexPanel() {
           <strong> busca semântica</strong> — entende o significado das perguntas, não apenas palavras-chave.
           Resultado: respostas muito mais precisas e contextuais.
         </p>
-        <p className="text-xs text-gray-400 mt-2">⚠️ Requer chave <code className="bg-white px-1 rounded">OPENAI_API_KEY</code> configurada no ambiente.</p>
+        <p className="text-xs text-gray-400 mt-2">⚠️ Requer chave <code className="bg-white px-1 rounded">GOOGLE_GENERATIVE_AI_KEY</code> configurada no ambiente.</p>
       </div>
 
       {/* Resultado da última sync */}

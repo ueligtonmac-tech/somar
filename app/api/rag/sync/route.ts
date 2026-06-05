@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
-import { generateEmbeddingsBatch } from '@/lib/embeddings'
+import { generateEmbedding, generateEmbeddingsBatch } from '@/lib/embeddings'
 // Rota admin: indexa todo o conteúdo existente gerando embeddings
 export async function POST() {
   const supabase = await createClient()
@@ -14,6 +14,18 @@ export async function POST() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
+
+  // Verificar se a chave Google está configurada
+  const googleKey = process.env.GOOGLE_GENERATIVE_AI_KEY
+  if (!googleKey || googleKey === 'your_gemini_key') {
+    return Response.json({ ok: false, message: 'Erro: GOOGLE_GENERATIVE_AI_KEY não configurada no ambiente.' }, { status: 400 })
+  }
+
+  // Testar a chave gerando um embedding de teste
+  const testEmb = await generateEmbedding('teste')
+  if (!testEmb) {
+    return Response.json({ ok: false, message: 'Erro: chave Google inválida ou sem acesso à API de embeddings.' }, { status: 400 })
+  }
 
   const results = { knowledge: 0, cards: 0, errors: 0 }
 
