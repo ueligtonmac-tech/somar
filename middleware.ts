@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/login', '/auth/callback']
+const PUBLIC_ROUTES = ['/login', '/cadastro', '/esqueci-senha', '/auth/callback', '/auth/reset-password']
 const ADMIN_ROUTES = ['/admin']
 const ADMIN_ROLES = ['admin', 'builder']
 

@@ -55,14 +55,34 @@ function LoginForm() {
   }
 
   return (
-    <div style={S.page}>
+    <div style={S.page} className="login-page-root">
+      <style>{`
+        @media (max-width: 767px) {
+          .login-left { display: none !important; }
+          .login-divider { display: none !important; }
+          .login-right {
+            flex: 1 !important;
+            padding: 1.5rem 1rem !important;
+            align-items: flex-start !important;
+            padding-top: 2.5rem !important;
+          }
+          .login-card {
+            max-width: 100% !important;
+            border-radius: 1.25rem !important;
+          }
+          .login-page-root {
+            height: auto !important;
+            min-height: 100dvh !important;
+          }
+        }
+      `}</style>
       {/* Onda verde full-width */}
       <div style={S.wave}>
         <Image src="/onda-verde.png" alt="" width={1600} height={560} style={{ width: '100%', height: 'auto' }} />
       </div>
 
       {/* ── Esquerda ── */}
-      <div style={S.left}>
+      <div style={S.left} className="login-left">
         <Image src="/logo.png" alt="Ultragaz" width={180} height={55} style={{ filter: 'brightness(0) invert(1)', height: 'auto' }} priority />
         <div style={{ paddingBottom: '4rem' }}>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: '1rem' }}>
@@ -116,11 +136,11 @@ function LoginForm() {
       </div>
 
       {/* Divisor */}
-      <div style={{ width: 1, background: 'rgba(255,255,255,0.1)', alignSelf: 'stretch', margin: '2rem 0', zIndex: 1, flexShrink: 0 }} />
+      <div className="login-divider" style={{ width: 1, background: 'rgba(255,255,255,0.1)', alignSelf: 'stretch', margin: '2rem 0', zIndex: 1, flexShrink: 0 }} />
 
       {/* ── Direita ── */}
-      <div style={S.right}>
-        <div style={S.card}>
+      <div style={S.right} className="login-right">
+        <div style={S.card} className="login-card">
           <h2 style={{ color: '#111827', fontSize: '1.35rem', fontWeight: 900, marginBottom: '0.2rem' }}>Bem-vindo(a)</h2>
           <p style={{ color: '#9ca3af', fontSize: '0.8rem', fontWeight: 500, marginBottom: '1.1rem' }}>Acesse sua conta para continuar</p>
 
