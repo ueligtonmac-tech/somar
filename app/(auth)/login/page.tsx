@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import QRCode from 'react-qr-code'
 
 const S = {
   page: { minHeight: '100vh', background: '#000FFF', display: 'flex', position: 'relative' as const, overflow: 'hidden', fontFamily: 'Mangueira, system-ui, sans-serif' },
@@ -82,6 +83,34 @@ function LoginForm() {
                 <span style={{ color: 'rgba(200,215,255,0.85)', fontSize: '0.875rem', fontWeight: 500 }}>{item}</span>
               </div>
             ))}
+          </div>
+
+          {/* QR Code de acesso rápido */}
+          <div style={{ marginTop: '2.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+            <div style={{
+              background: 'white',
+              borderRadius: '1rem',
+              padding: '10px',
+              flexShrink: 0,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+            }}>
+              <QRCode
+                value="https://somar-tawny.vercel.app/login"
+                size={88}
+                bgColor="white"
+                fgColor="#000FFF"
+                level="M"
+                style={{ borderRadius: '4px', display: 'block' }}
+              />
+            </div>
+            <div>
+              <p style={{ color: 'white', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.2rem' }}>
+                Acesse pelo celular
+              </p>
+              <p style={{ color: 'rgba(200,215,255,0.65)', fontSize: '0.72rem', fontWeight: 500, lineHeight: 1.5 }}>
+                Aponte a câmera para<br />acessar a plataforma
+              </p>
+            </div>
           </div>
         </div>
       </div>
