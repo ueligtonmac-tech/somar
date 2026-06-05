@@ -8,11 +8,11 @@ import { createClient } from '@/lib/supabase/client'
 import QRCode from 'react-qr-code'
 
 const S = {
-  page: { minHeight: '100vh', background: '#000FFF', display: 'flex', position: 'relative' as const, overflow: 'hidden', fontFamily: 'Mangueira, system-ui, sans-serif' },
+  page: { height: '100vh', background: '#000FFF', display: 'flex', position: 'relative' as const, overflow: 'hidden', fontFamily: 'Mangueira, system-ui, sans-serif' },
   wave: { position: 'absolute' as const, bottom: '-80px', left: '-2%', width: '104%', pointerEvents: 'none' as const, zIndex: 0, opacity: 0.5, transform: 'rotate(-2deg)' },
-  left: { flex: '0 0 52%', display: 'flex', flexDirection: 'column' as const, justifyContent: 'space-between', padding: '2.75rem 3.5rem', position: 'relative' as const, zIndex: 1 },
-  right: { flex: 1, display: 'flex', alignItems: 'center' as const, justifyContent: 'center' as const, padding: '2.5rem 3rem', position: 'relative' as const, zIndex: 1 },
-  card: { background: 'white', borderRadius: '1.75rem', boxShadow: '0 32px 80px rgba(0,0,80,0.4)', padding: '2.25rem 2rem', width: '100%', maxWidth: '380px' },
+  left: { flex: '0 0 52%', display: 'flex', flexDirection: 'column' as const, justifyContent: 'space-between', padding: '2.25rem 3.5rem', position: 'relative' as const, zIndex: 1, overflow: 'hidden' },
+  right: { flex: 1, display: 'flex', alignItems: 'center' as const, justifyContent: 'center' as const, padding: '1.25rem 2.5rem', position: 'relative' as const, zIndex: 1, overflowY: 'auto' as const },
+  card: { background: 'white', borderRadius: '1.75rem', boxShadow: '0 32px 80px rgba(0,0,80,0.4)', padding: '1.75rem 1.75rem', width: '100%', maxWidth: '370px' },
   input: { width: '100%', border: '2px solid #e5e7eb', borderRadius: '0.75rem', padding: '0.85rem 1rem', fontSize: '0.9rem', fontFamily: 'inherit', outline: 'none', color: '#111', background: 'white', boxSizing: 'border-box' as const },
   btnPrimary: { width: '100%', background: '#000FFF', color: 'white', border: 'none', borderRadius: '0.875rem', padding: '0.95rem', fontSize: '0.95rem', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.18s' },
   btnGoogle: { width: '100%', display: 'flex', alignItems: 'center' as const, justifyContent: 'center' as const, gap: '0.75rem', background: 'white', border: '2px solid #e5e7eb', borderRadius: '0.875rem', padding: '0.85rem', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.9rem', fontWeight: 600, color: '#374151', transition: 'all 0.18s' },
@@ -116,21 +116,21 @@ function LoginForm() {
       </div>
 
       {/* Divisor */}
-      <div style={{ width: 1, background: 'rgba(255,255,255,0.1)', alignSelf: 'stretch', margin: '3rem 0', zIndex: 1, flexShrink: 0 }} />
+      <div style={{ width: 1, background: 'rgba(255,255,255,0.1)', alignSelf: 'stretch', margin: '2rem 0', zIndex: 1, flexShrink: 0 }} />
 
       {/* ── Direita ── */}
       <div style={S.right}>
         <div style={S.card}>
-          <h2 style={{ color: '#111827', fontSize: '1.5rem', fontWeight: 900, marginBottom: '0.25rem' }}>Bem-vindo(a)</h2>
-          <p style={{ color: '#9ca3af', fontSize: '0.85rem', fontWeight: 500, marginBottom: '1.5rem' }}>Acesse sua conta para continuar</p>
+          <h2 style={{ color: '#111827', fontSize: '1.35rem', fontWeight: 900, marginBottom: '0.2rem' }}>Bem-vindo(a)</h2>
+          <p style={{ color: '#9ca3af', fontSize: '0.8rem', fontWeight: 500, marginBottom: '1.1rem' }}>Acesse sua conta para continuar</p>
 
           {error && (
-            <div style={{ marginBottom: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.75rem', padding: '0.75rem 1rem', color: '#b91c1c', fontSize: '0.85rem', textAlign: 'center' }}>
+            <div style={{ marginBottom: '0.75rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.75rem', padding: '0.6rem 0.875rem', color: '#b91c1c', fontSize: '0.82rem', textAlign: 'center' }}>
               {error}
             </div>
           )}
 
-          <form onSubmit={handleEmail} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+          <form onSubmit={handleEmail} style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
             <div>
               <label style={S.label}>E-mail</label>
               <input
@@ -162,23 +162,23 @@ function LoginForm() {
                   {showPass ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
               </div>
-              <div style={{ textAlign: 'right', marginTop: '0.4rem' }}>
-                <a href="/esqueci-senha" style={{ color: '#000FFF', fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none' }}>Esqueci minha senha</a>
+              <div style={{ textAlign: 'right', marginTop: '0.3rem' }}>
+                <a href="/esqueci-senha" style={{ color: '#000FFF', fontSize: '0.75rem', fontWeight: 600, textDecoration: 'none' }}>Esqueci minha senha</a>
               </div>
             </div>
 
-            <button type="submit" disabled={loading} style={{ ...S.btnPrimary, opacity: loading ? 0.7 : 1, marginTop: '0.25rem' }}>
+            <button type="submit" disabled={loading} style={{ ...S.btnPrimary, opacity: loading ? 0.7 : 1, marginTop: '0.1rem' }}>
               {loading ? 'Entrando...' : 'Fazer Login'}
             </button>
           </form>
 
-          <div style={S.divider}>
+          <div style={{ ...S.divider, margin: '0.9rem 0' }}>
             <div style={S.divLine} />
             <span>ou</span>
             <div style={S.divLine} />
           </div>
 
-          <button onClick={handleGoogle} style={S.btnGoogle}
+          <button onClick={handleGoogle} style={{ ...S.btnGoogle, padding: '0.75rem' }}
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#000FFF'; (e.currentTarget as HTMLButtonElement).style.color = '#000FFF' }}
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#e5e7eb'; (e.currentTarget as HTMLButtonElement).style.color = '#374151' }}
           >
@@ -186,11 +186,11 @@ function LoginForm() {
             Continuar com Google
           </button>
 
-          <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #f3f4f6', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
-            <a href="/cadastro" style={{ color: '#000FFF', fontSize: '0.85rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+          <div style={{ marginTop: '1rem', paddingTop: '0.875rem', borderTop: '1px solid #f3f4f6', display: 'flex', flexDirection: 'column', gap: '0.4rem', alignItems: 'center' }}>
+            <a href="/cadastro" style={{ color: '#000FFF', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
               ▶ Primeiro acesso
             </a>
-            <a href="https://wa.me/5565999999999" target="_blank" rel="noopener noreferrer" style={{ color: '#9ca3af', fontSize: '0.75rem', textDecoration: 'none' }}>
+            <a href="https://wa.me/5565999999999" target="_blank" rel="noopener noreferrer" style={{ color: '#9ca3af', fontSize: '0.72rem', textDecoration: 'none' }}>
               Problemas? Contate o administrador
             </a>
           </div>
