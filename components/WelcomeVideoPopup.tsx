@@ -55,13 +55,18 @@ export default function WelcomeVideoPopup() {
         </div>
 
         {/* Vídeo */}
-        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+        <div className="relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
           <iframe
-            src="https://www.youtube.com/embed/Cpw2eXnaOoc?autoplay=1&rel=0&modestbranding=1"
+            src="https://www.youtube-nocookie.com/embed/Cpw2eXnaOoc?autoplay=1&mute=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&controls=1"
             title="Apresentação HUB Somar"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             className="absolute inset-0 w-full h-full"
+          />
+          {/* Cobre o overlay de título/canal do YouTube (faixa preta no topo) */}
+          <div
+            className="absolute top-0 left-0 right-0 pointer-events-none"
+            style={{ height: '72px', background: 'linear-gradient(to bottom, #000 60%, transparent)' }}
           />
         </div>
 
