@@ -111,6 +111,7 @@ function BotJoaoDesktop() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const mimeTypeRef = useRef<string>('')
+  const sendMessageRef = useRef<(text: string) => void>(() => {})
 
   useEffect(() => {
     const t = setTimeout(() => setShowBubble(true), 2000)
@@ -211,6 +212,10 @@ function BotJoaoDesktop() {
     }
   }, [input, loading, conversationId, messages])
 
+  useEffect(() => {
+    sendMessageRef.current = (text: string) => sendMessage(text)
+  }, [sendMessage])
+
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -232,7 +237,7 @@ function BotJoaoDesktop() {
           form.append('audio', blob, 'audio.webm')
           const res = await fetch('/api/chat/transcribe', { method: 'POST', body: form })
           const data = await res.json()
-          if (data.text) sendMessage(data.text)
+          if (data.text) sendMessageRef.current(data.text)
         } finally {
           setTranscribing(false)
         }
@@ -244,7 +249,7 @@ function BotJoaoDesktop() {
     } catch {
       alert('Permita o acesso ao microfone para usar essa função.')
     }
-  }, [sendMessage])
+  }, [])
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop()
