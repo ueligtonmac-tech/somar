@@ -110,11 +110,7 @@ function BotJoaoDesktop() {
   const inputRef = useRef<HTMLInputElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
-  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const audioContextRef = useRef<AudioContext | null>(null)
-  const analyserRef = useRef<AnalyserNode | null>(null)
-  const silenceRafRef = useRef<number | null>(null)
-  const isRecordingRef = useRef(false)
+  const mimeTypeRef = useRef<string>('')
 
   useEffect(() => {
     const t = setTimeout(() => setShowBubble(true), 2000)
@@ -215,28 +211,21 @@ function BotJoaoDesktop() {
     }
   }, [input, loading, conversationId, messages])
 
-  const stopRecording = useCallback(() => {
-    isRecordingRef.current = false
-    if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null }
-    if (silenceRafRef.current) { cancelAnimationFrame(silenceRafRef.current); silenceRafRef.current = null }
-    if (audioContextRef.current) { audioContextRef.current.close(); audioContextRef.current = null }
-    if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop()
-    setRecording(false)
-  }, [])
-
   const startRecording = useCallback(async () => {
-    if (isRecordingRef.current) { stopRecording(); return }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : 'audio/webm'
+      mimeTypeRef.current = mimeType
       const mediaRecorder = new MediaRecorder(stream, { mimeType })
       audioChunksRef.current = []
 
       mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunksRef.current.push(e.data) }
       mediaRecorder.onstop = async () => {
         stream.getTracks().forEach(t => t.stop())
-        const blob = new Blob(audioChunksRef.current, { type: mimeType })
-        if (blob.size < 1000) return
+        const blob = new Blob(audioChunksRef.current, { type: mimeTypeRef.current })
+        if (blob.size < 500) return
         setTranscribing(true)
         try {
           const form = new FormData()
@@ -249,51 +238,18 @@ function BotJoaoDesktop() {
         }
       }
 
-      // VAD via AnalyserNode
-      const audioCtx = new AudioContext()
-      audioContextRef.current = audioCtx
-      const analyser = audioCtx.createAnalyser()
-      analyserRef.current = analyser
-      analyser.fftSize = 1024
-      audioCtx.createMediaStreamSource(stream).connect(analyser)
-      const freqData = new Uint8Array(analyser.frequencyBinCount)
-
-      const SILENCE_THRESHOLD = 15  // RMS mínimo para considerar fala
-      const SILENCE_DELAY = 2000    // ms de silêncio antes de parar
-      const GRACE_PERIOD = 700      // ms iniciais sem detecção (evita falso-positivo)
-      const startedAt = Date.now()
-
-      const checkSilence = () => {
-        if (!isRecordingRef.current) return
-        analyser.getByteFrequencyData(freqData)
-        const rms = Math.sqrt(freqData.reduce((s, v) => s + v * v, 0) / freqData.length)
-        const elapsed = Date.now() - startedAt
-
-        if (elapsed > GRACE_PERIOD) {
-          if (rms < SILENCE_THRESHOLD) {
-            if (!silenceTimerRef.current) {
-              silenceTimerRef.current = setTimeout(() => {
-                if (isRecordingRef.current) stopRecording()
-                silenceTimerRef.current = null
-              }, SILENCE_DELAY)
-            }
-          } else {
-            if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null }
-          }
-        }
-
-        silenceRafRef.current = requestAnimationFrame(checkSilence)
-      }
-
       mediaRecorderRef.current = mediaRecorder
-      isRecordingRef.current = true
-      mediaRecorder.start(100)
+      mediaRecorder.start()
       setRecording(true)
-      silenceRafRef.current = requestAnimationFrame(checkSilence)
     } catch {
       alert('Permita o acesso ao microfone para usar essa função.')
     }
-  }, [stopRecording])
+  }, [])
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop()
+    setRecording(false)
+  }, [])
 
   const sendFeedback = async (score: number) => {
     if (!feedback) return
@@ -448,12 +404,16 @@ function BotJoaoDesktop() {
                 className="flex-1 border-2 border-gray-100 rounded-xl px-3 py-2 text-sm focus:border-[#000FFF] focus:outline-none transition-colors"
                 disabled={loading || recording || transcribing}
               />
-              {/* Botão microfone */}
+              {/* Botão microfone — pressionar para gravar, soltar para transcrever */}
               <button
-                onClick={startRecording}
+                onMouseDown={startRecording}
+                onMouseUp={stopRecording}
+                onMouseLeave={recording ? stopRecording : undefined}
+                onTouchStart={e => { e.preventDefault(); startRecording() }}
+                onTouchEnd={e => { e.preventDefault(); stopRecording() }}
                 disabled={loading || transcribing}
-                title={recording ? 'Clique para parar' : 'Clique para falar'}
-                className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
+                title={recording ? 'Solte para transcrever' : 'Pressione para falar'}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all select-none ${
                   recording
                     ? 'bg-red-500 text-white scale-110 animate-pulse'
                     : transcribing
@@ -481,7 +441,7 @@ function BotJoaoDesktop() {
               </button>
             </div>
             {recording && (
-              <p className="text-center text-[10px] text-red-500 mt-1.5 animate-pulse font-medium">🔴 Gravando... clique para parar ou pare de falar</p>
+              <p className="text-center text-[10px] text-red-500 mt-1.5 animate-pulse font-medium">🔴 Gravando... solte para transcrever</p>
             )}
             {!recording && <p className="text-center text-[10px] text-gray-300 mt-1.5">Bot João · HUB Somar Ultragaz</p>}
           </div>
