@@ -135,9 +135,9 @@ function BotJoaoDesktop() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
-  const sendMessage = useCallback(async () => {
-    if (!input.trim() || loading) return
-    const userMsg = input.trim()
+  const sendMessage = useCallback(async (directText?: string) => {
+    const userMsg = (directText ?? input).trim()
+    if (!userMsg || loading) return
     setInput('')
 
     const userMsgObj: Message = { role: 'user', content: userMsg, id: Date.now().toString() }
@@ -232,7 +232,7 @@ function BotJoaoDesktop() {
           form.append('audio', blob, 'audio.webm')
           const res = await fetch('/api/chat/transcribe', { method: 'POST', body: form })
           const data = await res.json()
-          if (data.text) setInput(data.text)
+          if (data.text) sendMessage(data.text)
         } finally {
           setTranscribing(false)
         }
@@ -244,7 +244,7 @@ function BotJoaoDesktop() {
     } catch {
       alert('Permita o acesso ao microfone para usar essa função.')
     }
-  }, [])
+  }, [sendMessage])
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop()
@@ -430,7 +430,7 @@ function BotJoaoDesktop() {
               </button>
               {/* Botão enviar */}
               <button
-                onClick={sendMessage}
+                onClick={() => sendMessage()}
                 disabled={!input.trim() || loading || recording || transcribing}
                 className="w-9 h-9 rounded-xl bg-[#000FFF] text-white flex items-center justify-center disabled:opacity-40 hover:bg-blue-700 transition-colors flex-shrink-0"
               >
