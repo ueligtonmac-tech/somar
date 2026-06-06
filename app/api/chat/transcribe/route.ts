@@ -13,10 +13,14 @@ export async function POST(req: NextRequest) {
   const audioFile = formData.get('audio') as File | null
   if (!audioFile) return NextResponse.json({ error: 'Arquivo de áudio não enviado' }, { status: 400 })
 
+  // prompt ensina o Whisper os termos de domínio da Ultragaz
+  const whisperPrompt = 'App Ultragaz, HUB Somar, Vale Gás, AmigU, Ultragaz, canais digitais, entregador, pedido, faturamento, precificação, roteirização, WhatsApp, consultor, módulo, trilha, onboarding, EpiUltragaz, EpiUltra'
+
   const transcription = await openai.audio.transcriptions.create({
     file: audioFile,
     model: 'whisper-1',
     language: 'pt',
+    prompt: whisperPrompt,
   })
 
   return NextResponse.json({ text: transcription.text })
