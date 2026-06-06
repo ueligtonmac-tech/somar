@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -21,16 +22,22 @@ export default async function BotAdminPage({
   const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!me || !['admin', 'builder'].includes(me.role)) redirect('/trilha')
 
+  // Service client bypassa RLS — necessário para admin ver feedback de todos os usuários
+  const service = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   const tab = searchParams.tab || 'learning'
 
   // Buscar contadores (resiliente a tabelas/colunas ausentes)
   const [r1, r2, r3, r4] = await Promise.all([
-    supabase.from('bot_feedback').select('*', { count: 'exact', head: true })
+    service.from('bot_feedback').select('*', { count: 'exact', head: true })
       .eq('escalated', false).eq('reviewed', false).gte('score', 7),
-    supabase.from('bot_feedback').select('*', { count: 'exact', head: true })
+    service.from('bot_feedback').select('*', { count: 'exact', head: true })
       .eq('escalated', true).eq('reviewed', false),
-    supabase.from('bot_knowledge').select('*', { count: 'exact', head: true }).eq('approved', true),
-    supabase.from('bot_messages').select('*', { count: 'exact', head: true }).eq('role', 'user'),
+    service.from('bot_knowledge').select('*', { count: 'exact', head: true }).eq('approved', true),
+    service.from('bot_messages').select('*', { count: 'exact', head: true }).eq('role', 'user'),
   ])
   const pendingLearning = r1.count
   const pendingEscalations = r2.count
@@ -49,7 +56,7 @@ export default async function BotAdminPage({
   const userNames = new Map<string, string>()
 
   if (tab === 'learning') {
-    const { data } = await supabase
+    const { data } = await service
       .from('bot_feedback')
       .select('id, question, answer, score, created_at, conversation_id, user_id')
       .eq('escalated', false)
@@ -61,11 +68,11 @@ export default async function BotAdminPage({
     // Buscar nomes dos usuários
     const uids1: string[] = Array.from(new Set(feedbackItems.map(f => f.user_id))).filter(Boolean) as string[]
     if (uids1.length > 0) {
-      const { data: ps } = await supabase.from('profiles').select('id, full_name').in('id', uids1)
+      const { data: ps } = await service.from('profiles').select('id, full_name').in('id', uids1)
       ps?.forEach(p => p.full_name && userNames.set(p.id, p.full_name))
     }
   } else if (tab === 'escalations') {
-    const { data } = await supabase
+    const { data } = await service
       .from('bot_feedback')
       .select('id, question, answer, score, created_at, conversation_id, user_id')
       .eq('escalated', true)
@@ -75,11 +82,11 @@ export default async function BotAdminPage({
     escalationItems = data || []
     const uids2 = Array.from(new Set(escalationItems.map(f => f.user_id).filter((id): id is string => Boolean(id))))
     if (uids2.length > 0) {
-      const { data: ps } = await supabase.from('profiles').select('id, full_name').in('id', uids2)
+      const { data: ps } = await service.from('profiles').select('id, full_name').in('id', uids2)
       ps?.forEach(p => p.full_name && userNames.set(p.id, p.full_name))
     }
   } else if (tab === 'knowledge') {
-    const { data } = await supabase
+    const { data } = await service
       .from('bot_knowledge')
       .select('id, question, answer, created_at')
       .eq('approved', true)
@@ -98,8 +105,8 @@ export default async function BotAdminPage({
     ]
 
     const [{ data: allKnowledge }, { data: allFeedback }] = await Promise.all([
-      supabase.from('bot_knowledge').select('question, answer').eq('approved', true).limit(300),
-      supabase.from('bot_feedback').select('question, score').limit(500),
+      service.from('bot_knowledge').select('question, answer').eq('approved', true).limit(300),
+      service.from('bot_feedback').select('question, score').limit(500),
     ])
 
     thermometerAreas = AREAS.map(({ area, icon, keywords }) => {
@@ -165,7 +172,7 @@ export default async function BotAdminPage({
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         {tabs.map(t => (
           <Link
             key={t.key}

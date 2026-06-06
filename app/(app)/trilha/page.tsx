@@ -128,6 +128,26 @@ export default async function TrilhaPage() {
             <p className="text-sm">Nenhum módulo publicado ainda.</p>
           </div>
         )}
+
+        {/* Certificado — aparece quando toda a trilha é concluída */}
+        {totalCount > 0 && completedCount >= totalCount && (
+          <div className="mt-8 bg-gradient-to-br from-[#000FFF] to-blue-700 rounded-2xl p-6 text-white text-center shadow-lg">
+            <div className="text-4xl mb-3">🎓</div>
+            <h2 className="text-xl font-black mb-1">Parabéns! Trilha concluída!</h2>
+            <p className="text-blue-200 text-sm mb-4">
+              Você completou todos os {totalCount} módulos da trilha de onboarding.
+            </p>
+            <Link
+              href="/trilha/certificado"
+              className="inline-flex items-center gap-2 bg-white text-[#000FFF] font-black px-6 py-3 rounded-xl text-sm hover:bg-blue-50 transition-colors shadow-md"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+              </svg>
+              Gerar meu certificado PDF
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   )

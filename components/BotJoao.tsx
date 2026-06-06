@@ -231,7 +231,7 @@ function BotJoaoDesktop() {
       {showBubble && !open && (
         <div
           className="fixed z-40"
-          style={{ bottom: '136px', right: '16px', animation: 'fadeInUp 0.4s ease forwards' }}
+          style={{ bottom: '158px', right: '16px', animation: 'fadeInUp 0.4s ease forwards' }}
         >
           <div className="relative bg-white rounded-2xl rounded-br-sm shadow-xl border border-gray-100 px-4 py-3 max-w-[210px]">
             <p className="text-xs font-black text-[#000FFF] mb-0.5">Bot João 🤖</p>
@@ -249,7 +249,7 @@ function BotJoaoDesktop() {
       {/* Mascote flutuante desktop — MAIOR */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="fixed bottom-4 right-4 z-50 w-28 h-28 drop-shadow-2xl hover:scale-105 transition-transform"
+        className="fixed bottom-4 right-4 z-50 w-36 h-36 drop-shadow-2xl hover:scale-105 transition-transform"
         style={{ animation: 'botFloat 3s ease-in-out infinite' }}
         title="Fale com o Bot João"
         aria-label="Abrir Bot João"
@@ -257,8 +257,8 @@ function BotJoaoDesktop() {
         <Image
           src="/bot-joao.webp"
           alt="Bot João"
-          width={80}
-          height={112}
+          width={100}
+          height={144}
           className="w-full h-full object-contain"
           priority
         />
@@ -273,7 +273,7 @@ function BotJoaoDesktop() {
       {/* Janela do chat — posicionada acima do mascote maior */}
       {open && (
         <div
-          className="fixed bottom-36 right-4 z-50 w-[390px] max-w-[calc(100vw-20px)] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
+          className="fixed bottom-44 right-4 z-50 w-[390px] max-w-[calc(100vw-20px)] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
           style={{ height: '530px' }}
         >
           {/* Header */}
@@ -290,32 +290,35 @@ function BotJoaoDesktop() {
 
           {/* Mensagens */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
-            {messages.map((msg) => (
-              <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                {msg.role === 'assistant' && BOT_AVATAR}
-                <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
-                  msg.role === 'user'
-                    ? 'bg-[#000FFF] text-white rounded-tr-none'
-                    : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none shadow-sm'
-                }`}>
-                  {formatMessage(msg.content)}
-                </div>
-              </div>
-            ))}
-
-            {loading && messages[messages.length - 1]?.content === '' && (
-              <div className="flex gap-2">
-                {BOT_AVATAR}
-                <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
-                  <div className="flex gap-1.5 items-center">
-                    <span className="w-2 h-2 bg-[#000FFF]/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-[#000FFF]/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-[#000FFF]/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                    <span className="text-xs text-gray-400 ml-1 font-medium">Digitando...</span>
+            {messages.map((msg) => {
+              const isTyping = loading && msg.role === 'assistant' && msg.content === '' && msg.id === messages[messages.length - 1]?.id
+              if (isTyping) return (
+                <div key={msg.id} className="flex gap-2">
+                  {BOT_AVATAR}
+                  <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
+                    <div className="flex gap-1.5 items-center">
+                      <span className="w-2 h-2 bg-[#000FFF]/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 bg-[#000FFF]/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-[#000FFF]/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <span className="text-xs text-gray-400 ml-1 font-medium">Digitando...</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )
+              if (msg.content === '') return null
+              return (
+                <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  {msg.role === 'assistant' && BOT_AVATAR}
+                  <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
+                    msg.role === 'user'
+                      ? 'bg-[#000FFF] text-white rounded-tr-none'
+                      : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none shadow-sm'
+                  }`}>
+                    {formatMessage(msg.content)}
+                  </div>
+                </div>
+              )
+            })}
 
             {/* Feedback */}
             {feedback && !feedbackSent && (

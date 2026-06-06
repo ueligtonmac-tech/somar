@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useTransition, useRef } from 'react'
-import { updateCard, deleteCard, uploadCardPdf } from '../actions'
+import { updateCard, deleteCard, uploadCardPdf, reorderCards } from '../actions'
 
 interface Card {
   id: string
   title: string
+  module_id: string
   scenario: string | null
   challenge: string | null
   explanation: string | null
@@ -44,7 +45,15 @@ function getEmbedUrl(url: string) {
   return url
 }
 
-export default function CardEditor({ card, index }: { card: Card; index: number }) {
+export default function CardEditor({
+  card,
+  index,
+  moduleCardIds,
+}: {
+  card: Card
+  index: number
+  moduleCardIds: string[]
+}) {
   const [expanded, setExpanded] = useState(false)
   const [tab, setTab] = useState<'content' | 'media'>('content')
   const [values, setValues] = useState({
@@ -118,6 +127,39 @@ export default function CardEditor({ card, index }: { card: Card; index: number 
     <div className={`transition-colors ${pending ? 'opacity-60' : ''}`}>
       {/* Header colapsável */}
       <div className="flex items-center gap-2 px-4 md:px-6 hover:bg-gray-50 transition-colors">
+        {/* Setas de reordenação */}
+        <div className="flex flex-col gap-0.5 flex-shrink-0">
+          <button
+            disabled={index === 1 || pending}
+            onClick={e => {
+              e.stopPropagation()
+              const ids = [...moduleCardIds]
+              const pos = ids.indexOf(card.id)
+              if (pos <= 0) return
+              ;[ids[pos - 1], ids[pos]] = [ids[pos], ids[pos - 1]]
+              startTransition(() => reorderCards(card.module_id ?? '', ids))
+            }}
+            className="w-5 h-5 rounded flex items-center justify-center text-gray-300 hover:text-gray-600 hover:bg-gray-100 disabled:opacity-20 transition-colors"
+            title="Mover para cima"
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M18 15l-6-6-6 6"/></svg>
+          </button>
+          <button
+            disabled={index === moduleCardIds.length || pending}
+            onClick={e => {
+              e.stopPropagation()
+              const ids = [...moduleCardIds]
+              const pos = ids.indexOf(card.id)
+              if (pos >= ids.length - 1) return
+              ;[ids[pos], ids[pos + 1]] = [ids[pos + 1], ids[pos]]
+              startTransition(() => reorderCards(card.module_id ?? '', ids))
+            }}
+            className="w-5 h-5 rounded flex items-center justify-center text-gray-300 hover:text-gray-600 hover:bg-gray-100 disabled:opacity-20 transition-colors"
+            title="Mover para baixo"
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+        </div>
         <button
           onClick={() => setExpanded(e => !e)}
           className="flex-1 flex items-center gap-3 py-4 text-left"

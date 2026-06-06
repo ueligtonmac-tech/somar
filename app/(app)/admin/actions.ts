@@ -56,6 +56,40 @@ export async function reorderCard(cardId: string, newIndex: number) {
   revalidatePath('/admin/cards')
 }
 
+export async function reorderCards(moduleId: string, orderedIds: string[]) {
+  const supabase = await createClient()
+  await Promise.all(
+    orderedIds.map((id, idx) =>
+      supabase.from('cards').update({ order_index: idx + 1 }).eq('id', id).eq('module_id', moduleId)
+    )
+  )
+  revalidatePath('/admin/cards')
+}
+
+export async function createModule(title: string, orderIndex: number) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!profile || !['admin', 'builder'].includes(profile.role)) throw new Error('Sem permissão')
+
+  // derive slug from title
+  const slug = title
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
+  const { error } = await supabase.from('modules').insert({
+    title,
+    slug: `${slug}-${Date.now()}`,
+    order_index: orderIndex,
+    description: '',
+  })
+  if (error) throw new Error('Erro ao criar módulo: ' + error.message)
+  revalidatePath('/admin/cards')
+}
+
 export async function uploadCardPdf(cardId: string, formData: FormData): Promise<{ url: string; name: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

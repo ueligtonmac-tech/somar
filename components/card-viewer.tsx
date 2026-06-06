@@ -152,6 +152,17 @@ export default function CardViewer({
           )}
         </div>
 
+        {/* Banner de conclusão total — aparece no último card do último módulo */}
+        {isLast && !nextModuleSlug && (
+          <div className="mx-6 mb-4 rounded-2xl bg-gradient-to-br from-[#000FFF] to-blue-600 p-5 text-center text-white">
+            <div className="text-3xl mb-2">🎓</div>
+            <p className="font-black text-base">Trilha 100% concluída!</p>
+            <p className="text-blue-200 text-xs mt-1">
+              Parabéns! Você completou todo o programa de onboarding da Ultragaz.
+            </p>
+          </div>
+        )}
+
         {/* Navegação entre cards */}
         <div className="px-6 pb-6 flex items-center justify-between gap-3">
           <button
@@ -163,14 +174,21 @@ export default function CardViewer({
           </button>
 
           {isLast ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap justify-end">
               <span className="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-lg">✓ Módulo concluído</span>
-              {nextModuleSlug && (
+              {nextModuleSlug ? (
                 <Link
                   href={`/trilha/${nextModuleSlug}`}
                   className="px-4 py-2 text-sm font-semibold bg-ug-blue text-white rounded-lg hover:bg-ug-blue-dark transition-colors"
                 >
                   Próximo módulo →
+                </Link>
+              ) : (
+                <Link
+                  href="/trilha/certificado"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-gradient-to-r from-[#000FFF] to-blue-500 text-white rounded-lg hover:opacity-90 transition-opacity shadow-md"
+                >
+                  🎓 Gerar certificado
                 </Link>
               )}
             </div>

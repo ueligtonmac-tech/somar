@@ -56,6 +56,12 @@ export default async function AdminPage() {
             🤖 Bot João
           </Link>
           <Link
+            href="/admin/usuarios"
+            className="flex items-center gap-2 bg-white border-2 border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-bold hover:border-[#000FFF] hover:text-[#000FFF] transition-colors"
+          >
+            👤 Usuários
+          </Link>
+          <Link
             href="/admin/cards"
             className="flex items-center gap-2 bg-[#000FFF] text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors"
           >

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import CardEditor from './CardEditor'
 import NewCardButton from './NewCardButton'
+import NewModuleButton from './NewModuleButton'
 
 export default async function CardsAdminPage() {
   const supabase = await createClient()
@@ -86,7 +87,12 @@ export default async function CardsAdminPage() {
               {/* Cards */}
               <div className="divide-y divide-gray-50">
                 {moduleCards.map((card, idx) => (
-                  <CardEditor key={card.id} card={card} index={idx + 1} />
+                  <CardEditor
+                    key={card.id}
+                    card={card}
+                    index={idx + 1}
+                    moduleCardIds={moduleCards.map(c => c.id)}
+                  />
                 ))}
               </div>
 
@@ -96,6 +102,9 @@ export default async function CardsAdminPage() {
           )
         })}
       </div>
+
+      {/* Criar novo módulo */}
+      <NewModuleButton nextIndex={(modules?.length ?? 0) + 1} />
     </div>
   )
 }

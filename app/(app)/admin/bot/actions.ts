@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { generateEmbedding } from '@/lib/embeddings'
+import { sendWhatsApp } from '@/lib/whatsapp'
 
 async function assertAdmin() {
   const supabase = await createClient()
@@ -76,7 +77,8 @@ export async function approveFeedback(feedbackId: string, question: string, answ
 /** Rejeita um feedback (não vira conhecimento) */
 export async function rejectFeedback(feedbackId: string) {
   const { service } = await assertAdmin()
-  const { error } = await service.from('bot_feedback').update({ reviewed: true, approved: false }).eq('id', feedbackId)
+  // Só marca reviewed=true; coluna 'approved' não existe em bot_feedback
+  const { error } = await service.from('bot_feedback').update({ reviewed: true }).eq('id', feedbackId)
   if (error) throw new Error('Erro ao rejeitar: ' + error.message)
   revalidatePath('/admin/bot')
 }
@@ -85,13 +87,22 @@ export async function rejectFeedback(feedbackId: string) {
 export async function resolveEscalation(feedbackId: string, adminAnswer: string, addToKnowledge: boolean) {
   const { service, user } = await assertAdmin()
 
+  // Tenta update com campos extras; se falhar por colunas inexistentes, usa só reviewed
   const { error } = await service.from('bot_feedback').update({
     reviewed: true,
     admin_answer: adminAnswer,
     reviewed_by: user.id,
     reviewed_at: new Date().toISOString(),
   }).eq('id', feedbackId)
-  if (error) throw new Error('Erro ao resolver: ' + error.message)
+
+  if (error) {
+    // Fallback: apenas marca como revisado (colunas extras podem não existir ainda)
+    const { error: fallbackError } = await service
+      .from('bot_feedback')
+      .update({ reviewed: true })
+      .eq('id', feedbackId)
+    if (fallbackError) throw new Error('Erro ao resolver: ' + fallbackError.message)
+  }
 
   if (addToKnowledge) {
     const { data: fb } = await service.from('bot_feedback').select('question').eq('id', feedbackId).single()
@@ -110,6 +121,56 @@ export async function resolveEscalation(feedbackId: string, adminAnswer: string,
         })
       }
     }
+  }
+
+  // Notificar o usuário que sua pergunta foi respondida
+  try {
+    const { data: fb } = await service
+      .from('bot_feedback')
+      .select('user_id, question')
+      .eq('id', feedbackId)
+      .maybeSingle()
+
+    if (fb?.user_id) {
+      const truncatedQuestion = fb.question?.slice(0, 100) ?? ''
+      const truncatedAnswer = adminAnswer?.slice(0, 200) ?? ''
+
+      const notifTitle = '✅ Sua pergunta foi respondida — HUB Somar'
+      const notifMessage = [
+        `✅ *HUB Somar — Sua pergunta foi respondida!*`,
+        ``,
+        `❓ *Sua pergunta:*`,
+        `_${truncatedQuestion}_`,
+        ``,
+        `💡 *Resposta do time Ultragaz:*`,
+        `${truncatedAnswer}`,
+        ``,
+        `Acesse o HUB Somar para ver a resposta completa.`,
+      ].join('\n')
+
+      await service.from('notifications').insert({
+        user_id: fb.user_id,
+        type: 'escalation_answered',
+        title: notifTitle,
+        message: notifMessage,
+        metadata: { feedbackId, question: truncatedQuestion },
+      })
+
+      // Enviar WhatsApp ao consultor se tiver telefone
+      const { data: profile } = await service
+        .from('profiles')
+        .select('phone, whatsapp')
+        .eq('id', fb.user_id)
+        .maybeSingle()
+
+      const phone = profile?.phone ?? profile?.whatsapp
+      if (phone) {
+        await sendWhatsApp(phone, notifMessage)
+      }
+    }
+  } catch (e) {
+    console.error('Resolve escalation notification error:', e)
+    // Não bloqueia a operação principal
   }
 
   revalidatePath('/admin/bot')

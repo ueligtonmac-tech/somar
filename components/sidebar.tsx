@@ -10,9 +10,9 @@ import UserMenu from './UserMenu'
 interface Module { id: string; slug: string; title: string; order_index: number }
 interface Progress { module_id: string; completed: boolean; cards_seen: number }
 interface Profile { full_name: string | null; email: string; role: string }
-interface SidebarProps { profile: Profile; modules: Module[]; progress: Progress[] }
+interface SidebarProps { profile: Profile; modules: Module[]; progress: Progress[]; unreadNotifications?: number }
 
-export default function Sidebar({ profile, modules, progress }: SidebarProps) {
+export default function Sidebar({ profile, modules, progress, unreadNotifications = 0 }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -111,6 +111,15 @@ export default function Sidebar({ profile, modules, progress }: SidebarProps) {
             <ChatIcon />
             <span>Bot João</span>
             <span className="ml-auto text-[10px] bg-[#000FFF]/10 text-[#000FFF] px-2 py-0.5 rounded-full font-bold">IA</span>
+          </Link>
+          <Link href="/notificacoes" onClick={onNavigate} className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors ${pathname === '/notificacoes' ? 'bg-[#000FFF]/10 text-[#000FFF] font-bold' : 'text-gray-500 hover:bg-gray-50 font-medium'}`}>
+            <BellIcon />
+            <span>Notificações</span>
+            {unreadNotifications > 0 && (
+              <span className="ml-auto text-[10px] bg-[#000FFF] text-white px-2 py-0.5 rounded-full font-bold">
+                {unreadNotifications > 99 ? '99+' : unreadNotifications}
+              </span>
+            )}
           </Link>
         </div>
       </nav>
@@ -211,4 +220,7 @@ function LogoutIcon() {
 }
 function BibliotecaIcon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+}
+function BellIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
 }
