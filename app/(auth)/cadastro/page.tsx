@@ -293,7 +293,7 @@ export default function CadastroPage() {
               <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#111', marginBottom: '0.5rem' }}>Cadastro concluído!</h2>
               <p style={{ color: '#6b7280', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '2rem' }}>
                 Sua conta foi criada com sucesso.<br />
-                Bem-vindo(a) ao <strong style={{ color: BLUE }}>HUB Somar</strong>!
+                Bem-vindo(a) ao <strong style={{ color: BLUE }}>Bot João</strong>!
               </p>
               <button onClick={() => router.push('/trilha')} style={S.btnPrimary}>
                 Acessar a trilha →

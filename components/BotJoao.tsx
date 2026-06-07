@@ -122,7 +122,7 @@ function BotJoaoDesktop() {
     if (open && messages.length === 0) {
       setMessages([{
         role: 'assistant',
-        content: 'Olá! Sou o **Bot João**, seu assistente do HUB Somar 👋\n\nEstou aqui para responder suas dúvidas sobre os módulos, produtos e processos da Ultragaz. Como posso te ajudar?',
+        content: 'Olá! Sou o **Bot João**, seu assistente de onboarding da Ultragaz 👋\n\nEstou aqui para responder suas dúvidas sobre os módulos, produtos e processos da Ultragaz. Como posso te ajudar?',
         id: 'welcome',
       }])
     }
@@ -333,7 +333,7 @@ function BotJoaoDesktop() {
             </div>
             <div className="flex-1">
               <p className="text-white font-bold text-sm">Bot João</p>
-              <p className="text-blue-200 text-xs">Assistente HUB Somar · Ultragaz</p>
+              <p className="text-blue-200 text-xs">Assistente inteligente · Ultragaz</p>
             </div>
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" title="Online" />
           </div>
@@ -448,7 +448,7 @@ function BotJoaoDesktop() {
             {recording && (
               <p className="text-center text-[10px] text-red-500 mt-1.5 animate-pulse font-medium">🔴 Gravando... solte para transcrever</p>
             )}
-            {!recording && <p className="text-center text-[10px] text-gray-300 mt-1.5">Bot João · HUB Somar Ultragaz</p>}
+            {!recording && <p className="text-center text-[10px] text-gray-300 mt-1.5">Bot João · Ultragaz</p>}
           </div>
         </div>
       )}

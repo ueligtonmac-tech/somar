@@ -51,10 +51,10 @@ export async function POST(req: NextRequest) {
           .in('role', ['gerencial', 'admin', 'builder'])
 
         if (managers && managers.length > 0) {
-          const notifTitle = '🚨 Nova escalação no HUB Somar'
+          const notifTitle = '🚨 Nova escalação — Bot João'
           const urgency = score <= 3 ? '🔴 URGENTE' : score <= 5 ? '🟠 Médio' : '🟡 Baixo'
           const notifMessage = [
-            `🚨 *HUB Somar — Nova Escalação*`,
+            `🚨 *Bot João — Nova Escalação*`,
             ``,
             `👤 *Consultor:* ${userName}`,
             `📊 *Prioridade:* ${urgency} (nota ${score}/10)`,

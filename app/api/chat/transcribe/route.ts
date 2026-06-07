@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   if (!audioFile) return NextResponse.json({ error: 'Arquivo de áudio não enviado' }, { status: 400 })
 
   // prompt ensina o Whisper os termos de domínio da Ultragaz
-  const whisperPrompt = 'App Ultragaz, HUB Somar, Vale Gás, AmigU, Ultragaz, canais digitais, entregador, pedido, faturamento, precificação, roteirização, WhatsApp, consultor, módulo, trilha, onboarding, EpiUltragaz, EpiUltra'
+  const whisperPrompt = 'App Ultragaz, Bot João, Vale Gás, AmigU, Ultragaz, canais digitais, entregador, pedido, faturamento, precificação, roteirização, WhatsApp, consultor, módulo, trilha, onboarding'
 
   const transcription = await openai.audio.transcriptions.create({
     file: audioFile,

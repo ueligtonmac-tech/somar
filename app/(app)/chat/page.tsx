@@ -27,7 +27,7 @@ export default function ChatPage() {
   const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([{
     role: 'assistant',
-    content: 'Olá! Sou o **Bot João**, seu assistente do HUB Somar 👋\n\nEstou aqui para responder suas dúvidas sobre os módulos, produtos e processos da Ultragaz. Como posso te ajudar?',
+    content: 'Olá! Sou o **Bot João**, seu assistente de onboarding da Ultragaz 👋\n\nEstou aqui para responder suas dúvidas sobre os módulos, produtos e processos da Ultragaz. Como posso te ajudar?',
     id: 'welcome',
   }])
   const [input, setInput] = useState('')
@@ -154,7 +154,7 @@ export default function ChatPage() {
           <p className="text-white font-bold text-sm">Bot João</p>
           <p className="text-blue-200 text-xs flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
-            Assistente HUB Somar · Ultragaz
+            Assistente inteligente · Ultragaz
           </p>
         </div>
       </div>
@@ -237,7 +237,7 @@ export default function ChatPage() {
             </svg>
           </button>
         </div>
-        <p className="text-center text-[10px] text-gray-300 mt-1.5">Bot João · HUB Somar Ultragaz</p>
+        <p className="text-center text-[10px] text-gray-300 mt-1.5">Bot João · Ultragaz</p>
       </div>
     </div>
   )

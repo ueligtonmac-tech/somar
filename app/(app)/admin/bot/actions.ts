@@ -135,9 +135,9 @@ export async function resolveEscalation(feedbackId: string, adminAnswer: string,
       const truncatedQuestion = fb.question?.slice(0, 100) ?? ''
       const truncatedAnswer = adminAnswer?.slice(0, 200) ?? ''
 
-      const notifTitle = '✅ Sua pergunta foi respondida — HUB Somar'
+      const notifTitle = '✅ Sua pergunta foi respondida — Bot João'
       const notifMessage = [
-        `✅ *HUB Somar — Sua pergunta foi respondida!*`,
+        `✅ *Bot João — Sua pergunta foi respondida!*`,
         ``,
         `❓ *Sua pergunta:*`,
         `_${truncatedQuestion}_`,
@@ -145,7 +145,7 @@ export async function resolveEscalation(feedbackId: string, adminAnswer: string,
         `💡 *Resposta do time Ultragaz:*`,
         `${truncatedAnswer}`,
         ``,
-        `Acesse o HUB Somar para ver a resposta completa.`,
+        `Acesse o Bot João para ver a resposta completa.`,
       ].join('\n')
 
       await service.from('notifications').insert({

@@ -65,7 +65,7 @@ export default function BibliotecaClient({ files }: { files: LibraryFile[] }) {
   const WELCOME: Message = {
     role: 'assistant',
     id: 'welcome',
-    content: 'Olá! 👋 Aqui na Biblioteca você encontra todos os materiais disponíveis para download.\n\nMas não precisa ficar só nos PDFs — **já li tudo** que está aqui! Me pergunte qualquer coisa sobre os materiais, Vale Gás, App Ultragaz, HUB Somar... estou aqui para ajudar! 😄',
+    content: 'Olá! 👋 Aqui na Biblioteca você encontra todos os materiais disponíveis para download.\n\nMas não precisa ficar só nos PDFs — **já li tudo** que está aqui! Me pergunte qualquer coisa sobre os materiais, Vale Gás, App Ultragaz, canais digitais... estou aqui para ajudar! 😄',
   }
 
   const [messages, setMessages] = useState<Message[]>([WELCOME])

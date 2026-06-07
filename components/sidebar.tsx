@@ -44,7 +44,7 @@ export default function Sidebar({ profile, modules, progress, unreadNotification
           </div>
           <div className="flex-1">
             <p className="text-white font-extrabold text-sm leading-tight">ultragaz</p>
-            <p className="text-blue-200 text-xs font-medium">HUB Somar</p>
+            <p className="text-blue-200 text-xs font-medium">Bot João</p>
           </div>
           {onNavigate && (
             <button onClick={onNavigate} className="md:hidden text-white/70 hover:text-white p-1">
@@ -152,7 +152,7 @@ export default function Sidebar({ profile, modules, progress, unreadNotification
             <Image src="/ug-icon.jpg" alt="Ultragaz" width={32} height={32} className="w-full h-full object-cover" />
           </div>
           <div>
-            <p className="text-white font-extrabold text-sm leading-tight">HUB Somar</p>
+            <p className="text-white font-extrabold text-sm leading-tight">Bot João</p>
             <p className="text-blue-200 text-[10px]">Ultragaz</p>
           </div>
         </div>

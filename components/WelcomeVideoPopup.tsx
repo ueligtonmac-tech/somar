@@ -44,7 +44,7 @@ export default function WelcomeVideoPopup() {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-black text-gray-900">Bem-vindo ao HUB Somar!</p>
+              <p className="text-sm font-black text-gray-900">Bem-vindo ao Bot João!</p>
               <p className="text-xs text-gray-400">Assista ao vídeo de apresentação</p>
             </div>
           </div>
@@ -66,7 +66,7 @@ export default function WelcomeVideoPopup() {
             <>
               <iframe
                 src={`https://www.youtube-nocookie.com/embed/${VIDEO_ID}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1`}
-                title="Apresentação HUB Somar"
+                title="Apresentação Bot João"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 className="absolute inset-0 w-full h-full"

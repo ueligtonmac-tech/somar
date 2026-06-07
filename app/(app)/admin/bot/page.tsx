@@ -98,7 +98,7 @@ export default async function BotAdminPage({
     const AREAS = [
       { area: 'Canais Digitais', icon: '📱', keywords: ['canal', 'digital', 'app', 'whatsapp', 'aplicativo', 'site'] },
       { area: 'Vale Gás', icon: '🔵', keywords: ['vale', 'gás', 'gas', 'benefício', 'mapa', 'validação', 'map'] },
-      { area: 'HUB Somar', icon: '🏪', keywords: ['hub', 'somar', 'pedido', 'gestão', 'roteirização', 'entregador'] },
+      { area: 'Bot João', icon: '🤖', keywords: ['bot', 'joao', 'onboarding', 'pedido', 'gestão', 'roteirização', 'entregador'] },
       { area: 'AmigU', icon: '🤝', keywords: ['amigu', 'fidelidade', 'programa', 'pontos', 'revendedor'] },
       { area: 'Precificação', icon: '💰', keywords: ['preço', 'precific', 'faturamento', 'custo', 'margem', 'valor'] },
       { area: 'Ultragaz Geral', icon: '🏢', keywords: ['ultragaz', 'empresa', 'missão', 'valor', 'cultura', 'história'] },

@@ -106,9 +106,9 @@ export default async function CertificadoPage() {
 
               {/* ── Cabeçalho ── */}
               <div className="flex items-center justify-between mb-7">
-                {/* Esquerda: apenas texto HUB Somar */}
+                {/* Esquerda: apenas texto Bot João */}
                 <div>
-                  <p className="text-[#000FFF] font-black text-[22px] leading-none tracking-tight">HUB Somar</p>
+                  <p className="text-[#000FFF] font-black text-[22px] leading-none tracking-tight">Bot João</p>
                   <p className="text-gray-400 text-[10px] tracking-[0.25em] uppercase mt-1">Plataforma de Onboarding</p>
                 </div>
 
@@ -148,7 +148,7 @@ export default async function CertificadoPage() {
                   <strong className="text-gray-900">Trilha de Onboarding de Canais Digitais</strong>,
                   completando todos os {totalModules} módulos do programa de capacitação desenvolvido pela{' '}
                   <strong className="text-gray-900">Ultragaz</strong> em parceria com a plataforma{' '}
-                  <strong className="text-gray-900">HUB Somar</strong>.
+                  <strong className="text-gray-900">Bot João</strong>.
                 </p>
               </div>
 
@@ -174,7 +174,7 @@ export default async function CertificadoPage() {
                     Emitido em <strong className="text-gray-700">{completionDate}</strong>
                   </p>
                   <p className="text-gray-400 mt-0.5" style={{ fontSize: '9px' }}>
-                    Documento gerado pela plataforma HUB Somar
+                    Documento gerado pela plataforma Bot João
                   </p>
                 </div>
 
@@ -194,7 +194,7 @@ export default async function CertificadoPage() {
                   </div>
                   <div>
                     <p className="text-[#000FFF] font-black" style={{ fontSize: '10px' }}>Certificado Válido</p>
-                    <p className="text-gray-400" style={{ fontSize: '9px' }}>HUB Somar · {new Date().getFullYear()}</p>
+                    <p className="text-gray-400" style={{ fontSize: '9px' }}>Bot João · {new Date().getFullYear()}</p>
                   </div>
                 </div>
               </div>
