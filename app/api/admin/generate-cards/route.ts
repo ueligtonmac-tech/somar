@@ -52,6 +52,22 @@ export async function POST(req: NextRequest) {
   const libraryContent = chunks?.map(c => c.content).join('\n\n---\n\n').slice(0, 12000) || ''
   const knowledgeContent = knowledge?.map(k => `P: ${k.question}\nR: ${k.answer}`).join('\n\n').slice(0, 6000) || ''
 
+  const isIntroModule = /introdu/i.test(module.title) || /intro/i.test(module.title) || /boas.?vindas/i.test(module.title)
+  const hasLibraryContent = libraryContent.length > 100 || knowledgeContent.length > 100
+  const noExistingCards = !existingCards || existingCards.length === 0
+
+  // Instrução de fallback: se módulo introdutório ou sem conteúdo de biblioteca, gerar com conhecimento da plataforma
+  const contentInstruction = (!hasLibraryContent || isIntroModule)
+    ? `ATENÇÃO: Este módulo não possui material de biblioteca ou é um módulo introdutório.
+Nesse caso, use seu conhecimento sobre plataformas de onboarding para consultores de vendas digitais da Ultragaz para criar cards introdutórios que:
+- Apresentem o propósito da trilha de onboarding
+- Expliquem o que é o Bot João e como ele auxilia no onboarding
+- Contextualizem o papel do consultor de canais digitais da Ultragaz
+- Motivem e orientem o consultor sobre como aproveitar a trilha
+- Expliquem a estrutura dos módulos disponíveis na plataforma
+NÃO retorne array vazio para módulos introdutórios — sempre gere ao menos 3 cards de boas-vindas.`
+    : `Baseie o conteúdo no material fornecido acima. Se o conteúdo for insuficiente para cards NOVOS (não duplicados), retorne array vazio.`
+
   const prompt = `Você é um especialista em design instrucional. Preciso que gere cards de treinamento para consultores de canais digitais da Ultragaz.
 
 ## MÓDULO
@@ -70,9 +86,8 @@ ${knowledgeContent || 'Nenhum conhecimento disponível.'}
 ## INSTRUÇÕES
 1. Gere apenas cards com conteúdo NOVO — não repita nem parafraseie os cards existentes.
 2. Cada card deve ter: título objetivo, cenário realista, desafio prático, explicação detalhada e dica de ação.
-3. Baseie o conteúdo EXCLUSIVAMENTE no material fornecido acima. Não invente dados ou valores.
-4. Gere quantos cards forem necessários para cobrir o conteúdo sem redundância.
-5. Se o conteúdo disponível for insuficiente para gerar cards novos, retorne array vazio.
+3. Gere quantos cards forem necessários para cobrir o conteúdo sem redundância (mínimo 3, máximo 10).
+4. ${contentInstruction}
 
 ## FORMATO DE SAÍDA (JSON puro, sem markdown)
 [
