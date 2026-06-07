@@ -1,16 +1,17 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { updateModule, deleteModule } from '../actions'
+import { updateModule, deleteModule, reorderModules } from '../actions'
 import GenerateCardsButton from './GenerateCardsButton'
 
 interface Props {
   module: { id: string; title: string; description?: string | null; published?: boolean; order_index: number }
   cardCount: number
   publishedCount: number
+  allModuleIds: string[]
 }
 
-export default function ModuleHeader({ module, cardCount, publishedCount }: Props) {
+export default function ModuleHeader({ module, cardCount, publishedCount, allModuleIds }: Props) {
   const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState(module.title)
   const [description, setDescription] = useState(module.description ?? '')
@@ -76,6 +77,38 @@ export default function ModuleHeader({ module, cardCount, publishedCount }: Prop
       ) : (
         /* ── Modo visualização ── */
         <div className="flex items-center gap-3">
+          {/* Setas reordenação */}
+          <div className="flex flex-col gap-0.5 flex-shrink-0">
+            <button
+              disabled={allModuleIds[0] === module.id || pending}
+              onClick={() => {
+                const ids = [...allModuleIds]
+                const pos = ids.indexOf(module.id)
+                if (pos <= 0) return
+                ;[ids[pos - 1], ids[pos]] = [ids[pos], ids[pos - 1]]
+                startTransition(() => reorderModules(ids))
+              }}
+              className="w-5 h-5 rounded flex items-center justify-center text-white/40 hover:text-white hover:bg-white/20 disabled:opacity-20 transition-colors"
+              title="Mover para cima"
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M18 15l-6-6-6 6"/></svg>
+            </button>
+            <button
+              disabled={allModuleIds[allModuleIds.length - 1] === module.id || pending}
+              onClick={() => {
+                const ids = [...allModuleIds]
+                const pos = ids.indexOf(module.id)
+                if (pos >= ids.length - 1) return
+                ;[ids[pos], ids[pos + 1]] = [ids[pos + 1], ids[pos]]
+                startTransition(() => reorderModules(ids))
+              }}
+              className="w-5 h-5 rounded flex items-center justify-center text-white/40 hover:text-white hover:bg-white/20 disabled:opacity-20 transition-colors"
+              title="Mover para baixo"
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+
           <span className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-white font-black text-sm flex-shrink-0">
             {module.order_index}
           </span>

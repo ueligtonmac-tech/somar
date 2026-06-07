@@ -90,6 +90,20 @@ export async function createModule(title: string, orderIndex: number) {
   revalidatePath('/admin/cards')
 }
 
+export async function reorderModules(orderedIds: string[]) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!profile || !['admin', 'builder'].includes(profile.role)) throw new Error('Sem permissão')
+  await Promise.all(
+    orderedIds.map((id, idx) =>
+      supabase.from('modules').update({ order_index: idx + 1 }).eq('id', id)
+    )
+  )
+  revalidatePath('/admin/cards')
+}
+
 export async function updateModule(moduleId: string, data: { title?: string; description?: string; published?: boolean }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

@@ -74,6 +74,7 @@ export default async function CardsAdminPage() {
                 module={module}
                 cardCount={moduleCards.length}
                 publishedCount={published}
+                allModuleIds={modules.map(m => m.id)}
               />
 
               {/* Cards */}
