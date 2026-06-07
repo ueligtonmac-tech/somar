@@ -4,6 +4,7 @@ import Link from 'next/link'
 import CardEditor from './CardEditor'
 import NewCardButton from './NewCardButton'
 import NewModuleButton from './NewModuleButton'
+import GenerateCardsButton from './GenerateCardsButton'
 
 export default async function CardsAdminPage() {
   const supabase = await createClient()
@@ -76,10 +77,11 @@ export default async function CardsAdminPage() {
                     {module.order_index}
                   </span>
                   <h2 className="text-white font-bold flex-1">{module.title}</h2>
-                  <div className="text-right">
+                  <div className="flex items-center gap-3">
                     <span className="text-blue-200 text-xs font-semibold">
                       {moduleCards.length} cards · {published} publicados
                     </span>
+                    <GenerateCardsButton moduleId={module.id} moduleTitle={module.title} />
                   </div>
                 </div>
               </div>
