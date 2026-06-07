@@ -113,12 +113,22 @@ export async function resolveEscalation(feedbackId: string, adminAnswer: string,
         .eq('source_feedback_id', feedbackId)
         .maybeSingle()
       if (!existing) {
-        await service.from('bot_knowledge').insert({
+        const { data: newKb } = await service.from('bot_knowledge').insert({
           question: fb.question,
           answer: adminAnswer,
           source_feedback_id: feedbackId,
           approved: true,
-        })
+        }).select('id').single()
+
+        // Gerar embedding em background para ativar busca semântica
+        if (newKb) {
+          generateEmbedding(`${fb.question}\n${adminAnswer}`).then(async (embedding) => {
+            if (!embedding) return
+            await service.from('bot_knowledge')
+              .update({ embedding: JSON.stringify(embedding) })
+              .eq('id', newKb.id)
+          }).catch(() => { /* ignora erro de embedding */ })
+        }
       }
     }
   }
