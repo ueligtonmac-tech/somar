@@ -1,7 +1,10 @@
 'use client'
 
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
+
+const BotAnimatedCanvas = dynamic(() => import('@/components/BotAnimatedCanvas'), { ssr: false })
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -201,17 +204,13 @@ function LoginForm() {
               <div style={{ marginLeft: '102px', marginBottom: '8px', position: 'relative', zIndex: 10 }}>
                 <BotBubble />
               </div>
-              <Image
-                src="/bot-joao-login.png"
-                alt="Bot João"
+              <BotAnimatedCanvas
                 width={370}
                 height={460}
                 style={{
-                  objectFit: 'contain',
                   filter: 'drop-shadow(0 28px 56px rgba(0,0,80,0.4))',
                   marginBottom: '-3rem',
                 }}
-                priority
               />
             </div>
           </div>
