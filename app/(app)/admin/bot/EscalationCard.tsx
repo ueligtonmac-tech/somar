@@ -19,6 +19,27 @@ export default function EscalationCard({ item }: { item: EscalationItem }) {
   const [showConversation, setShowConversation] = useState(false)
   const [pending, startTransition] = useTransition()
   const [done, setDone] = useState(false)
+  const [improving, setImproving] = useState(false)
+  const [improveError, setImproveError] = useState('')
+
+  const handleImproveWithAI = async () => {
+    setImproving(true)
+    setImproveError('')
+    try {
+      const res = await fetch('/api/admin/improve-answer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: item.question, botAnswer: item.answer, adminDraft: adminAnswer }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erro desconhecido')
+      setAdminAnswer(data.improved)
+    } catch (e) {
+      setImproveError(e instanceof Error ? e.message : 'Erro ao gerar resposta')
+    } finally {
+      setImproving(false)
+    }
+  }
 
   if (done) return null
 
@@ -59,12 +80,32 @@ export default function EscalationCard({ item }: { item: EscalationItem }) {
 
       {/* Resposta do admin */}
       <div className="px-5 py-4">
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Sua resposta correta</p>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Sua resposta correta</p>
+          <button
+            onClick={handleImproveWithAI}
+            disabled={improving}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-50 text-purple-600 text-xs font-bold border border-purple-100 hover:bg-purple-100 disabled:opacity-50 transition-colors"
+            title="Gerar ou melhorar a resposta com IA"
+          >
+            {improving ? (
+              <>
+                <svg className="animate-spin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                Gerando...
+              </>
+            ) : (
+              <>✨ {adminAnswer.trim() ? 'Melhorar com IA' : 'Gerar com IA'}</>
+            )}
+          </button>
+        </div>
+        {improveError && (
+          <p className="text-xs text-red-500 mb-2">⚠ {improveError}</p>
+        )}
         <textarea
           value={adminAnswer}
           onChange={e => setAdminAnswer(e.target.value)}
           rows={4}
-          placeholder="Escreva a resposta correta para essa pergunta. Ela será enviada ao consultor e, se marcada, adicionada à base de conhecimento do Bot João..."
+          placeholder="Escreva a resposta correta para essa pergunta, ou clique em ✨ Gerar com IA para uma sugestão automática..."
           className="w-full border-2 border-gray-100 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:border-[#000FFF] focus:outline-none resize-none leading-relaxed placeholder:text-gray-300"
         />
 

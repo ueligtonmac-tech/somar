@@ -96,6 +96,7 @@ function BotJoaoMobile() {
 
 /* ─── Versão desktop: chat flutuante completo ─── */
 function BotJoaoDesktop() {
+  const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -112,6 +113,9 @@ function BotJoaoDesktop() {
   const audioChunksRef = useRef<Blob[]>([])
   const mimeTypeRef = useRef<string>('')
   const sendMessageRef = useRef<(text: string) => void>(() => {})
+
+  // Evita flash no SSR: só renderiza após hidratação
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     const t = setTimeout(() => setShowBubble(true), 2000)
@@ -274,6 +278,8 @@ function BotJoaoDesktop() {
       return <span key={i}>{part}</span>
     })
   }
+
+  if (!mounted) return null
 
   return (
     <>
