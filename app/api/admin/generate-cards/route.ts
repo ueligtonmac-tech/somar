@@ -54,8 +54,6 @@ export async function POST(req: NextRequest) {
 
   const isIntroModule = /introdu/i.test(module.title) || /intro/i.test(module.title) || /boas.?vindas/i.test(module.title)
   const hasLibraryContent = libraryContent.length > 100 || knowledgeContent.length > 100
-  const noExistingCards = !existingCards || existingCards.length === 0
-
   // Instrução de fallback: se módulo introdutório ou sem conteúdo de biblioteca, gerar com conhecimento da plataforma
   const contentInstruction = (!hasLibraryContent || isIntroModule)
     ? `ATENÇÃO: Este módulo não possui material de biblioteca ou é um módulo introdutório.
