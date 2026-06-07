@@ -30,7 +30,7 @@ export default function EsqueciSenhaPage() {
     const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     })
-    if (err) { setError(err.message); setLoading(false); return }
+    if (err) { setError(err.message || JSON.stringify(err)); setLoading(false); return }
     setLoading(false)
     setStep('sent')
   }
