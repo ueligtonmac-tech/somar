@@ -90,6 +90,28 @@ export async function createModule(title: string, orderIndex: number) {
   revalidatePath('/admin/cards')
 }
 
+export async function updateModule(moduleId: string, data: { title?: string; description?: string; published?: boolean }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!profile || !['admin', 'builder'].includes(profile.role)) throw new Error('Sem permissão')
+  const { error } = await supabase.from('modules').update({ ...data, updated_at: new Date().toISOString() }).eq('id', moduleId)
+  if (error) throw new Error('Erro ao atualizar módulo: ' + error.message)
+  revalidatePath('/admin/cards')
+}
+
+export async function deleteModule(moduleId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Não autenticado')
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!profile || !['admin', 'builder'].includes(profile.role)) throw new Error('Sem permissão')
+  const { error } = await supabase.from('modules').delete().eq('id', moduleId)
+  if (error) throw new Error('Erro ao excluir módulo: ' + error.message)
+  revalidatePath('/admin/cards')
+}
+
 export async function uploadCardPdf(cardId: string, formData: FormData): Promise<{ url: string; name: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

@@ -177,18 +177,15 @@ function LoginForm() {
         {/* Área principal: título (esquerda) + Bot João grande (direita) */}
         <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1, marginTop: '1.5rem', gap: '0' }}>
 
-          {/* Esquerda: título + QR */}
-          <div style={{ flex: '0 0 auto', paddingBottom: '2.5rem', maxWidth: '180px' }}>
-            <h1 style={{ color: 'white', fontSize: 'clamp(2.75rem, 5vw, 4.25rem)', fontWeight: 900, lineHeight: 0.92, marginBottom: '2.5rem' }}>
-              HUB<br />Somar
-            </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-              <div style={{ background: 'white', borderRadius: '0.875rem', padding: '8px', flexShrink: 0, boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
-                <QRCode value="https://somar-tawny.vercel.app/login" size={70} bgColor="white" fgColor="#000FFF" level="M" style={{ display: 'block' }} />
+          {/* Esquerda: QR Code */}
+          <div style={{ flex: '0 0 auto', paddingBottom: '2.5rem', maxWidth: '220px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <div style={{ background: 'white', borderRadius: '1rem', padding: '12px', flexShrink: 0, boxShadow: '0 4px 24px rgba(0,0,0,0.35)' }}>
+                <QRCode value="https://somar-tawny.vercel.app/login" size={120} bgColor="white" fgColor="#000FFF" level="M" style={{ display: 'block' }} />
               </div>
               <div>
-                <p style={{ color: 'white', fontSize: '0.75rem', fontWeight: 800, marginBottom: '0.15rem' }}>Celular</p>
-                <p style={{ color: 'rgba(200,215,255,0.65)', fontSize: '0.65rem', lineHeight: 1.4 }}>Aponte a câmera<br />para acessar</p>
+                <p style={{ color: 'white', fontSize: '0.8rem', fontWeight: 800, marginBottom: '0.2rem' }}>Acesse pelo celular</p>
+                <p style={{ color: 'rgba(200,215,255,0.65)', fontSize: '0.68rem', lineHeight: 1.5 }}>Aponte a câmera<br />para acessar</p>
               </div>
             </div>
           </div>

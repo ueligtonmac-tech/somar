@@ -4,7 +4,7 @@ import Link from 'next/link'
 import CardEditor from './CardEditor'
 import NewCardButton from './NewCardButton'
 import NewModuleButton from './NewModuleButton'
-import GenerateCardsButton from './GenerateCardsButton'
+import ModuleHeader from './ModuleHeader'
 
 export default async function CardsAdminPage() {
   const supabase = await createClient()
@@ -15,7 +15,7 @@ export default async function CardsAdminPage() {
   if (!me || !['admin', 'builder'].includes(me.role)) redirect('/trilha')
 
   const [{ data: modules }, { data: cards }] = await Promise.all([
-    supabase.from('modules').select('id, title, order_index').order('order_index'),
+    supabase.from('modules').select('id, title, description, order_index, published').order('order_index'),
     supabase.from('cards').select('*').order('order_index'),
   ])
 
@@ -70,21 +70,11 @@ export default async function CardsAdminPage() {
           const published = moduleCards.filter(c => c.published).length
           return (
             <div key={module.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              {/* Header do módulo */}
-              <div className="bg-[#000FFF] px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <span className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-white font-black text-sm flex-shrink-0">
-                    {module.order_index}
-                  </span>
-                  <h2 className="text-white font-bold flex-1">{module.title}</h2>
-                  <div className="flex items-center gap-3">
-                    <span className="text-blue-200 text-xs font-semibold">
-                      {moduleCards.length} cards · {published} publicados
-                    </span>
-                    <GenerateCardsButton moduleId={module.id} moduleTitle={module.title} />
-                  </div>
-                </div>
-              </div>
+              <ModuleHeader
+                module={module}
+                cardCount={moduleCards.length}
+                publishedCount={published}
+              />
 
               {/* Cards */}
               <div className="divide-y divide-gray-50">
