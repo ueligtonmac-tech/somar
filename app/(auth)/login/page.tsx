@@ -203,7 +203,7 @@ function LoginForm() {
               </div>
               {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
               <video
-                src="/bot-joao-animated.mp4"
+                src="/bot-joao-v2.mp4"
                 autoPlay
                 loop
                 muted
