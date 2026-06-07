@@ -201,21 +201,19 @@ function LoginForm() {
               <div style={{ marginLeft: '102px', marginBottom: '8px', position: 'relative', zIndex: 10 }}>
                 <BotBubble />
               </div>
-              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-              <video
-                src="/bot-joao-v2.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
+              <Image
+                src="/bot-joao-login.png"
+                alt="Bot João"
                 width={370}
                 height={460}
                 style={{
                   objectFit: 'contain',
+                  filter: 'drop-shadow(0 28px 56px rgba(0,0,80,0.4))',
                   display: 'block',
                   flexShrink: 0,
                   marginBottom: '-3rem',
                 }}
+                priority
               />
             </div>
           </div>
