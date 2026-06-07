@@ -212,10 +212,8 @@ function LoginForm() {
                 height={460}
                 style={{
                   objectFit: 'contain',
-                  mixBlendMode: 'screen',
                   display: 'block',
                   flexShrink: 0,
-                  filter: 'drop-shadow(0 28px 56px rgba(0,0,80,0.4))',
                   marginBottom: '-3rem',
                 }}
               />
