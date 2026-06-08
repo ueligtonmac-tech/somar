@@ -35,8 +35,14 @@ export default function ChatPage() {
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<FeedbackState | null>(null)
   const [feedbackSent, setFeedbackSent] = useState(false)
+  const [recording, setRecording] = useState(false)
+  const [transcribing, setTranscribing] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+  const mimeTypeRef = useRef<string>('')
+  const sendMessageRef = useRef<(text: string) => void>(() => {})
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -52,9 +58,9 @@ export default function ChatPage() {
     })
   }
 
-  const sendMessage = useCallback(async () => {
-    if (!input.trim() || loading) return
-    const userMsg = input.trim()
+  const sendMessage = useCallback(async (directText?: string) => {
+    const userMsg = (directText ?? input).trim()
+    if (!userMsg || loading) return
     setInput('')
 
     const userMsgObj: Message = { role: 'user', content: userMsg, id: Date.now().toString() }
@@ -88,21 +94,15 @@ export default function ChatPage() {
         if (done) break
 
         const raw = decoder.decode(value, { stream: true })
-        const lines = raw.split('\n')
-
-        for (const line of lines) {
+        for (const line of raw.split('\n')) {
           if (!line.startsWith('data: ')) continue
           try {
             const parsed = JSON.parse(line.slice(6))
-
             if (parsed.type === 'chunk') {
-              const chars = parsed.text.split('')
-              for (const char of chars) {
+              for (const char of parsed.text.split('')) {
                 fullText += char
                 const snapshot = fullText
-                setMessages(prev =>
-                  prev.map(m => m.id === botMsgId ? { ...m, content: snapshot } : m)
-                )
+                setMessages(prev => prev.map(m => m.id === botMsgId ? { ...m, content: snapshot } : m))
                 await new Promise(r => setTimeout(r, 28))
               }
             } else if (parsed.type === 'done') {
@@ -112,7 +112,7 @@ export default function ChatPage() {
             } else if (parsed.type === 'error') {
               throw new Error(parsed.message)
             }
-          } catch { /* linha mal-formada, ignora */ }
+          } catch { /* linha mal-formada */ }
         }
       }
     } catch {
@@ -126,6 +126,48 @@ export default function ChatPage() {
       setLoading(false)
     }
   }, [input, loading, conversationId, messages])
+
+  useEffect(() => {
+    sendMessageRef.current = (text: string) => sendMessage(text)
+  }, [sendMessage])
+
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : 'audio/webm'
+      mimeTypeRef.current = mimeType
+      const mediaRecorder = new MediaRecorder(stream, { mimeType })
+      audioChunksRef.current = []
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunksRef.current.push(e.data) }
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop())
+        const blob = new Blob(audioChunksRef.current, { type: mimeTypeRef.current })
+        if (blob.size < 500) return
+        setTranscribing(true)
+        try {
+          const form = new FormData()
+          form.append('audio', blob, 'audio.webm')
+          const res = await fetch('/api/chat/transcribe', { method: 'POST', body: form })
+          const data = await res.json()
+          if (data.text) sendMessageRef.current(data.text)
+        } finally {
+          setTranscribing(false)
+        }
+      }
+      mediaRecorderRef.current = mediaRecorder
+      mediaRecorder.start()
+      setRecording(true)
+    } catch {
+      alert('Permita o acesso ao microfone para usar essa função.')
+    }
+  }, [])
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop()
+    setRecording(false)
+  }, [])
 
   const sendFeedback = async (score: number) => {
     if (!feedback) return
@@ -148,8 +190,8 @@ export default function ChatPage() {
           </svg>
         </button>
         <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex-shrink-0">
-            <Image src="/bot-joao.webp" alt="Bot João" width={40} height={40} className="object-contain scale-110" />
-          </div>
+          <Image src="/bot-joao.webp" alt="Bot João" width={40} height={40} className="object-contain scale-110" />
+        </div>
         <div className="flex-1">
           <p className="text-white font-bold text-sm">Bot João</p>
           <p className="text-blue-200 text-xs flex items-center gap-1">
@@ -219,16 +261,41 @@ export default function ChatPage() {
           <input
             ref={inputRef}
             type="text"
-            value={input}
+            value={transcribing ? 'Transcrevendo...' : input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
             placeholder="Pergunte sobre os módulos..."
             className="flex-1 border-2 border-gray-100 rounded-xl px-3 py-2.5 text-sm focus:border-[#000FFF] focus:outline-none transition-colors"
-            disabled={loading}
+            disabled={loading || recording || transcribing}
           />
+          {/* Microfone — segure para gravar, solte para transcrever */}
           <button
-            onClick={sendMessage}
-            disabled={!input.trim() || loading}
+            onMouseDown={startRecording}
+            onMouseUp={stopRecording}
+            onMouseLeave={recording ? stopRecording : undefined}
+            onTouchStart={e => { e.preventDefault(); startRecording() }}
+            onTouchEnd={e => { e.preventDefault(); stopRecording() }}
+            disabled={loading || transcribing}
+            title={recording ? 'Solte para transcrever' : 'Pressione para falar'}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all select-none ${
+              recording
+                ? 'bg-red-500 text-white scale-110 animate-pulse'
+                : transcribing
+                ? 'bg-gray-200 text-gray-400'
+                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+            }`}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4z"/>
+              <path d="M19 11a7 7 0 0 1-14 0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="8" y1="22" x2="16" y2="22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+          {/* Enviar */}
+          <button
+            onClick={() => sendMessage()}
+            disabled={!input.trim() || loading || recording || transcribing}
             className="w-10 h-10 rounded-xl bg-[#000FFF] text-white flex items-center justify-center disabled:opacity-40 hover:bg-blue-700 transition-colors flex-shrink-0"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
@@ -237,7 +304,10 @@ export default function ChatPage() {
             </svg>
           </button>
         </div>
-        <p className="text-center text-[10px] text-gray-300 mt-1.5">Bot João · Ultragaz</p>
+        {recording && (
+          <p className="text-center text-[10px] text-red-500 mt-1.5 animate-pulse font-medium">🔴 Gravando... solte para transcrever</p>
+        )}
+        {!recording && <p className="text-center text-[10px] text-gray-300 mt-1.5">Bot João · Ultragaz</p>}
       </div>
     </div>
   )
