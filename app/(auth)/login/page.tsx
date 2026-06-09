@@ -190,15 +190,11 @@ function LoginForm() {
             </div>
           </div>
 
-          {/* Direita: Bot João + balão acima da cabeça */}
+          {/* Direita: Bot João fixo + balão cresce para cima via position absolute */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flexShrink: 0, minHeight: '520px', justifyContent: 'flex-end' }}>
-              {/*
-                Imagem original: bot aponta para direita, cabeça centrada em ~x:120px da esquerda.
-                Triângulo do balão está em left:18 do BotBubble.
-                marginLeft = 120 - 18 = 102px → alinha o triângulo sobre a cabeça.
-              */}
-              <div style={{ marginLeft: '102px', marginBottom: '8px', position: 'relative', zIndex: 10 }}>
+            <div style={{ position: 'relative', flexShrink: 0, width: '370px', height: '460px', marginBottom: '-3rem' }}>
+              {/* Balão posicionado sobre a cabeça do mascote — cresce para cima sem mover a imagem */}
+              <div style={{ position: 'absolute', bottom: '310px', left: '102px', zIndex: 10 }}>
                 <BotBubble />
               </div>
               <Image
@@ -210,9 +206,8 @@ function LoginForm() {
                   objectFit: 'contain',
                   filter: 'drop-shadow(0 28px 56px rgba(0,0,80,0.4))',
                   display: 'block',
-                  flexShrink: 0,
-                  marginBottom: '-3rem',
-                  minHeight: '460px',
+                  width: '370px',
+                  height: '460px',
                 }}
                 priority
               />
@@ -292,20 +287,22 @@ function LoginForm() {
             Continuar com Google
           </button>
 
-          <div style={{ marginTop: '1rem', paddingTop: '0.875rem', borderTop: '1px solid #f3f4f6', display: 'flex', flexDirection: 'column', gap: '0.4rem', alignItems: 'center' }}>
+          <div style={{ marginTop: '1rem', paddingTop: '0.875rem', borderTop: '1px solid #f3f4f6', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
             <a href="/cadastro" style={{ color: '#000FFF', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
               ▶ Primeiro acesso
             </a>
-            <a href="https://wa.me/5565996464417" target="_blank" rel="noopener noreferrer" style={{ color: '#9ca3af', fontSize: '0.72rem', textDecoration: 'none' }}>
+            <a href="https://wa.me/5565996464417" target="_blank" rel="noopener noreferrer" style={{ color: '#6b7280', fontSize: '0.75rem', fontWeight: 500, textDecoration: 'none' }}>
               Problemas? Contate o administrador
             </a>
-            <p style={{ color: '#d1d5db', fontSize: '0.65rem', marginTop: '0.5rem', textAlign: 'center', lineHeight: 1.6 }}>
-              Ao continuar, você concorda com os{' '}
-              <a href="/termos" style={{ color: '#000FFF', textDecoration: 'none', fontWeight: 600 }}>Termos de Uso</a>
-              {' '}e a{' '}
-              <a href="/politica" style={{ color: '#000FFF', textDecoration: 'none', fontWeight: 600 }}>Política de Privacidade</a>
-              <br />© 2026 Arkanjia
-            </p>
+            <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '0.6rem', width: '100%', textAlign: 'center' }}>
+              <p style={{ color: '#9ca3af', fontSize: '0.7rem', lineHeight: 1.7, margin: 0 }}>
+                Ao continuar, você concorda com os{' '}
+                <a href="/termos" style={{ color: '#000FFF', textDecoration: 'none', fontWeight: 700 }}>Termos de Uso</a>
+                {' '}e a{' '}
+                <a href="/politica" style={{ color: '#000FFF', textDecoration: 'none', fontWeight: 700 }}>Política de Privacidade</a>
+              </p>
+              <p style={{ color: '#c4c9d4', fontSize: '0.65rem', margin: '0.2rem 0 0', fontWeight: 500 }}>© 2026 Arkanjia</p>
+            </div>
           </div>
         </div>
       </div>
