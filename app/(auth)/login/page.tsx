@@ -192,25 +192,29 @@ function LoginForm() {
 
           {/* Direita: Bot João fixo + balão cresce para cima via position absolute */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
-            <div style={{ position: 'relative', flexShrink: 0, width: '370px', height: '460px', marginBottom: '-3rem' }}>
-              {/* Balão posicionado sobre a cabeça do mascote — cresce para cima sem mover a imagem */}
-              <div style={{ position: 'absolute', bottom: '310px', left: '102px', zIndex: 10 }}>
+            {/* Container com altura total = balão + mascote, mascote fixo no fundo */}
+            <div style={{ position: 'relative', flexShrink: 0, width: '370px', height: '600px', marginBottom: '-3rem' }}>
+              {/* Balão posicionado acima da cabeça — absolutamente fixo, cresce para cima */}
+              <div style={{ position: 'absolute', top: 0, left: '102px', zIndex: 10 }}>
                 <BotBubble />
               </div>
-              <Image
-                src="/bot-joao-login.png"
-                alt="Bot João"
-                width={370}
-                height={460}
-                style={{
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 28px 56px rgba(0,0,80,0.4))',
-                  display: 'block',
-                  width: '370px',
-                  height: '460px',
-                }}
-                priority
-              />
+              {/* Mascote ancorado no fundo do container */}
+              <div style={{ position: 'absolute', bottom: 0, left: 0 }}>
+                <Image
+                  src="/bot-joao-login.png"
+                  alt="Bot João"
+                  width={370}
+                  height={460}
+                  style={{
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 28px 56px rgba(0,0,80,0.4))',
+                    display: 'block',
+                    width: '370px',
+                    height: '460px',
+                  }}
+                  priority
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -287,22 +291,27 @@ function LoginForm() {
             Continuar com Google
           </button>
 
-          <div style={{ marginTop: '1rem', paddingTop: '0.875rem', borderTop: '1px solid #f3f4f6', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
-            <a href="/cadastro" style={{ color: '#000FFF', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-              ▶ Primeiro acesso
-            </a>
-            <a href="https://wa.me/5565996464417" target="_blank" rel="noopener noreferrer" style={{ color: '#6b7280', fontSize: '0.75rem', fontWeight: 500, textDecoration: 'none' }}>
-              Problemas? Contate o administrador
-            </a>
-            <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '0.6rem', width: '100%', textAlign: 'center' }}>
-              <p style={{ color: '#9ca3af', fontSize: '0.7rem', lineHeight: 1.7, margin: 0 }}>
-                Ao continuar, você concorda com os{' '}
-                <a href="/termos" style={{ color: '#000FFF', textDecoration: 'none', fontWeight: 700 }}>Termos de Uso</a>
-                {' '}e a{' '}
-                <a href="/politica" style={{ color: '#000FFF', textDecoration: 'none', fontWeight: 700 }}>Política de Privacidade</a>
-              </p>
-              <p style={{ color: '#c4c9d4', fontSize: '0.65rem', margin: '0.2rem 0 0', fontWeight: 500 }}>© 2026 Arkanjia</p>
+          {/* Rodapé do card */}
+          <div style={{ marginTop: '1rem', borderTop: '1px solid #f3f4f6', paddingTop: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0', alignItems: 'center' }}>
+            {/* Linha 1: Primeiro acesso | Fale conosco */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'center', marginBottom: '0.5rem' }}>
+              <a href="/cadastro" style={{ color: '#000FFF', fontSize: '0.78rem', fontWeight: 700, textDecoration: 'none' }}>
+                ▶ Primeiro acesso
+              </a>
+              <span style={{ color: '#e5e7eb', fontSize: '0.8rem' }}>|</span>
+              <a href="https://wa.me/5565996464417" target="_blank" rel="noopener noreferrer" style={{ color: '#6b7280', fontSize: '0.75rem', fontWeight: 500, textDecoration: 'none' }}>
+                Fale conosco
+              </a>
             </div>
+            {/* Linha 2: Termos e privacidade */}
+            <p style={{ color: '#9ca3af', fontSize: '0.68rem', lineHeight: 1.6, margin: 0, textAlign: 'center' }}>
+              Ao entrar você concorda com os{' '}
+              <a href="/termos" style={{ color: '#000FFF', textDecoration: 'none', fontWeight: 700 }}>Termos de Uso</a>
+              {' '}e{' '}
+              <a href="/politica" style={{ color: '#000FFF', textDecoration: 'none', fontWeight: 700 }}>Privacidade</a>
+            </p>
+            {/* Linha 3: Copyright */}
+            <p style={{ color: '#d1d5db', fontSize: '0.62rem', margin: '0.25rem 0 0', fontWeight: 500 }}>© 2026 Arkanjia</p>
           </div>
         </div>
       </div>
