@@ -181,7 +181,7 @@ function LoginForm() {
           <div style={{ flex: '0 0 auto', paddingBottom: '2.5rem', maxWidth: '220px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.75rem' }}>
               <div style={{ background: 'white', borderRadius: '1rem', padding: '12px', flexShrink: 0, boxShadow: '0 4px 24px rgba(0,0,0,0.35)' }}>
-                <QRCode value="https://somar-tawny.vercel.app/login" size={120} bgColor="white" fgColor="#000FFF" level="M" style={{ display: 'block' }} />
+                <QRCode value="https://botjoao.com.br/login" size={120} bgColor="white" fgColor="#000FFF" level="M" style={{ display: 'block' }} />
               </div>
               <div>
                 <p style={{ color: 'white', fontSize: '0.8rem', fontWeight: 800, marginBottom: '0.2rem' }}>Acesse pelo celular</p>
@@ -192,7 +192,7 @@ function LoginForm() {
 
           {/* Direita: Bot João + balão acima da cabeça */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flexShrink: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flexShrink: 0, minHeight: '520px', justifyContent: 'flex-end' }}>
               {/*
                 Imagem original: bot aponta para direita, cabeça centrada em ~x:120px da esquerda.
                 Triângulo do balão está em left:18 do BotBubble.
@@ -212,6 +212,7 @@ function LoginForm() {
                   display: 'block',
                   flexShrink: 0,
                   marginBottom: '-3rem',
+                  minHeight: '460px',
                 }}
                 priority
               />
@@ -295,7 +296,7 @@ function LoginForm() {
             <a href="/cadastro" style={{ color: '#000FFF', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
               ▶ Primeiro acesso
             </a>
-            <a href="https://wa.me/5565999999999" target="_blank" rel="noopener noreferrer" style={{ color: '#9ca3af', fontSize: '0.72rem', textDecoration: 'none' }}>
+            <a href="https://wa.me/5565996464417" target="_blank" rel="noopener noreferrer" style={{ color: '#9ca3af', fontSize: '0.72rem', textDecoration: 'none' }}>
               Problemas? Contate o administrador
             </a>
             <p style={{ color: '#d1d5db', fontSize: '0.65rem', marginTop: '0.5rem', textAlign: 'center', lineHeight: 1.6 }}>
