@@ -298,6 +298,13 @@ function LoginForm() {
             <a href="https://wa.me/5565999999999" target="_blank" rel="noopener noreferrer" style={{ color: '#9ca3af', fontSize: '0.72rem', textDecoration: 'none' }}>
               Problemas? Contate o administrador
             </a>
+            <p style={{ color: '#d1d5db', fontSize: '0.65rem', marginTop: '0.5rem', textAlign: 'center', lineHeight: 1.6 }}>
+              Ao continuar, você concorda com os{' '}
+              <a href="/termos" style={{ color: '#000FFF', textDecoration: 'none', fontWeight: 600 }}>Termos de Uso</a>
+              {' '}e a{' '}
+              <a href="/politica" style={{ color: '#000FFF', textDecoration: 'none', fontWeight: 600 }}>Política de Privacidade</a>
+              <br />© 2026 Arkanjia
+            </p>
           </div>
         </div>
       </div>

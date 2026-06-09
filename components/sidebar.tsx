@@ -134,6 +134,13 @@ export default function Sidebar({ profile, modules, progress, unreadNotification
         <button onClick={handleLogout} className="flex items-center gap-2 text-xs text-gray-400 hover:text-red-500 transition-colors py-1.5 w-full font-semibold">
           <LogoutIcon />{' '}Sair
         </button>
+        <div className="pt-2 border-t border-gray-50 mt-1">
+          <p className="text-[10px] text-gray-300 font-medium">© 2026 Arkanjia</p>
+          <div className="flex gap-3 mt-0.5">
+            <Link href="/politica" className="text-[10px] text-gray-300 hover:text-[#000FFF] transition-colors">Privacidade</Link>
+            <Link href="/termos" className="text-[10px] text-gray-300 hover:text-[#000FFF] transition-colors">Termos</Link>
+          </div>
+        </div>
       </div>
     </aside>
   )
