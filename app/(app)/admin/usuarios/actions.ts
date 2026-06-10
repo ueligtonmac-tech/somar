@@ -82,6 +82,28 @@ export async function approveUser(userId: string, role: string) {
   revalidatePath('/admin/usuarios')
 }
 
+export async function resendAccessEmail(userId: string) {
+  const { service } = await assertAdmin()
+
+  const { data: target } = await service
+    .from('profiles')
+    .select('full_name, email, active')
+    .eq('id', userId)
+    .single()
+
+  if (!target) throw new Error('Usuário não encontrado')
+  if (!target.email) throw new Error('Usuário sem e-mail cadastrado')
+
+  const displayName = target.full_name || target.email
+  const { sendEmail, templateAcessoLiberado } = await import('@/lib/email')
+
+  await sendEmail({
+    to: target.email,
+    subject: '✅ Acesso liberado — Bot João',
+    html: templateAcessoLiberado(displayName),
+  })
+}
+
 export async function rejectUser(userId: string) {
   const { service } = await assertAdmin()
   // Remove o usuário do sistema (hard delete do perfil — Supabase cascade deleta o auth.user)
