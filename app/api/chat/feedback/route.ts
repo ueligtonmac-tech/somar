@@ -44,11 +44,13 @@ export async function POST(req: NextRequest) {
         const truncatedQuestion = question?.slice(0, 100) ?? ''
         const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hub.somar.com.br'
 
-        // Buscar todos os gestores/admin/builder com phone ou whatsapp
+        // Buscar todos os gestores/admin/builder ativos (exceto o próprio usuário que escalou)
         const { data: managers } = await service
           .from('profiles')
           .select('id, phone, whatsapp')
           .in('role', ['gerencial', 'admin', 'builder'])
+          .eq('active', true)
+          .neq('id', user.id)
 
         if (managers && managers.length > 0) {
           const notifTitle = '🚨 Nova escalação — Bot João'
