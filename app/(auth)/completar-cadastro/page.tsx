@@ -11,6 +11,8 @@ export default function CompletarCadastroPage() {
   const router = useRouter()
   const [nome, setNome] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
+  const [funcao, setFuncao] = useState('')
+  const [cidade, setCidade] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [loadingUser, setLoadingUser] = useState(true)
@@ -39,6 +41,8 @@ export default function CompletarCadastroPage() {
       const googleName = user.user_metadata?.full_name || user.user_metadata?.name
       setNome(profile?.full_name || googleName || '')
       setWhatsapp(profile?.whatsapp || '')
+      setFuncao((profile as any)?.funcao || '')
+      setCidade((profile as any)?.cidade || '')
       setLoadingUser(false)
     }
     load()
@@ -47,6 +51,8 @@ export default function CompletarCadastroPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!nome.trim()) { setError('Por favor, informe seu nome completo.'); return }
+    if (!funcao) { setError('Por favor, selecione sua função.'); return }
+    if (!cidade.trim()) { setError('Por favor, informe sua cidade.'); return }
     setError('')
     setLoading(true)
 
@@ -54,7 +60,7 @@ export default function CompletarCadastroPage() {
       const res = await fetch('/api/auth/complete-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ full_name: nome.trim(), whatsapp: whatsapp.trim() }),
+        body: JSON.stringify({ full_name: nome.trim(), whatsapp: whatsapp.trim(), funcao, cidade: cidade.trim() }),
       })
 
       if (!res.ok) {
@@ -180,6 +186,66 @@ export default function CompletarCadastroPage() {
                 value={whatsapp}
                 onChange={e => setWhatsapp(e.target.value)}
                 placeholder="(65) 99999-9999"
+                style={{
+                  width: '100%',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '0.75rem',
+                  padding: '0.85rem 1rem',
+                  fontSize: '0.9rem',
+                  fontFamily: 'Mangueira, system-ui, sans-serif',
+                  outline: 'none',
+                  color: '#111',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={e => (e.target.style.borderColor = BLUE)}
+                onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.4rem', display: 'block' }}>
+                Função *
+              </label>
+              <select
+                value={funcao}
+                onChange={e => setFuncao(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '0.75rem',
+                  padding: '0.85rem 1rem',
+                  fontSize: '0.9rem',
+                  fontFamily: 'Mangueira, system-ui, sans-serif',
+                  outline: 'none',
+                  color: funcao ? '#111' : '#9ca3af',
+                  boxSizing: 'border-box',
+                  background: 'white',
+                  appearance: 'none',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                }}
+                onFocus={e => (e.target.style.borderColor = BLUE)}
+                onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
+              >
+                <option value="">Selecione sua função</option>
+                <option value="Consultor">Consultor</option>
+                <option value="Supervisor">Supervisor</option>
+                <option value="Gerente de Distrito">Gerente de Distrito</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.4rem', display: 'block' }}>
+                Cidade *
+              </label>
+              <input
+                type="text"
+                value={cidade}
+                onChange={e => setCidade(e.target.value)}
+                placeholder="Ex: Cuiabá - MT"
+                required
                 style={{
                   width: '100%',
                   border: '2px solid #e5e7eb',

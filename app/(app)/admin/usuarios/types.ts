@@ -14,5 +14,7 @@ export interface PendingUser {
   full_name: string | null
   email: string | null
   whatsapp: string | null
+  funcao: string | null
+  cidade: string | null
   created_at: string
 }

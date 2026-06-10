@@ -1,7 +1,13 @@
 import Image from 'next/image'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+
+async function signOutAction() {
+  'use server'
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  redirect('/login')
+}
 
 export default async function AguardandoAprovacaoPage() {
   const supabase = await createClient()
@@ -125,18 +131,23 @@ export default async function AguardandoAprovacaoPage() {
         </p>
 
         {/* Sair */}
-        <Link
-          href="/login"
-          style={{
-            display: 'block',
-            color: '#9ca3af',
-            fontSize: '0.8rem',
-            textDecoration: 'none',
-            fontWeight: 600,
-          }}
-        >
-          ← Sair da conta
-        </Link>
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#9ca3af',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              fontFamily: 'Mangueira, system-ui, sans-serif',
+              padding: 0,
+            }}
+          >
+            ← Sair da conta
+          </button>
+        </form>
 
         <p style={{ color: '#d1d5db', fontSize: '0.65rem', marginTop: '2rem' }}>
           © 2026 Arkanjia · Bot João · Ultragaz

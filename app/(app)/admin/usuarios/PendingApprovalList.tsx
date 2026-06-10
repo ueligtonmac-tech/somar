@@ -18,6 +18,7 @@ function ApproveRow({ user }: { user: PendingUser }) {
   const [isPending, startTransition] = useTransition()
   const [role, setRole] = useState<Role>('consultant')
   const [done, setDone] = useState(false)
+  const [expanded, setExpanded] = useState(false)
 
   const handleApprove = () => {
     startTransition(async () => {
@@ -37,68 +38,101 @@ function ApproveRow({ user }: { user: PendingUser }) {
   if (done) return null
 
   return (
-    <div className="flex items-center gap-4 px-5 py-4 bg-amber-50/60 hover:bg-amber-50 transition-colors border-b border-amber-100 last:border-0">
-      {/* Avatar */}
-      <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-        <span className="text-sm font-extrabold text-amber-600">
-          {(user.full_name ?? user.email ?? '?').charAt(0).toUpperCase()}
-        </span>
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-gray-900 truncate">{user.full_name || '—'}</p>
-        <p className="text-xs text-gray-500 truncate">{user.email}</p>
-        {user.whatsapp && (
-          <p className="text-xs text-gray-400">{user.whatsapp}</p>
-        )}
-      </div>
-
-      {/* Data de cadastro */}
-      <span className="text-xs text-gray-400 flex-shrink-0 hidden sm:block">
-        {new Date(user.created_at).toLocaleDateString('pt-BR')}
-      </span>
-
-      {/* Seletor de role */}
-      <select
-        value={role}
-        onChange={e => setRole(e.target.value as Role)}
-        disabled={isPending}
-        className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white font-semibold text-gray-700 focus:outline-none focus:border-[#000FFF] focus:ring-1 focus:ring-[#000FFF]/20 transition-colors cursor-pointer disabled:opacity-60 flex-shrink-0"
-      >
-        {ROLES.map(r => (
-          <option key={r} value={r}>{ROLE_LABELS[r]}</option>
-        ))}
-      </select>
-
-      {/* Botões */}
-      <div className="flex items-center gap-2 flex-shrink-0">
+    <div className="border-b border-amber-100 last:border-0">
+      {/* Linha principal */}
+      <div className="flex items-center gap-4 px-5 py-4 bg-amber-50/60 hover:bg-amber-50 transition-colors">
+        {/* Avatar + toggle detalhes */}
         <button
-          onClick={handleApprove}
-          disabled={isPending}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#000FFF] text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60"
+          onClick={() => setExpanded(v => !v)}
+          className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 hover:bg-amber-200 transition-colors cursor-pointer"
+          title="Ver detalhes"
         >
-          {isPending ? (
-            <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
+          <span className="text-sm font-extrabold text-amber-600">
+            {(user.full_name ?? user.email ?? '?').charAt(0).toUpperCase()}
+          </span>
+        </button>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setExpanded(v => !v)}>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-bold text-gray-900 truncate">{user.full_name || '—'}</p>
+            {user.funcao && (
+              <span className="text-[10px] bg-blue-50 text-blue-600 font-bold px-2 py-0.5 rounded-full flex-shrink-0">{user.funcao}</span>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 truncate">{user.email}</p>
+          {user.cidade && (
+            <p className="text-xs text-gray-400">{user.cidade}</p>
           )}
-          Aprovar
-        </button>
-        <button
-          onClick={handleReject}
+        </div>
+
+        {/* Data de cadastro */}
+        <span className="text-xs text-gray-400 flex-shrink-0 hidden sm:block">
+          {new Date(user.created_at).toLocaleDateString('pt-BR')}
+        </span>
+
+        {/* Seletor de role */}
+        <select
+          value={role}
+          onChange={e => setRole(e.target.value as Role)}
           disabled={isPending}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100 transition-colors disabled:opacity-60 border border-red-100"
+          className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white font-semibold text-gray-700 focus:outline-none focus:border-[#000FFF] focus:ring-1 focus:ring-[#000FFF]/20 transition-colors cursor-pointer disabled:opacity-60 flex-shrink-0"
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-          Rejeitar
-        </button>
+          {ROLES.map(r => (
+            <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+          ))}
+        </select>
+
+        {/* Botões */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={handleApprove}
+            disabled={isPending}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#000FFF] text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60"
+          >
+            {isPending ? (
+              <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            )}
+            Aprovar
+          </button>
+          <button
+            onClick={handleReject}
+            disabled={isPending}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100 transition-colors disabled:opacity-60 border border-red-100"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Rejeitar
+          </button>
+        </div>
       </div>
+
+      {/* Painel de detalhes expandível */}
+      {expanded && (
+        <div className="px-5 py-4 bg-white border-t border-amber-50 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <Detail label="Nome completo" value={user.full_name} />
+          <Detail label="E-mail" value={user.email} />
+          <Detail label="WhatsApp" value={user.whatsapp} />
+          <Detail label="Função" value={user.funcao} />
+          <Detail label="Cidade" value={user.cidade} />
+          <Detail label="Cadastro" value={new Date(user.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Detail({ label, value }: { label: string; value: string | null | undefined }) {
+  return (
+    <div>
+      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">{label}</p>
+      <p className="text-sm font-semibold text-gray-800">{value || <span className="text-gray-300 font-normal">—</span>}</p>
     </div>
   )
 }
