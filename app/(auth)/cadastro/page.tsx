@@ -96,17 +96,17 @@ export default function CadastroPage() {
     const { error: passErr } = await supabase.auth.updateUser({ password })
     if (passErr) { setError(passErr.message); setLoading(false); return }
 
-    // Atualiza perfil
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await supabase.from('profiles').upsert({
-        id: user.id,
-        email: user.email,
-        full_name: nome,
-        whatsapp,
-        role: 'consultant',
-        active: true,
-      }, { onConflict: 'id' })
+    // Salva perfil + notifica admins via API route (usa service role internamente)
+    const res = await fetch('/api/auth/complete-profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ full_name: nome, whatsapp }),
+    })
+
+    if (!res.ok) {
+      setError('Erro ao salvar perfil. Tente novamente.')
+      setLoading(false)
+      return
     }
 
     setLoading(false)
@@ -284,19 +284,22 @@ export default function CadastroPage() {
             </form>
           )}
 
-          {/* Etapa 5 — Conclusão */}
+          {/* Etapa 5 — Aguardando aprovação */}
           {step === 5 && (
             <div style={{ textAlign: 'center' }}>
-              <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#f0fdf4', border: '3px solid #22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#f0f4ff', border: '3px solid #000FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#000FFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
               </div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#111', marginBottom: '0.5rem' }}>Cadastro concluído!</h2>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#111', marginBottom: '0.5rem' }}>Cadastro enviado! 🎉</h2>
               <p style={{ color: '#6b7280', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '2rem' }}>
-                Sua conta foi criada com sucesso.<br />
-                Bem-vindo(a) ao <strong style={{ color: BLUE }}>Bot João</strong>!
+                Seu perfil está sendo analisado pela nossa equipe.<br />
+                Você receberá um <strong style={{ color: '#111' }}>e-mail</strong> quando o acesso for liberado.
               </p>
-              <button onClick={() => router.push('/trilha')} style={S.btnPrimary}>
-                Acessar a trilha →
+              <button onClick={() => router.push('/aguardando-aprovacao')} style={S.btnPrimary}>
+                Ver status do cadastro →
               </button>
             </div>
           )}

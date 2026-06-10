@@ -1,12 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useNotifications } from './NotificationProvider'
 
-interface NotificationBellProps {
-  count: number
-}
+export default function NotificationBell() {
+  const { unreadCount } = useNotifications()
 
-export default function NotificationBell({ count }: NotificationBellProps) {
   return (
     <Link
       href="/notificacoes"
@@ -14,9 +13,9 @@ export default function NotificationBell({ count }: NotificationBellProps) {
       title="Notificações"
     >
       <BellIcon />
-      {count > 0 && (
+      {unreadCount > 0 && (
         <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-[#000FFF] text-white text-[10px] font-extrabold rounded-full flex items-center justify-center px-1 leading-none">
-          {count > 99 ? '99+' : count}
+          {unreadCount > 99 ? '99+' : unreadCount}
         </span>
       )}
     </Link>

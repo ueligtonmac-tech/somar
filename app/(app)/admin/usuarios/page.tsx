@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import UserManagementTable from './UserManagementTable'
+import PendingApprovalList from './PendingApprovalList'
+import { logger } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,27 +20,46 @@ export default async function UsuariosPage() {
 
     if (!me || !['admin', 'builder'].includes(me.role ?? '')) redirect('/trilha')
 
-    const { data: profiles, error } = await supabase
-      .from('profiles')
-      .select('id, full_name, email, role, phone, whatsapp, created_at')
-      .order('created_at', { ascending: false })
+    // Busca usuários ativos e pendentes em paralelo
+    const [{ data: activeProfiles, error: activeErr }, { data: pendingProfiles, error: pendingErr }] =
+      await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, full_name, email, role, phone, whatsapp, created_at')
+          .eq('active', true)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('profiles')
+          .select('id, full_name, email, whatsapp, created_at')
+          .eq('active', false)
+          .eq('onboarding_complete', true)
+          .order('created_at', { ascending: false }),
+      ])
 
-    if (error) {
-      console.error('[usuarios] profiles query error:', error)
-    }
+    if (activeErr) logger.error('profiles query error', { context: 'admin/usuarios', error: activeErr })
+    if (pendingErr) logger.error('pending profiles query error', { context: 'admin/usuarios', error: pendingErr })
 
-    const users = (profiles ?? []).map(p => ({
+    const users = (activeProfiles ?? []).map(p => ({
       id: p.id as string,
       full_name: (p.full_name ?? null) as string | null,
       email: (p.email ?? null) as string | null,
-      role: (p.role ?? 'consultor') as string,
+      role: (p.role ?? 'consultant') as string,
       phone: (p.phone ?? null) as string | null,
+      whatsapp: (p.whatsapp ?? null) as string | null,
+      created_at: p.created_at as string,
+    }))
+
+    const pending = (pendingProfiles ?? []).map(p => ({
+      id: p.id as string,
+      full_name: (p.full_name ?? null) as string | null,
+      email: (p.email ?? null) as string | null,
       whatsapp: (p.whatsapp ?? null) as string | null,
       created_at: p.created_at as string,
     }))
 
     return (
       <div className="p-6 max-w-6xl mx-auto">
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <a href="/admin" className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -48,18 +69,46 @@ export default async function UsuariosPage() {
             </a>
             <div>
               <h1 className="text-2xl font-black text-gray-900">Gestão de Usuários</h1>
-              <p className="text-gray-400 text-sm mt-0.5">Perfis, funções e contatos dos consultores</p>
+              <p className="text-gray-400 text-sm mt-0.5">Aprovações, perfis e contatos dos consultores</p>
             </div>
           </div>
-          <span className="text-xs text-gray-400 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-full font-semibold">
-            {users.length} usuários
-          </span>
+          <div className="flex items-center gap-2">
+            {pending.length > 0 && (
+              <span className="text-xs bg-amber-100 text-amber-700 font-bold px-3 py-1.5 rounded-full border border-amber-200 animate-pulse">
+                {pending.length} aguardando
+              </span>
+            )}
+            <span className="text-xs text-gray-400 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-full font-semibold">
+              {users.length} ativos
+            </span>
+          </div>
         </div>
-        <UserManagementTable users={users} />
+
+        {/* Seção de aprovações pendentes */}
+        <PendingApprovalList users={pending} />
+
+        {/* Tabela de usuários ativos */}
+        {users.length > 0 && (
+          <>
+            <div className="flex items-center gap-2 mb-3">
+              <h2 className="text-base font-black text-gray-900">Usuários Ativos</h2>
+              <span className="text-xs bg-green-100 text-green-700 font-bold px-2.5 py-1 rounded-full">
+                {users.length}
+              </span>
+            </div>
+            <UserManagementTable users={users} />
+          </>
+        )}
+
+        {users.length === 0 && pending.length === 0 && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm py-20 text-center">
+            <p className="text-gray-400 font-medium">Nenhum usuário cadastrado ainda.</p>
+          </div>
+        )}
       </div>
     )
   } catch (err) {
-    console.error('[usuarios] page error:', err)
+    logger.error('page error', { context: 'admin/usuarios', error: err })
     return (
       <div className="p-6 max-w-xl mx-auto mt-10 text-center">
         <p className="text-red-500 font-bold text-lg">Erro ao carregar a página</p>

@@ -15,11 +15,21 @@ async function markAllRead(userId: string) {
 }
 
 function NotifIcon({ type }: { type: string }) {
-  if (type === 'escalation_answered') {
+  if (type === 'escalation_answered' || type === 'account_approved') {
     return (
       <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+    )
+  }
+  if (type === 'new_registration') {
+    return (
+      <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
         </svg>
       </div>
     )
@@ -95,6 +105,8 @@ export default async function NotificacoesPage() {
             const href =
               notif.type === 'escalation_new' ? '/admin/bot?tab=escalations'
               : notif.type === 'escalation_answered' ? '/admin/bot?tab=escalations'
+              : notif.type === 'new_registration' ? '/admin/usuarios'
+              : notif.type === 'account_approved' ? '/trilha'
               : null
 
             const inner = (

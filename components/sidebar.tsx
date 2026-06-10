@@ -6,13 +6,15 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import UserMenu from './UserMenu'
+import { useNotifications } from './NotificationProvider'
 
 interface Module { id: string; slug: string; title: string; order_index: number }
 interface Progress { module_id: string; completed: boolean; cards_seen: number }
 interface Profile { full_name: string | null; email: string; role: string }
-interface SidebarProps { profile: Profile; modules: Module[]; progress: Progress[]; unreadNotifications?: number }
+interface SidebarProps { profile: Profile; modules: Module[]; progress: Progress[] }
 
-export default function Sidebar({ profile, modules, progress, unreadNotifications = 0 }: SidebarProps) {
+export default function Sidebar({ profile, modules, progress }: SidebarProps) {
+  const { unreadCount: unreadNotifications } = useNotifications()
   const pathname = usePathname()
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)

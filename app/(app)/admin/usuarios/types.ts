@@ -6,4 +6,13 @@ export interface UserProfile {
   phone: string | null
   whatsapp: string | null
   created_at: string
+  active?: boolean
+}
+
+export interface PendingUser {
+  id: string
+  full_name: string | null
+  email: string | null
+  whatsapp: string | null
+  created_at: string
 }

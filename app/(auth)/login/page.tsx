@@ -38,7 +38,6 @@ function BotBubble() {
   }, [currentLine, currentChar, done])
 
   const typing = currentLine < BOT_LINES.length ? BOT_LINES[currentLine].slice(0, currentChar) : ''
-  const hasContent = visibleLines.length > 0 || typing.length > 0
 
   return (
     <div style={{ position: 'relative', display: 'inline-block' }}>
@@ -47,45 +46,30 @@ function BotBubble() {
         background: 'white',
         borderRadius: '1.25rem',
         borderBottomLeftRadius: '0.3rem',
-        padding: '0.9rem 1.1rem',
-        width: '215px',
-        boxShadow: '0 10px 40px rgba(0,0,80,0.28)',
-        minHeight: hasContent ? undefined : '72px',
+        padding: '0.85rem 1rem',
+        width: '260px',
+        boxShadow: '0 8px 32px rgba(0,0,80,0.22)',
         position: 'relative',
       }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.55rem' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} />
-          <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#000FFF', letterSpacing: '0.01em' }}>Bot João</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+          <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#000FFF' }}>Bot João</span>
         </div>
-        {/* Texto digitado */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.38rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
           {visibleLines.map((line, i) => (
-            <p key={i} style={{ fontSize: '0.8rem', color: '#111827', fontWeight: 600, lineHeight: 1.45, margin: 0 }}>{line}</p>
+            <p key={i} style={{ fontSize: '0.82rem', color: '#111827', fontWeight: 600, lineHeight: 1.4, margin: 0, whiteSpace: 'nowrap' }}>{line}</p>
           ))}
           {!done && (
-            <p style={{ fontSize: '0.8rem', color: '#111827', fontWeight: 600, lineHeight: 1.45, margin: 0, minHeight: '1.1rem' }}>
+            <p style={{ fontSize: '0.82rem', color: '#111827', fontWeight: 600, lineHeight: 1.4, margin: 0, minHeight: '1.15rem', whiteSpace: 'nowrap' }}>
               {typing}
               <span style={{ display: 'inline-block', width: '2px', height: '0.8em', background: '#000FFF', marginLeft: '1px', verticalAlign: 'text-bottom', animation: 'blink 0.75s step-end infinite' }} />
             </p>
           )}
         </div>
       </div>
-
-      {/* Triângulo apontando para baixo-esquerda (para a cabeça do bot) */}
-      <div style={{
-        position: 'absolute',
-        bottom: -13,
-        left: 18,
-        width: 0, height: 0,
-        borderLeft: '9px solid transparent',
-        borderRight: '9px solid transparent',
-        borderTop: '14px solid white',
-      }} />
-
-      <style>{`
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-      `}</style>
+      {/* Triângulo aponta para a cabeça do robô abaixo */}
+      <div style={{ position: 'absolute', bottom: -12, left: 22, width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '13px solid white' }} />
+      <style>{`@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }`}</style>
     </div>
   )
 }
@@ -178,7 +162,7 @@ function LoginForm() {
         <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1, marginTop: '1.5rem', gap: '0' }}>
 
           {/* Esquerda: QR Code */}
-          <div style={{ flex: '0 0 auto', paddingBottom: '2.5rem', maxWidth: '220px' }}>
+          <div style={{ flex: '0 0 auto', paddingBottom: '18rem', maxWidth: '220px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.75rem' }}>
               <div style={{ background: 'white', borderRadius: '1rem', padding: '12px', flexShrink: 0, boxShadow: '0 4px 24px rgba(0,0,0,0.35)' }}>
                 <QRCode value="https://botjoao.com.br/login" size={120} bgColor="white" fgColor="#000FFF" level="M" style={{ display: 'block' }} />
@@ -190,31 +174,35 @@ function LoginForm() {
             </div>
           </div>
 
-          {/* Direita: Bot João fixo + balão cresce para cima via position absolute */}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
-            {/* Container com altura total = balão + mascote, mascote fixo no fundo */}
-            <div style={{ position: 'relative', flexShrink: 0, width: '370px', height: '600px', marginBottom: '-3rem' }}>
-              {/* Balão posicionado acima da cabeça — absolutamente fixo, cresce para cima */}
-              <div style={{ position: 'absolute', top: 0, left: '102px', zIndex: 10 }}>
+          {/* Robô + balão — layout final */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'flex-end' }}>
+            {/*
+              Imagem: 420×520px. Cabeça do robô está a ~105px do topo = 415px do rodapé.
+              Balão fica com bottom: 415px → fundo do balão toca exatamente a cabeça.
+              Container: 680px de altura acomoda balão (~160px) + robô (520px) confortavelmente.
+            */}
+            <div style={{ position: 'relative', width: '420px', height: '680px', flexShrink: 0 }}>
+              {/* Balão: bottom ancorado na cabeça do robô, cresce para cima */}
+              <div style={{ position: 'absolute', bottom: '415px', left: '90px', zIndex: 10 }}>
                 <BotBubble />
               </div>
-              {/* Mascote ancorado no fundo do container */}
-              <div style={{ position: 'absolute', bottom: 0, left: 0 }}>
-                <Image
-                  src="/bot-joao-login.png"
-                  alt="Bot João"
-                  width={370}
-                  height={460}
-                  style={{
-                    objectFit: 'contain',
-                    filter: 'drop-shadow(0 28px 56px rgba(0,0,80,0.4))',
-                    display: 'block',
-                    width: '370px',
-                    height: '460px',
-                  }}
-                  priority
-                />
-              </div>
+              {/* Robô: ancorado no fundo, 100% visível */}
+              <Image
+                src="/bot-joao-login.png"
+                alt="Bot João"
+                width={420}
+                height={520}
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  width: '420px',
+                  height: '520px',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 24px 48px rgba(0,0,80,0.45))',
+                }}
+                priority
+              />
             </div>
           </div>
         </div>
