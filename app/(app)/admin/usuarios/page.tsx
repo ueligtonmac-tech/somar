@@ -30,7 +30,7 @@ export default async function UsuariosPage() {
           .order('created_at', { ascending: false }),
         supabase
           .from('profiles')
-          .select('id, full_name, email, whatsapp, funcao, cidade, created_at')
+          .select('id, full_name, email, whatsapp, funcao, cidade, regiao, created_at')
           .eq('active', false)
           .eq('onboarding_complete', true)
           .order('created_at', { ascending: false }),
@@ -56,6 +56,7 @@ export default async function UsuariosPage() {
       whatsapp: (p.whatsapp ?? null) as string | null,
       funcao: ((p as any).funcao ?? null) as string | null,
       cidade: ((p as any).cidade ?? null) as string | null,
+      regiao: ((p as any).regiao ?? null) as string | null,
       created_at: p.created_at as string,
     }))
 

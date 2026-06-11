@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return Response.json({ error: 'Não autenticado' }, { status: 401 })
 
-  const { full_name, whatsapp, funcao, cidade } = await req.json()
+  const { full_name, whatsapp, funcao, cidade, regiao } = await req.json()
 
   // Atualiza perfil do usuário: marca onboarding como completo, ativo = false
   const { error: updateErr } = await supabase
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
       whatsapp: whatsapp?.trim() || null,
       funcao: funcao?.trim() || null,
       cidade: cidade?.trim() || null,
+      regiao: regiao?.trim() || null,
       onboarding_complete: true,
       active: false,
     })
@@ -57,12 +58,13 @@ export async function POST(req: NextRequest) {
   if (admins && admins.length > 0) {
     const funcaoStr = funcao?.trim() ? ` · ${funcao.trim()}` : ''
     const cidadeStr = cidade?.trim() ? ` · ${cidade.trim()}` : ''
+    const regiaoStr = regiao?.trim() ? ` · ${regiao.trim()}` : ''
     const notifications = admins.map(a => ({
       user_id: a.id,
       type: 'new_registration',
       title: '🆕 Novo cadastro aguardando aprovação',
-      message: `${displayName} (${userEmail})${funcaoStr}${cidadeStr} solicitou acesso à plataforma.`,
-      metadata: { newUserId: user.id, newUserEmail: userEmail, newUserName: displayName, funcao: funcao?.trim(), cidade: cidade?.trim() },
+      message: `${displayName} (${userEmail})${funcaoStr}${cidadeStr}${regiaoStr} solicitou acesso à plataforma.`,
+      metadata: { newUserId: user.id, newUserEmail: userEmail, newUserName: displayName, funcao: funcao?.trim(), cidade: cidade?.trim(), regiao: regiao?.trim() },
     }))
 
     const { error: notifErr } = await service.from('notifications').insert(notifications)

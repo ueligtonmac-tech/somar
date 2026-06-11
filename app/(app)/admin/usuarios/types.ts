@@ -16,5 +16,6 @@ export interface PendingUser {
   whatsapp: string | null
   funcao: string | null
   cidade: string | null
+  regiao: string | null
   created_at: string
 }

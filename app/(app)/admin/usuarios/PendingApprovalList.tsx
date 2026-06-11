@@ -61,8 +61,10 @@ function ApproveRow({ user }: { user: PendingUser }) {
             )}
           </div>
           <p className="text-xs text-gray-500 truncate">{user.email}</p>
-          {user.cidade && (
-            <p className="text-xs text-gray-400">{user.cidade}</p>
+          {(user.cidade || user.regiao) && (
+            <p className="text-xs text-gray-400">
+              {[user.cidade, user.regiao].filter(Boolean).join(' · ')}
+            </p>
           )}
         </div>
 
@@ -121,6 +123,7 @@ function ApproveRow({ user }: { user: PendingUser }) {
           <Detail label="WhatsApp" value={user.whatsapp} />
           <Detail label="Função" value={user.funcao} />
           <Detail label="Cidade" value={user.cidade} />
+          <Detail label="Região" value={user.regiao} />
           <Detail label="Cadastro" value={new Date(user.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })} />
         </div>
       )}

@@ -13,6 +13,8 @@ export default function CompletarCadastroPage() {
   const [whatsapp, setWhatsapp] = useState('')
   const [funcao, setFuncao] = useState('')
   const [cidade, setCidade] = useState('')
+  const [regiao, setRegiao] = useState('')
+  const [regioes, setRegioes] = useState<{ slug: string; nome: string }[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [loadingUser, setLoadingUser] = useState(true)
@@ -43,6 +45,16 @@ export default function CompletarCadastroPage() {
       setWhatsapp(profile?.whatsapp || '')
       setFuncao((profile as any)?.funcao || '')
       setCidade((profile as any)?.cidade || '')
+      setRegiao((profile as any)?.regiao || '')
+
+      // Buscar regiões ativas do banco
+      const { data: regioesList } = await supabase
+        .from('regioes_geograficas')
+        .select('slug, nome')
+        .eq('ativo', true)
+        .order('ordem')
+      setRegioes(regioesList ?? [])
+
       setLoadingUser(false)
     }
     load()
@@ -53,6 +65,7 @@ export default function CompletarCadastroPage() {
     if (!nome.trim()) { setError('Por favor, informe seu nome completo.'); return }
     if (!funcao) { setError('Por favor, selecione sua função.'); return }
     if (!cidade.trim()) { setError('Por favor, informe sua cidade.'); return }
+    if (!regiao) { setError('Por favor, selecione sua região.'); return }
     setError('')
     setLoading(true)
 
@@ -60,7 +73,7 @@ export default function CompletarCadastroPage() {
       const res = await fetch('/api/auth/complete-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ full_name: nome.trim(), whatsapp: whatsapp.trim(), funcao, cidade: cidade.trim() }),
+        body: JSON.stringify({ full_name: nome.trim(), whatsapp: whatsapp.trim(), funcao, cidade: cidade.trim(), regiao }),
       })
 
       if (!res.ok) {
@@ -260,6 +273,40 @@ export default function CompletarCadastroPage() {
                 onFocus={e => (e.target.style.borderColor = BLUE)}
                 onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
               />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.4rem', display: 'block' }}>
+                Região de atuação *
+              </label>
+              <select
+                value={regiao}
+                onChange={e => setRegiao(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '0.75rem',
+                  padding: '0.85rem 1rem',
+                  fontSize: '0.9rem',
+                  fontFamily: 'Mangueira, system-ui, sans-serif',
+                  outline: 'none',
+                  color: regiao ? '#111' : '#9ca3af',
+                  boxSizing: 'border-box',
+                  background: 'white',
+                  appearance: 'none',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 1rem center',
+                }}
+                onFocus={e => (e.target.style.borderColor = BLUE)}
+                onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
+              >
+                <option value="">Selecione sua região</option>
+                {regioes.map(r => (
+                  <option key={r.slug} value={r.slug}>{r.nome}</option>
+                ))}
+              </select>
             </div>
           </div>
 
