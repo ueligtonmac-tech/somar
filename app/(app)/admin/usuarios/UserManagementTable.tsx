@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useMemo } from 'react'
 import { updateUserRole, updateUserPhone, resendAccessEmail } from './actions'
-import type { UserProfile } from './types'
+import type { UserProfile, RefItem } from './types'
 
 const ROLES = ['consultor', 'gerencial', 'builder', 'admin'] as const
 type Role = typeof ROLES[number]
@@ -115,66 +115,151 @@ function ResendEmailButton({ userId }: { userId: string }) {
   )
 }
 
-export default function UserManagementTable({ users }: { users: UserProfile[] }) {
+export default function UserManagementTable({ users, perfis, regioes }: {
+  users: UserProfile[]
+  perfis: RefItem[]
+  regioes: RefItem[]
+}) {
+  const [search, setSearch] = useState('')
+  const [filterRegiao, setFilterRegiao] = useState('')
+  const [filterPerfil, setFilterPerfil] = useState('')
+
+  const filtered = useMemo(() => {
+    return users.filter(u => {
+      const q = search.toLowerCase()
+      const matchSearch = !q ||
+        (u.full_name ?? '').toLowerCase().includes(q) ||
+        (u.email ?? '').toLowerCase().includes(q) ||
+        (u.cidade ?? '').toLowerCase().includes(q)
+      const matchRegiao = !filterRegiao || u.regiao === filterRegiao
+      const matchPerfil = !filterPerfil || u.perfil === filterPerfil
+      return matchSearch && matchRegiao && matchPerfil
+    })
+  }, [users, search, filterRegiao, filterPerfil])
+
+  const hasFilters = search || filterRegiao || filterPerfil
+  const selectCls = "text-xs border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-600 focus:outline-none focus:border-[#000FFF] focus:ring-1 focus:ring-[#000FFF]/20 transition-colors cursor-pointer"
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* Table header */}
-      <div className="hidden md:grid grid-cols-[2fr_2fr_130px_180px_110px_140px] gap-4 px-6 py-3 bg-gray-50 text-xs font-bold text-gray-400 uppercase tracking-wider">
-        <span>Nome</span>
-        <span>E-mail</span>
-        <span>Perfil</span>
-        <span>Telefone (WhatsApp)</span>
-        <span>Cadastro</span>
-        <span>Ação</span>
-      </div>
-
-      <div className="divide-y divide-gray-50">
-        {users.map(profile => {
-          const role = (ROLES.includes(profile.role as Role) ? profile.role : 'consultor') as Role
-          const phone = profile.phone ?? profile.whatsapp
-          return (
-            <div
-              key={profile.id}
-              className="grid md:grid-cols-[2fr_2fr_130px_180px_110px_140px] gap-4 px-6 py-4 items-center hover:bg-gray-50/50 transition-colors"
-            >
-              {/* Nome */}
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#000FFF]/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-extrabold text-[#000FFF]">
-                    {(profile.full_name ?? profile.email ?? '?').charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <span className="text-sm font-semibold text-gray-900 truncate">
-                  {profile.full_name ?? '—'}
-                </span>
-              </div>
-
-              {/* Email */}
-              <span className="text-xs text-gray-500 truncate">{profile.email ?? '—'}</span>
-
-              {/* Role */}
-              <RoleCell userId={profile.id} currentRole={role} />
-
-              {/* Phone */}
-              <PhoneCell userId={profile.id} currentPhone={phone ?? null} />
-
-              {/* Created at */}
-              <span className="text-xs text-gray-400">
-                {new Date(profile.created_at).toLocaleDateString('pt-BR')}
-              </span>
-
-              {/* Reenviar acesso */}
-              <ResendEmailButton userId={profile.id} />
-            </div>
-          )
-        })}
-      </div>
-
-      {users.length === 0 && (
-        <div className="py-16 text-center text-gray-400 text-sm">
-          Nenhum usuário cadastrado ainda.
+    <div className="space-y-3">
+      {/* Barra de filtros */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Busca */}
+        <div className="relative flex-1 min-w-48">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar por nome, e-mail ou cidade…"
+            className="w-full text-xs border border-gray-200 rounded-lg pl-8 pr-3 py-2 bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:border-[#000FFF] focus:ring-1 focus:ring-[#000FFF]/20 transition-colors"
+          />
         </div>
-      )}
+
+        {/* Filtro região */}
+        <select value={filterRegiao} onChange={e => setFilterRegiao(e.target.value)} className={selectCls}>
+          <option value="">Todas as regiões</option>
+          {regioes.map(r => <option key={r.slug} value={r.slug}>{r.nome}</option>)}
+        </select>
+
+        {/* Filtro perfil */}
+        <select value={filterPerfil} onChange={e => setFilterPerfil(e.target.value)} className={selectCls}>
+          <option value="">Todos os perfis</option>
+          {perfis.map(p => <option key={p.slug} value={p.slug}>{p.nome}</option>)}
+        </select>
+
+        {/* Contador + limpar */}
+        <div className="flex items-center gap-2 ml-auto">
+          <span className="text-xs text-gray-400 font-medium">
+            {hasFilters ? (
+              <>{filtered.length} de {users.length}</>
+            ) : (
+              <>{users.length} usuário{users.length !== 1 ? 's' : ''}</>
+            )}
+          </span>
+          {hasFilters && (
+            <button
+              onClick={() => { setSearch(''); setFilterRegiao(''); setFilterPerfil('') }}
+              className="text-[10px] text-[#000FFF] font-bold hover:underline"
+            >
+              Limpar filtros
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Tabela */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="hidden md:grid grid-cols-[2fr_2fr_130px_130px_160px_100px_130px] gap-3 px-6 py-3 bg-gray-50 text-xs font-bold text-gray-400 uppercase tracking-wider">
+          <span>Nome</span>
+          <span>E-mail</span>
+          <span>Perfil</span>
+          <span>Região</span>
+          <span>Telefone</span>
+          <span>Cadastro</span>
+          <span>Ação</span>
+        </div>
+
+        <div className="divide-y divide-gray-50">
+          {filtered.map(profile => {
+            const role = (ROLES.includes(profile.role as Role) ? profile.role : 'consultor') as Role
+            const phone = profile.phone ?? profile.whatsapp
+            const perfilNome = perfis.find(p => p.slug === profile.perfil)?.nome
+            const regiaoNome = regioes.find(r => r.slug === profile.regiao)?.nome
+            return (
+              <div
+                key={profile.id}
+                className="grid md:grid-cols-[2fr_2fr_130px_130px_160px_100px_130px] gap-3 px-6 py-4 items-center hover:bg-gray-50/50 transition-colors"
+              >
+                {/* Nome */}
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-[#000FFF]/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-extrabold text-[#000FFF]">
+                      {(profile.full_name ?? profile.email ?? '?').charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{profile.full_name ?? '—'}</p>
+                    {profile.funcao && <p className="text-[10px] text-gray-400 truncate">{profile.funcao}</p>}
+                  </div>
+                </div>
+
+                {/* Email */}
+                <span className="text-xs text-gray-500 truncate">{profile.email ?? '—'}</span>
+
+                {/* Perfil */}
+                <div>
+                  {perfilNome ? (
+                    <span className="text-[10px] bg-blue-50 text-blue-700 font-bold px-2 py-1 rounded-full">{perfilNome}</span>
+                  ) : (
+                    <RoleCell userId={profile.id} currentRole={role} />
+                  )}
+                </div>
+
+                {/* Região */}
+                <span className="text-xs text-gray-500 truncate">{regiaoNome ?? '—'}</span>
+
+                {/* Phone */}
+                <PhoneCell userId={profile.id} currentPhone={phone ?? null} />
+
+                {/* Created at */}
+                <span className="text-xs text-gray-400">
+                  {new Date(profile.created_at).toLocaleDateString('pt-BR')}
+                </span>
+
+                {/* Reenviar acesso */}
+                <ResendEmailButton userId={profile.id} />
+              </div>
+            )
+          })}
+        </div>
+
+        {filtered.length === 0 && (
+          <div className="py-16 text-center text-gray-400 text-sm">
+            {hasFilters ? 'Nenhum usuário encontrado com esses filtros.' : 'Nenhum usuário cadastrado ainda.'}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

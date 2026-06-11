@@ -3,10 +3,19 @@ export interface UserProfile {
   full_name: string | null
   email: string | null
   role: string
+  perfil: string | null
+  funcao: string | null
+  cidade: string | null
+  regiao: string | null
   phone: string | null
   whatsapp: string | null
   created_at: string
   active?: boolean
+}
+
+export interface RefItem {
+  slug: string
+  nome: string
 }
 
 export interface PendingUser {

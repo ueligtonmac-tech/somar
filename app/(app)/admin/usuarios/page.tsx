@@ -25,10 +25,11 @@ export default async function UsuariosPage() {
       { data: activeProfiles, error: activeErr },
       { data: pendingProfiles, error: pendingErr },
       { data: perfisData },
+      { data: regioesData },
     ] = await Promise.all([
       supabase
         .from('profiles')
-        .select('id, full_name, email, role, phone, whatsapp, created_at')
+        .select('id, full_name, email, role, perfil, funcao, cidade, regiao, phone, whatsapp, created_at')
         .eq('active', true)
         .order('created_at', { ascending: false }),
       supabase
@@ -42,6 +43,11 @@ export default async function UsuariosPage() {
         .select('slug, nome')
         .eq('ativo', true)
         .order('ordem'),
+      supabase
+        .from('regioes_geograficas')
+        .select('slug, nome')
+        .eq('ativo', true)
+        .order('ordem'),
     ])
 
     if (activeErr) logger.error('profiles query error', { context: 'admin/usuarios', error: activeErr })
@@ -52,6 +58,10 @@ export default async function UsuariosPage() {
       full_name: (p.full_name ?? null) as string | null,
       email: (p.email ?? null) as string | null,
       role: (p.role ?? 'consultant') as string,
+      perfil: ((p as any).perfil ?? null) as string | null,
+      funcao: ((p as any).funcao ?? null) as string | null,
+      cidade: ((p as any).cidade ?? null) as string | null,
+      regiao: ((p as any).regiao ?? null) as string | null,
       phone: (p.phone ?? null) as string | null,
       whatsapp: (p.whatsapp ?? null) as string | null,
       created_at: p.created_at as string,
@@ -107,7 +117,11 @@ export default async function UsuariosPage() {
                 {users.length}
               </span>
             </div>
-            <UserManagementTable users={users} />
+            <UserManagementTable
+              users={users}
+              perfis={perfisData ?? []}
+              regioes={regioesData ?? []}
+            />
           </>
         )}
 
