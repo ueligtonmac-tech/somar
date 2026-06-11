@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest } from 'next/server'
 import { generateQueryEmbedding as generateEmbedding } from '@/lib/embeddings'
+import { logger } from '@/lib/logger'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -297,7 +298,7 @@ export async function POST(req: NextRequest) {
       },
     })
   } catch (err: unknown) {
-    console.error('Chat error:', err)
+    logger.error('Unhandled chat error', { context: 'api/chat', error: err })
     return new Response(JSON.stringify({ error: 'Erro interno. Tente novamente.' }), { status: 500 })
   }
 }

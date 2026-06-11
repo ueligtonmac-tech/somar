@@ -1,18 +1,22 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
+import { requireAdmin } from '@/lib/auth'
+
+// ── Cards ──────────────────────────────────────────────────────────────────
 
 export async function toggleUserActive(userId: string, active: boolean) {
-  const supabase = await createClient()
-  await supabase.from('profiles').update({ active }).eq('id', userId)
+  const { service } = await requireAdmin()
+  const { error } = await service.from('profiles').update({ active }).eq('id', userId)
+  if (error) throw new Error('Erro ao atualizar usuário: ' + error.message)
   revalidatePath('/admin')
 }
 
 export async function changeUserRole(userId: string, role: string) {
-  const supabase = await createClient()
-  await supabase.from('profiles').update({ role }).eq('id', userId)
+  const { service } = await requireAdmin()
+  const { error } = await service.from('profiles').update({ role }).eq('id', userId)
+  if (error) throw new Error('Erro ao alterar função: ' + error.message)
   revalidatePath('/admin')
 }
 
@@ -27,60 +31,62 @@ export async function updateCard(cardId: string, data: {
   pdf_name?: string
   published?: boolean
 }) {
-  const supabase = await createClient()
-  await supabase.from('cards').update({ ...data, updated_at: new Date().toISOString() }).eq('id', cardId)
+  const { service } = await requireAdmin()
+  const { error } = await service
+    .from('cards')
+    .update({ ...data, updated_at: new Date().toISOString() })
+    .eq('id', cardId)
+  if (error) throw new Error('Erro ao atualizar card: ' + error.message)
   revalidatePath('/admin/cards')
 }
 
 export async function createCard(moduleId: string, title: string, orderIndex: number) {
-  const supabase = await createClient()
-  const { data, error } = await supabase
+  const { service } = await requireAdmin()
+  const { data, error } = await service
     .from('cards')
     .insert({ module_id: moduleId, title, order_index: orderIndex, published: false })
     .select('id')
     .single()
-  if (error) throw error
+  if (error) throw new Error('Erro ao criar card: ' + error.message)
   revalidatePath('/admin/cards')
   return data.id
 }
 
 export async function deleteCard(cardId: string) {
-  const supabase = await createClient()
-  await supabase.from('cards').delete().eq('id', cardId)
+  const { service } = await requireAdmin()
+  const { error } = await service.from('cards').delete().eq('id', cardId)
+  if (error) throw new Error('Erro ao excluir card: ' + error.message)
   revalidatePath('/admin/cards')
 }
 
 export async function reorderCard(cardId: string, newIndex: number) {
-  const supabase = await createClient()
-  await supabase.from('cards').update({ order_index: newIndex }).eq('id', cardId)
+  const { service } = await requireAdmin()
+  await service.from('cards').update({ order_index: newIndex }).eq('id', cardId)
   revalidatePath('/admin/cards')
 }
 
 export async function reorderCards(moduleId: string, orderedIds: string[]) {
-  const supabase = await createClient()
+  const { service } = await requireAdmin()
   await Promise.all(
     orderedIds.map((id, idx) =>
-      supabase.from('cards').update({ order_index: idx + 1 }).eq('id', id).eq('module_id', moduleId)
+      service.from('cards').update({ order_index: idx + 1 }).eq('id', id).eq('module_id', moduleId)
     )
   )
   revalidatePath('/admin/cards')
 }
 
-export async function createModule(title: string, orderIndex: number) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['admin', 'builder'].includes(profile.role)) throw new Error('Sem permissão')
+// ── Módulos ────────────────────────────────────────────────────────────────
 
-  // derive slug from title
+export async function createModule(title: string, orderIndex: number) {
+  const { service } = await requireAdmin()
+
   const slug = title
     .toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
 
-  const { error } = await supabase.from('modules').insert({
+  const { error } = await service.from('modules').insert({
     title,
     slug: `${slug}-${Date.now()}`,
     order_index: orderIndex,
@@ -91,48 +97,34 @@ export async function createModule(title: string, orderIndex: number) {
 }
 
 export async function reorderModules(orderedIds: string[]) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['admin', 'builder'].includes(profile.role)) throw new Error('Sem permissão')
+  const { service } = await requireAdmin()
   await Promise.all(
     orderedIds.map((id, idx) =>
-      supabase.from('modules').update({ order_index: idx + 1 }).eq('id', id)
+      service.from('modules').update({ order_index: idx + 1 }).eq('id', id)
     )
   )
   revalidatePath('/admin/cards')
 }
 
 export async function updateModule(moduleId: string, data: { title?: string; description?: string; published?: boolean }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['admin', 'builder'].includes(profile.role)) throw new Error('Sem permissão')
-  const { error } = await supabase.from('modules').update({ ...data, updated_at: new Date().toISOString() }).eq('id', moduleId)
+  const { service } = await requireAdmin()
+  const { error } = await service
+    .from('modules')
+    .update({ ...data, updated_at: new Date().toISOString() })
+    .eq('id', moduleId)
   if (error) throw new Error('Erro ao atualizar módulo: ' + error.message)
   revalidatePath('/admin/cards')
 }
 
 export async function deleteModule(moduleId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['admin', 'builder'].includes(profile.role)) throw new Error('Sem permissão')
-  const { error } = await supabase.from('modules').delete().eq('id', moduleId)
+  const { service } = await requireAdmin()
+  const { error } = await service.from('modules').delete().eq('id', moduleId)
   if (error) throw new Error('Erro ao excluir módulo: ' + error.message)
   revalidatePath('/admin/cards')
 }
 
 export async function uploadCardPdf(cardId: string, formData: FormData): Promise<{ url: string; name: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['admin', 'builder'].includes(profile.role)) throw new Error('Sem permissão')
+  const { supabase } = await requireAdmin()
 
   const file = formData.get('file') as File
   if (!file) throw new Error('Arquivo não encontrado')
@@ -142,6 +134,7 @@ export async function uploadCardPdf(cardId: string, formData: FormData): Promise
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
+  void supabase // used only for auth check above
 
   const path = `pdfs/${cardId}-${Date.now()}-${file.name.replace(/\s+/g, '_')}`
   const bytes = await file.arrayBuffer()

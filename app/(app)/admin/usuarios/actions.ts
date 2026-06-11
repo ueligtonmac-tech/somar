@@ -1,24 +1,10 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
-
-async function assertAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['admin', 'builder'].includes(profile.role)) throw new Error('Sem permissão')
-  const service = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-  return { service }
-}
+import { requireAdmin } from '@/lib/auth'
 
 export async function updateUserRole(userId: string, role: string) {
-  const { service } = await assertAdmin()
+  const { service } = await requireAdmin()
   const { error } = await service
     .from('profiles')
     .update({ role })
@@ -28,7 +14,7 @@ export async function updateUserRole(userId: string, role: string) {
 }
 
 export async function updateUserPhone(userId: string, phone: string) {
-  const { service } = await assertAdmin()
+  const { service } = await requireAdmin()
   const { error } = await service
     .from('profiles')
     .update({ phone: phone.trim() || null })
@@ -38,9 +24,8 @@ export async function updateUserPhone(userId: string, phone: string) {
 }
 
 export async function approveUser(userId: string, role: string, perfil?: string) {
-  const { service } = await assertAdmin()
+  const { service } = await requireAdmin()
 
-  // Buscar dados do usuário a aprovar
   const { data: target } = await service
     .from('profiles')
     .select('id, full_name, email, whatsapp')
@@ -49,7 +34,6 @@ export async function approveUser(userId: string, role: string, perfil?: string)
 
   if (!target) throw new Error('Usuário não encontrado')
 
-  // Ativar usuário com role e perfil escolhidos
   const updateData: Record<string, unknown> = { active: true, role, onboarding_complete: true }
   if (perfil) updateData.perfil = perfil
 
@@ -62,16 +46,14 @@ export async function approveUser(userId: string, role: string, perfil?: string)
   const displayName = target.full_name || target.email || 'Usuário'
   const userEmail = target.email || ''
 
-  // Notificação in-app para o usuário aprovado
   await service.from('notifications').insert({
     user_id: userId,
     type: 'account_approved',
     title: '✅ Acesso liberado!',
-    message: `Seu perfil foi aprovado com sucesso. Você já pode acessar a plataforma.`,
+    message: 'Seu perfil foi aprovado com sucesso. Você já pode acessar a plataforma.',
     metadata: { role, perfil: perfil ?? null },
   })
 
-  // Notificações externas em paralelo (não bloqueiam)
   const { sendWhatsApp } = await import('@/lib/whatsapp')
   const { sendEmail, templateAcessoLiberado } = await import('@/lib/email')
 
@@ -86,7 +68,7 @@ export async function approveUser(userId: string, role: string, perfil?: string)
 }
 
 export async function resendAccessEmail(userId: string) {
-  const { service } = await assertAdmin()
+  const { service } = await requireAdmin()
 
   const { data: target } = await service
     .from('profiles')
@@ -108,13 +90,41 @@ export async function resendAccessEmail(userId: string) {
 }
 
 export async function rejectUser(userId: string) {
-  const { service } = await assertAdmin()
-  // Remove o usuário do sistema (hard delete do perfil — Supabase cascade deleta o auth.user)
-  // Por segurança, apenas desativa permanentemente sem deletar para manter histórico
+  const { service } = await requireAdmin()
+
+  // Buscar dados para notificação antes de rejeitar
+  const { data: target } = await service
+    .from('profiles')
+    .select('full_name, email')
+    .eq('id', userId)
+    .single()
+
+  if (!target) throw new Error('Usuário não encontrado')
+
+  // Marca como rejeitado: active=false, onboarding_complete=false, role permanece
+  // A coluna rejected_at sinaliza que foi deliberadamente rejeitado (evita re-aprovação acidental)
   const { error } = await service
     .from('profiles')
-    .update({ active: false, onboarding_complete: false })
+    .update({ active: false, onboarding_complete: false, rejected_at: new Date().toISOString() })
     .eq('id', userId)
-  if (error) throw new Error('Erro ao rejeitar usuário: ' + error.message)
+
+  if (error) {
+    // Se rejected_at não existir ainda (antes da migration), fazer sem ela
+    const { error: err2 } = await service
+      .from('profiles')
+      .update({ active: false, onboarding_complete: false })
+      .eq('id', userId)
+    if (err2) throw new Error('Erro ao rejeitar usuário: ' + err2.message)
+  }
+
+  // Notificação in-app para o usuário rejeitado
+  await service.from('notifications').insert({
+    user_id: userId,
+    type: 'account_rejected',
+    title: '❌ Cadastro não aprovado',
+    message: 'Seu cadastro não foi aprovado neste momento. Entre em contato com o administrador para mais informações.',
+    metadata: {},
+  })
+
   revalidatePath('/admin/usuarios')
 }

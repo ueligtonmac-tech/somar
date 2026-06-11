@@ -91,16 +91,21 @@ export async function middleware(request: NextRequest) {
   // ── 4. Buscar perfil (para rotas de página) ──
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, active, onboarding_complete')
+    .select('role, active, onboarding_complete, rejected_at')
     .eq('id', user.id)
     .single()
 
   // ── 5. Rotas de pendência — permitir mesmo sem aprovação ──
   if (PENDING_ROUTES.some(r => pathname.startsWith(r))) {
-    // Se já está ativo, manda para a trilha
     if (profile?.active) {
       return NextResponse.redirect(new URL('/trilha', request.url))
     }
+    // Não redirecionar usuários rejeitados de '/cadastro-rejeitado'
+    return supabaseResponse
+  }
+
+  // ── 5b. Rota de rejeição ──
+  if (pathname.startsWith('/cadastro-rejeitado')) {
     return supabaseResponse
   }
 
@@ -109,12 +114,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/completar-cadastro', request.url))
   }
 
-  // ── 7. Usuário inativo (aguardando aprovação) ──
+  // ── 7. Usuário rejeitado → tela específica ──
+  if (!profile?.active && profile?.rejected_at) {
+    return NextResponse.redirect(new URL('/cadastro-rejeitado', request.url))
+  }
+
+  // ── 8. Usuário inativo (aguardando aprovação) ──
   if (!profile?.active) {
     return NextResponse.redirect(new URL('/aguardando-aprovacao', request.url))
   }
 
-  // ── 8. Rotas de admin — verificar role ──
+  // ── 9. Rotas de admin — verificar role ──
   if (ADMIN_ROUTES.some(r => pathname.startsWith(r))) {
     if (!ADMIN_ROLES.includes(profile?.role ?? '')) {
       return NextResponse.redirect(new URL('/trilha', request.url))

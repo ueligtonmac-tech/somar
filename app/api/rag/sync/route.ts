@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { generateEmbedding, generateEmbeddingsBatch } from '@/lib/embeddings'
+import { logger } from '@/lib/logger'
 
 // Rota admin/builder: indexa todo o conteúdo gerando embeddings
 export async function POST() {
@@ -33,14 +34,24 @@ export async function POST() {
   const results = { knowledge: 0, cards: 0, errors: 0 }
 
   // ── 1. Indexar TODOS os bot_knowledge aprovados ──
-  const { data: knowledge, error: kErr } = await service
-    .from('bot_knowledge')
-    .select('id, question, answer, embedding')
-    .eq('approved', true)
+  // Busca em lotes de 1000 para superar o limite padrão do Supabase
+  let knowledge: { id: string; question: string; answer: string; embedding: string | null }[] = []
+  let from = 0
+  const PAGE = 1000
+  while (true) {
+    const { data: page, error: kErr } = await service
+      .from('bot_knowledge')
+      .select('id, question, answer, embedding')
+      .eq('approved', true)
+      .range(from, from + PAGE - 1)
+    if (kErr) { logger.error('knowledge query error', { context: 'rag/sync', error: kErr }); break }
+    if (!page || page.length === 0) break
+    knowledge = knowledge.concat(page)
+    if (page.length < PAGE) break
+    from += PAGE
+  }
 
-  if (kErr) console.error('[rag/sync] knowledge query error:', kErr)
-
-  if (knowledge && knowledge.length > 0) {
+  if (knowledge.length > 0) {
     // Só os que ainda não têm embedding
     const pending = knowledge.filter(k => !k.embedding)
     if (pending.length > 0) {
@@ -53,7 +64,7 @@ export async function POST() {
           .from('bot_knowledge')
           .update({ embedding: embeddings[i] as unknown as string })
           .eq('id', pending[i].id)
-        if (error) { console.error('[rag/sync] update knowledge error:', error); results.errors++ }
+        if (error) { logger.error('update knowledge error', { context: 'rag/sync', error }); results.errors++ }
         else results.knowledge++
       }
     }
@@ -64,7 +75,7 @@ export async function POST() {
     .from('cards')
     .select('id, title, scenario, challenge, explanation, action_hint, embedding')
 
-  if (cErr) console.error('[rag/sync] cards query error:', cErr)
+  if (cErr) logger.error('cards query error', { context: 'rag/sync', error: cErr })
 
   if (cards && cards.length > 0) {
     const pending = cards.filter(c => !c.embedding)
@@ -85,7 +96,7 @@ export async function POST() {
           .from('cards')
           .update({ embedding: embeddings[i] as unknown as string })
           .eq('id', pending[i].id)
-        if (error) { console.error('[rag/sync] update card error:', error); results.errors++ }
+        if (error) { logger.error('update card error', { context: 'rag/sync', error }); results.errors++ }
         else results.cards++
       }
     }
@@ -109,18 +120,16 @@ export async function GET() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const [kAll, cAll] = await Promise.all([
-    service.from('bot_knowledge').select('id, embedding').eq('approved', true),
-    service.from('cards').select('id, embedding'),
+  // Conta via SQL para não sofrer com o limite de 1000 rows do Supabase
+  const [kCount, kIndexedCount, cCount, cIndexedCount] = await Promise.all([
+    service.from('bot_knowledge').select('*', { count: 'exact', head: true }).eq('approved', true),
+    service.from('bot_knowledge').select('*', { count: 'exact', head: true }).eq('approved', true).not('embedding', 'is', null),
+    service.from('cards').select('*', { count: 'exact', head: true }),
+    service.from('cards').select('*', { count: 'exact', head: true }).not('embedding', 'is', null),
   ])
 
-  const kTotal = kAll.data?.length ?? 0
-  const kIndexed = kAll.data?.filter(k => k.embedding).length ?? 0
-  const cTotal = cAll.data?.length ?? 0
-  const cIndexed = cAll.data?.filter(c => c.embedding).length ?? 0
-
   return Response.json({
-    knowledge: { total: kTotal, indexed: kIndexed },
-    cards: { total: cTotal, indexed: cIndexed },
+    knowledge: { total: kCount.count ?? 0, indexed: kIndexedCount.count ?? 0 },
+    cards: { total: cCount.count ?? 0, indexed: cIndexedCount.count ?? 0 },
   })
 }
