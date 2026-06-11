@@ -4,6 +4,31 @@ import UserManagementTable from './UserManagementTable'
 import PendingApprovalList from './PendingApprovalList'
 import { logger } from '@/lib/logger'
 
+interface ProfileRow {
+  id: string
+  full_name: string | null
+  email: string | null
+  role: string
+  perfil: string | null
+  funcao: string | null
+  cidade: string | null
+  regiao: string | null
+  phone: string | null
+  whatsapp: string | null
+  created_at: string
+}
+
+interface PendingRow {
+  id: string
+  full_name: string | null
+  email: string | null
+  whatsapp: string | null
+  funcao: string | null
+  cidade: string | null
+  regiao: string | null
+  created_at: string
+}
+
 export const dynamic = 'force-dynamic'
 
 export default async function UsuariosPage() {
@@ -53,29 +78,29 @@ export default async function UsuariosPage() {
     if (activeErr) logger.error('profiles query error', { context: 'admin/usuarios', error: activeErr })
     if (pendingErr) logger.error('pending profiles query error', { context: 'admin/usuarios', error: pendingErr })
 
-    const users = (activeProfiles ?? []).map(p => ({
-      id: p.id as string,
-      full_name: (p.full_name ?? null) as string | null,
-      email: (p.email ?? null) as string | null,
-      role: (p.role ?? 'consultant') as string,
-      perfil: ((p as any).perfil ?? null) as string | null,
-      funcao: ((p as any).funcao ?? null) as string | null,
-      cidade: ((p as any).cidade ?? null) as string | null,
-      regiao: ((p as any).regiao ?? null) as string | null,
-      phone: (p.phone ?? null) as string | null,
-      whatsapp: (p.whatsapp ?? null) as string | null,
-      created_at: p.created_at as string,
+    const users = ((activeProfiles ?? []) as ProfileRow[]).map(p => ({
+      id: p.id,
+      full_name: p.full_name ?? null,
+      email: p.email ?? null,
+      role: p.role ?? 'consultant',
+      perfil: p.perfil ?? null,
+      funcao: p.funcao ?? null,
+      cidade: p.cidade ?? null,
+      regiao: p.regiao ?? null,
+      phone: p.phone ?? null,
+      whatsapp: p.whatsapp ?? null,
+      created_at: p.created_at,
     }))
 
-    const pending = (pendingProfiles ?? []).map(p => ({
-      id: p.id as string,
-      full_name: (p.full_name ?? null) as string | null,
-      email: (p.email ?? null) as string | null,
-      whatsapp: (p.whatsapp ?? null) as string | null,
-      funcao: ((p as any).funcao ?? null) as string | null,
-      cidade: ((p as any).cidade ?? null) as string | null,
-      regiao: ((p as any).regiao ?? null) as string | null,
-      created_at: p.created_at as string,
+    const pending = ((pendingProfiles ?? []) as PendingRow[]).map(p => ({
+      id: p.id,
+      full_name: p.full_name ?? null,
+      email: p.email ?? null,
+      whatsapp: p.whatsapp ?? null,
+      funcao: p.funcao ?? null,
+      cidade: p.cidade ?? null,
+      regiao: p.regiao ?? null,
+      created_at: p.created_at,
     }))
 
     return (

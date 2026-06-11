@@ -26,12 +26,20 @@ export default function CompletarCadastroPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
 
-      // Buscar perfil para pré-preencher nome (Google preenche automaticamente)
+      // Buscar perfil para pré-preencher (inclui campos novos)
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, whatsapp, active, onboarding_complete')
+        .select('full_name, whatsapp, funcao, cidade, regiao, active, onboarding_complete')
         .eq('id', user.id)
-        .single()
+        .single<{
+          full_name: string | null
+          whatsapp: string | null
+          funcao: string | null
+          cidade: string | null
+          regiao: string | null
+          active: boolean
+          onboarding_complete: boolean
+        }>()
 
       // Se onboarding já está completo, redireciona
       if (profile?.onboarding_complete) {
@@ -43,9 +51,9 @@ export default function CompletarCadastroPage() {
       const googleName = user.user_metadata?.full_name || user.user_metadata?.name
       setNome(profile?.full_name || googleName || '')
       setWhatsapp(profile?.whatsapp || '')
-      setFuncao((profile as any)?.funcao || '')
-      setCidade((profile as any)?.cidade || '')
-      setRegiao((profile as any)?.regiao || '')
+      setFuncao(profile?.funcao || '')
+      setCidade(profile?.cidade || '')
+      setRegiao(profile?.regiao || '')
 
       // Buscar regiões ativas do banco
       const { data: regioesList } = await supabase
