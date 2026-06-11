@@ -20,21 +20,29 @@ export default async function UsuariosPage() {
 
     if (!me || !['admin', 'builder'].includes(me.role ?? '')) redirect('/trilha')
 
-    // Busca usuários ativos e pendentes em paralelo
-    const [{ data: activeProfiles, error: activeErr }, { data: pendingProfiles, error: pendingErr }] =
-      await Promise.all([
-        supabase
-          .from('profiles')
-          .select('id, full_name, email, role, phone, whatsapp, created_at')
-          .eq('active', true)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('profiles')
-          .select('id, full_name, email, whatsapp, funcao, cidade, regiao, created_at')
-          .eq('active', false)
-          .eq('onboarding_complete', true)
-          .order('created_at', { ascending: false }),
-      ])
+    // Busca usuários, pendentes e tabelas de referência em paralelo
+    const [
+      { data: activeProfiles, error: activeErr },
+      { data: pendingProfiles, error: pendingErr },
+      { data: perfisData },
+    ] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id, full_name, email, role, phone, whatsapp, created_at')
+        .eq('active', true)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('profiles')
+        .select('id, full_name, email, whatsapp, funcao, cidade, regiao, created_at')
+        .eq('active', false)
+        .eq('onboarding_complete', true)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('perfis_consultor')
+        .select('slug, nome')
+        .eq('ativo', true)
+        .order('ordem'),
+    ])
 
     if (activeErr) logger.error('profiles query error', { context: 'admin/usuarios', error: activeErr })
     if (pendingErr) logger.error('pending profiles query error', { context: 'admin/usuarios', error: pendingErr })
@@ -88,7 +96,7 @@ export default async function UsuariosPage() {
         </div>
 
         {/* Seção de aprovações pendentes */}
-        <PendingApprovalList users={pending} />
+        <PendingApprovalList users={pending} perfis={perfisData ?? []} />
 
         {/* Tabela de usuários ativos */}
         {users.length > 0 && (

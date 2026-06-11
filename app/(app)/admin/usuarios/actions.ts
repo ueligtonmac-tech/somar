@@ -37,7 +37,7 @@ export async function updateUserPhone(userId: string, phone: string) {
   revalidatePath('/admin/usuarios')
 }
 
-export async function approveUser(userId: string, role: string) {
+export async function approveUser(userId: string, role: string, perfil?: string) {
   const { service } = await assertAdmin()
 
   // Buscar dados do usuário a aprovar
@@ -49,10 +49,13 @@ export async function approveUser(userId: string, role: string) {
 
   if (!target) throw new Error('Usuário não encontrado')
 
-  // Ativar usuário com o role escolhido
+  // Ativar usuário com role e perfil escolhidos
+  const updateData: Record<string, unknown> = { active: true, role, onboarding_complete: true }
+  if (perfil) updateData.perfil = perfil
+
   const { error } = await service
     .from('profiles')
-    .update({ active: true, role, onboarding_complete: true })
+    .update(updateData)
     .eq('id', userId)
   if (error) throw new Error('Erro ao aprovar usuário: ' + error.message)
 
@@ -65,7 +68,7 @@ export async function approveUser(userId: string, role: string) {
     type: 'account_approved',
     title: '✅ Acesso liberado!',
     message: `Seu perfil foi aprovado com sucesso. Você já pode acessar a plataforma.`,
-    metadata: { role },
+    metadata: { role, perfil: perfil ?? null },
   })
 
   // Notificações externas em paralelo (não bloqueiam)

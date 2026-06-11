@@ -14,15 +14,23 @@ const ROLE_LABELS: Record<Role, string> = {
   admin: 'Admin',
 }
 
-function ApproveRow({ user }: { user: PendingUser }) {
+function ApproveRow({ user, perfis }: { user: PendingUser; perfis: { slug: string; nome: string }[] }) {
   const [isPending, startTransition] = useTransition()
   const [role, setRole] = useState<Role>('consultant')
+  const [perfil, setPerfil] = useState('')
   const [done, setDone] = useState(false)
   const [expanded, setExpanded] = useState(false)
 
+  // Auto-ajusta role quando perfil "gerencial" é selecionado
+  const handlePerfilChange = (slug: string) => {
+    setPerfil(slug)
+    if (slug === 'gerencial') setRole('gerencial')
+    else if (role === 'gerencial') setRole('consultant')
+  }
+
   const handleApprove = () => {
     startTransition(async () => {
-      await approveUser(user.id, role)
+      await approveUser(user.id, role, perfil || undefined)
       setDone(true)
     })
   }
@@ -73,7 +81,20 @@ function ApproveRow({ user }: { user: PendingUser }) {
           {new Date(user.created_at).toLocaleDateString('pt-BR')}
         </span>
 
-        {/* Seletor de role */}
+        {/* Seletor de perfil */}
+        <select
+          value={perfil}
+          onChange={e => handlePerfilChange(e.target.value)}
+          disabled={isPending}
+          className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white font-semibold text-gray-700 focus:outline-none focus:border-[#000FFF] focus:ring-1 focus:ring-[#000FFF]/20 transition-colors cursor-pointer disabled:opacity-60 flex-shrink-0"
+        >
+          <option value="">Perfil…</option>
+          {perfis.map(p => (
+            <option key={p.slug} value={p.slug}>{p.nome}</option>
+          ))}
+        </select>
+
+        {/* Seletor de role (acesso) */}
         <select
           value={role}
           onChange={e => setRole(e.target.value as Role)}
@@ -140,7 +161,7 @@ function Detail({ label, value }: { label: string; value: string | null | undefi
   )
 }
 
-export default function PendingApprovalList({ users }: { users: PendingUser[] }) {
+export default function PendingApprovalList({ users, perfis }: { users: PendingUser[]; perfis: { slug: string; nome: string }[] }) {
   if (users.length === 0) return null
 
   return (
@@ -168,7 +189,7 @@ export default function PendingApprovalList({ users }: { users: PendingUser[] })
 
         <div>
           {users.map(user => (
-            <ApproveRow key={user.id} user={user} />
+            <ApproveRow key={user.id} user={user} perfis={perfis} />
           ))}
         </div>
       </div>
