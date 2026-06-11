@@ -179,12 +179,12 @@ export default function PendingApprovalList({ users, perfis }: { users: PendingU
 
       <div className="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden">
         {/* Cabeçalho da tabela */}
-        <div className="hidden sm:grid grid-cols-[2.5fr_1.5fr_120px_140px_180px] gap-4 px-5 py-3 bg-amber-50 text-xs font-bold text-amber-700 uppercase tracking-wider border-b border-amber-100">
-          <span>Usuário</span>
-          <span>Cadastro</span>
-          <span>Perfil</span>
-          <span></span>
-          <span>Ação</span>
+        <div className="hidden sm:flex items-center gap-4 px-5 py-3 bg-amber-50 text-xs font-bold text-amber-700 uppercase tracking-wider border-b border-amber-100">
+          <span className="flex-1 min-w-0">Usuário</span>
+          <span className="w-20 flex-shrink-0 hidden md:block">Cadastro</span>
+          <span className="w-32 flex-shrink-0">Perfil</span>
+          <span className="w-24 flex-shrink-0">Acesso</span>
+          <span className="w-36 flex-shrink-0">Ação</span>
         </div>
 
         <div>

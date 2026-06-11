@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -33,12 +33,23 @@ export default function CadastroPage() {
   const [code, setCode] = useState('')
   const [nome, setNome] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
+  const [funcao, setFuncao] = useState('')
+  const [cidade, setCidade] = useState('')
+  const [regiao, setRegiao] = useState('')
+  const [regioes, setRegioes] = useState<{ slug: string; nome: string }[]>([])
   const [password, setPassword] = useState('')
   const [confirmPass, setConfirmPass] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [countdown, setCountdown] = useState(0)
+
+  // Carrega regiões ao montar
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.from('regioes_geograficas').select('slug, nome').eq('ativo', true).order('ordem')
+      .then(({ data }) => setRegioes(data ?? []))
+  }, [])
 
   const startCountdown = () => {
     setCountdown(60)
@@ -79,6 +90,9 @@ export default function CadastroPage() {
   const handleDados = (e: React.FormEvent) => {
     e.preventDefault()
     if (!nome.trim()) { setError('Informe seu nome completo.'); return }
+    if (!funcao) { setError('Selecione sua função.'); return }
+    if (!cidade.trim()) { setError('Informe sua cidade.'); return }
+    if (!regiao) { setError('Selecione sua região de atuação.'); return }
     setError('')
     setStep(4)
   }
@@ -100,7 +114,7 @@ export default function CadastroPage() {
     const res = await fetch('/api/auth/complete-profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ full_name: nome, whatsapp }),
+      body: JSON.stringify({ full_name: nome, whatsapp, funcao, cidade: cidade.trim(), regiao }),
     })
 
     if (!res.ok) {
@@ -235,6 +249,26 @@ export default function CadastroPage() {
                 <div>
                   <label style={S.label}>WhatsApp <span style={{ color: '#9ca3af', fontWeight: 400 }}>(opcional)</span></label>
                   <input type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="(65) 99999-9999" style={S.input} onFocus={e => (e.target.style.borderColor = BLUE)} onBlur={e => (e.target.style.borderColor = '#e5e7eb')} />
+                </div>
+                <div>
+                  <label style={S.label}>Função *</label>
+                  <select value={funcao} onChange={e => setFuncao(e.target.value)} required style={{ ...S.input, color: funcao ? '#111' : '#9ca3af', appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', background: 'white' }} onFocus={e => (e.target.style.borderColor = BLUE)} onBlur={e => (e.target.style.borderColor = '#e5e7eb')}>
+                    <option value="">Selecione sua função</option>
+                    <option value="Consultor">Consultor</option>
+                    <option value="Supervisor">Supervisor</option>
+                    <option value="Gerente de Distrito">Gerente de Distrito</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={S.label}>Cidade *</label>
+                  <input type="text" value={cidade} onChange={e => setCidade(e.target.value)} placeholder="Ex: Cuiabá - MT" required style={S.input} onFocus={e => (e.target.style.borderColor = BLUE)} onBlur={e => (e.target.style.borderColor = '#e5e7eb')} />
+                </div>
+                <div>
+                  <label style={S.label}>Região de atuação *</label>
+                  <select value={regiao} onChange={e => setRegiao(e.target.value)} required style={{ ...S.input, color: regiao ? '#111' : '#9ca3af', appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', background: 'white' }} onFocus={e => (e.target.style.borderColor = BLUE)} onBlur={e => (e.target.style.borderColor = '#e5e7eb')}>
+                    <option value="">Selecione sua região</option>
+                    {regioes.map(r => <option key={r.slug} value={r.slug}>{r.nome}</option>)}
+                  </select>
                 </div>
               </div>
               <button type="submit" style={{ ...S.btnPrimary, marginTop: '1.75rem' }}>

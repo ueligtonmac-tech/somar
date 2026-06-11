@@ -34,7 +34,7 @@ function makeRateLimiter(limits: Record<string, [number, number]>) {
   return { check, store }
 }
 
-const TEST_LIMITS = {
+const TEST_LIMITS: Record<string, [number, number]> = {
   '/api/chat': [3, 60_000],         // max 3 por minuto
   '/api/rag/sync': [2, 3_600_000],  // max 2 por hora
 }
