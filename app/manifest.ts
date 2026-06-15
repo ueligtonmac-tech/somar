@@ -2,29 +2,29 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Bot João · Ultragaz',
-    short_name: 'Bot João',
+    name: 'HUB Somar · Ultragaz',
+    short_name: 'HUB Somar',
     description: 'Plataforma de onboarding para consultores de canais digitais Ultragaz',
     start_url: '/trilha',
     display: 'standalone',
-    background_color: '#000FFF',
+    background_color: '#ffffff',
     theme_color: '#000FFF',
     orientation: 'portrait',
     icons: [
       {
-        src: '/bot-joao.webp',
+        src: '/ug-icon.jpg',
         sizes: '192x192',
-        type: 'image/webp',
+        type: 'image/jpeg',
       },
       {
-        src: '/bot-joao.webp',
+        src: '/ug-icon.jpg',
         sizes: '512x512',
-        type: 'image/webp',
+        type: 'image/jpeg',
       },
       {
-        src: '/bot-joao.webp',
+        src: '/ug-icon.jpg',
         sizes: 'any',
-        type: 'image/webp',
+        type: 'image/jpeg',
         purpose: 'maskable',
       },
     ],

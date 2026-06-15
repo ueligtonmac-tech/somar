@@ -89,18 +89,29 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── 4. Buscar perfil (para rotas de página) ──
-  const { data: profile } = await supabase
+  // Tenta com rejected_at; se a coluna não existir no banco (migration pendente),
+  // faz fallback sem ela — evita loop infinito em deploys graduais.
+  const { data: profile, error: profileErr } = await supabase
     .from('profiles')
     .select('role, active, onboarding_complete, rejected_at')
     .eq('id', user.id)
     .single()
 
+  // Fallback: coluna rejected_at pode não existir ainda
+  const safeProfile = profileErr
+    ? (await supabase
+        .from('profiles')
+        .select('role, active, onboarding_complete')
+        .eq('id', user.id)
+        .single()
+      ).data
+    : profile
+
   // ── 5. Rotas de pendência — permitir mesmo sem aprovação ──
   if (PENDING_ROUTES.some(r => pathname.startsWith(r))) {
-    if (profile?.active) {
+    if (safeProfile?.active) {
       return NextResponse.redirect(new URL('/trilha', request.url))
     }
-    // Não redirecionar usuários rejeitados de '/cadastro-rejeitado'
     return supabaseResponse
   }
 
@@ -110,23 +121,23 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── 6. Usuário com onboarding incompleto → completar cadastro ──
-  if (!profile?.onboarding_complete) {
+  if (!safeProfile?.onboarding_complete) {
     return NextResponse.redirect(new URL('/completar-cadastro', request.url))
   }
 
   // ── 7. Usuário rejeitado → tela específica ──
-  if (!profile?.active && profile?.rejected_at) {
+  if (!safeProfile?.active && (safeProfile as { rejected_at?: string | null } | null)?.rejected_at) {
     return NextResponse.redirect(new URL('/cadastro-rejeitado', request.url))
   }
 
   // ── 8. Usuário inativo (aguardando aprovação) ──
-  if (!profile?.active) {
+  if (!safeProfile?.active) {
     return NextResponse.redirect(new URL('/aguardando-aprovacao', request.url))
   }
 
   // ── 9. Rotas de admin — verificar role ──
   if (ADMIN_ROUTES.some(r => pathname.startsWith(r))) {
-    if (!ADMIN_ROLES.includes(profile?.role ?? '')) {
+    if (!ADMIN_ROLES.includes(safeProfile?.role ?? '')) {
       return NextResponse.redirect(new URL('/trilha', request.url))
     }
   }
