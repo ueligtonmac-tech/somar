@@ -134,9 +134,26 @@ export async function POST(req: NextRequest) {
       }
     } catch { /* ignora */ }
 
-    // ── BIBLIOTECA: materiais da biblioteca de PDFs ──
+    // ── BIBLIOTECA: busca semântica nos chunks dos PDFs (se indexados) + lista de arquivos ──
     let bibliotecaContext = ''
     try {
+      // 1. Busca semântica nos document_chunks (PDFs indexados)
+      if (queryEmbedding) {
+        const { data: chunks } = await supabase.rpc('match_chunks', {
+          query_embedding: JSON.stringify(queryEmbedding),
+          match_threshold: 0.5,
+          match_count: 4,
+        })
+        if (chunks && chunks.length > 0) {
+          bibliotecaContext = `\n\nCONTEÚDO EXTRAÍDO DOS MANUAIS DA ULTRAGAZ (use como referência factual):\n` +
+            chunks.map((c: { content: string; metadata: { title?: string } }, i: number) => {
+              const src = c.metadata?.title ? ` [${c.metadata.title}]` : ''
+              return `${i + 1}.${src} ${c.content}`
+            }).join('\n\n')
+        }
+      }
+
+      // 2. Lista de arquivos relevantes na biblioteca (fallback ou complemento)
       const { data: libFiles } = await supabase
         .from('library_files')
         .select('title, description, category')
@@ -149,10 +166,10 @@ export async function POST(req: NextRequest) {
         const relevantFiles = libFiles.filter(f => {
           const text = [f.title, f.description, f.category].filter(Boolean).join(' ').toLowerCase()
           return msgWords.some((w: string) => text.includes(w))
-        }).slice(0, 5)
+        }).slice(0, 4)
 
         if (relevantFiles.length > 0) {
-          bibliotecaContext = `\n\nMATERIAIS DISPONÍVEIS NA BIBLIOTECA (informe ao consultor que pode baixar esses materiais na seção Biblioteca do Bot João):\n` +
+          bibliotecaContext += `\n\nMATERIAIS DISPONÍVEIS PARA DOWNLOAD NA BIBLIOTECA:\n` +
             relevantFiles.map((f, i) => {
               const parts = [`"${f.title}"`]
               if (f.category) parts.push(`(${f.category})`)
