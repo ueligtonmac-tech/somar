@@ -1,4 +1,3 @@
-import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { requireAdmin } from '@/lib/auth'
 import { generateEmbeddingsBatch } from '@/lib/embeddings'
 import { logger } from '@/lib/logger'
@@ -61,13 +60,8 @@ export async function GET() {
   try {
     const { service } = await requireAdmin()
 
-    const [total, indexed] = await Promise.all([
+    const [total] = await Promise.all([
       service.from('library_files').select('*', { count: 'exact', head: true }).eq('active', true),
-      service
-        .from('library_files')
-        .select('id')
-        .eq('active', true)
-        .in('id', (await service.from('document_chunks').select('document_id')).data?.map(d => d.document_id) ?? []),
     ])
 
     const indexedIds = (await service
