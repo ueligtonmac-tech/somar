@@ -119,6 +119,7 @@ export async function POST(req: NextRequest) {
     let totalChunks = 0
     let errors = 0
     const processed: string[] = []
+    const errorDetails: string[] = []
 
     for (const file of toProcess) {
       try {
@@ -128,12 +129,18 @@ export async function POST(req: NextRequest) {
         const text = await extractTextFromUrl(file.file_url)
         if (!text || text.trim().length < 50) {
           logger.warn('PDF sem texto extraível', { context: 'index-library', data: { title: file.title } })
+          errorDetails.push(`"${file.title}": sem texto extraível (${text?.trim().length ?? 0} chars)`)
+          errors++
           continue
         }
 
         // Divide em chunks
         const chunks = chunkText(text)
-        if (!chunks.length) continue
+        if (!chunks.length) {
+          errorDetails.push(`"${file.title}": chunkText retornou 0 chunks`)
+          errors++
+          continue
+        }
 
         // Se reindex, remove chunks antigos
         if (reindex) {
@@ -157,6 +164,7 @@ export async function POST(req: NextRequest) {
 
         if (insertErr) {
           logger.error('Erro ao inserir chunks', { context: 'index-library', error: insertErr, data: { title: file.title } })
+          errorDetails.push(`"${file.title}": insert error — ${insertErr.message}`)
           errors++
         } else {
           totalChunks += chunks.length
@@ -164,7 +172,9 @@ export async function POST(req: NextRequest) {
           logger.info('PDF indexado', { context: 'index-library', data: { title: file.title, chunks: chunks.length } })
         }
       } catch (fileErr: unknown) {
+        const errMsg = fileErr instanceof Error ? fileErr.message : String(fileErr)
         logger.error('Erro ao processar PDF', { context: 'index-library', error: fileErr, data: { title: file.title } })
+        errorDetails.push(`"${file.title}": ${errMsg}`)
         errors++
       }
     }
@@ -173,7 +183,7 @@ export async function POST(req: NextRequest) {
       ? `Indexados ${processed.length} arquivos (${totalChunks} trechos). Falhas: ${errors}.`
       : `✅ ${processed.length} PDF(s) indexados com sucesso! Total: ${totalChunks} trechos de conteúdo.`
 
-    return NextResponse.json({ ok: true, message: msg, indexed: processed.length, chunks: totalChunks, errors, files: processed })
+    return NextResponse.json({ ok: true, message: msg, indexed: processed.length, chunks: totalChunks, errors, files: processed, errorDetails })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Erro ao indexar biblioteca'
     return NextResponse.json({ error: msg }, { status: 500 })
