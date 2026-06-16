@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
         // Buscar todos os gestores/admin/builder ativos (exceto o próprio usuário que escalou)
         const { data: managers } = await service
           .from('profiles')
-          .select('id, phone, whatsapp')
+          .select('id, whatsapp')
           .in('role', ['gerencial', 'admin', 'builder'])
           .eq('active', true)
           .neq('id', user.id)
@@ -79,11 +79,10 @@ export async function POST(req: NextRequest) {
 
           await service.from('notifications').insert(notifInserts)
 
-          // Enviar WhatsApp para quem tem phone ou whatsapp
+          // Enviar WhatsApp para gestores que têm número cadastrado
           for (const m of managers) {
-            const phone = m.phone ?? m.whatsapp
-            if (phone) {
-              await sendWhatsApp(phone, notifMessage)
+            if (m.whatsapp) {
+              await sendWhatsApp(m.whatsapp, notifMessage)
             }
           }
         }

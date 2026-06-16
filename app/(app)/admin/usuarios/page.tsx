@@ -13,7 +13,6 @@ interface ProfileRow {
   funcao: string | null
   cidade: string | null
   regiao: string | null
-  phone: string | null
   whatsapp: string | null
   created_at: string
 }
@@ -54,7 +53,7 @@ export default async function UsuariosPage() {
     ] = await Promise.all([
       supabase
         .from('profiles')
-        .select('id, full_name, email, role, perfil, funcao, cidade, regiao, phone, whatsapp, created_at')
+        .select('id, full_name, email, role, perfil, funcao, cidade, regiao, whatsapp, created_at')
         .eq('active', true)
         .order('created_at', { ascending: false }),
       supabase
@@ -87,7 +86,6 @@ export default async function UsuariosPage() {
       funcao: p.funcao ?? null,
       cidade: p.cidade ?? null,
       regiao: p.regiao ?? null,
-      phone: p.phone ?? null,
       whatsapp: p.whatsapp ?? null,
       created_at: p.created_at,
     }))

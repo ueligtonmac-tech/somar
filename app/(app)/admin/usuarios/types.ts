@@ -7,7 +7,6 @@ export interface UserProfile {
   funcao: string | null
   cidade: string | null
   regiao: string | null
-  phone: string | null
   whatsapp: string | null
   created_at: string
   active?: boolean

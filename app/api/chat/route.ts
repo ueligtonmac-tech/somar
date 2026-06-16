@@ -80,11 +80,13 @@ export async function POST(req: NextRequest) {
     }
     messages.push({ role: 'user', content: message })
 
+    // ── RAG: gera embedding uma única vez para reutilizar em todas as buscas semânticas ──
+    const queryEmbedding = await generateEmbedding(message).catch(() => null)
+
     // ── RAG: busca semântica (embeddings) com fallback para keywords ──
     let knowledgeContext = ''
     try {
       // Tenta busca semântica primeiro
-      const queryEmbedding = await generateEmbedding(message)
 
       if (queryEmbedding) {
         // Busca semântica em bot_knowledge
@@ -164,8 +166,6 @@ export async function POST(req: NextRequest) {
     // ── CARDS: busca semântica nos módulos da trilha ──
     let cardsContext = ''
     try {
-      const queryEmbedding = await generateEmbedding(message)
-
       if (queryEmbedding) {
         const { data: semanticCards } = await supabase.rpc('match_cards', {
           query_embedding: JSON.stringify(queryEmbedding),

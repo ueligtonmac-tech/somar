@@ -203,7 +203,7 @@ export default function UserManagementTable({ users, perfis, regioes }: {
         <div className="divide-y divide-gray-50">
           {filtered.map(profile => {
             const role = (ROLES.includes(profile.role as Role) ? profile.role : 'consultor') as Role
-            const phone = profile.phone ?? profile.whatsapp
+            const phone = profile.whatsapp
             const perfilNome = perfis.find(p => p.slug === profile.perfil)?.nome
             const regiaoNome = regioes.find(r => r.slug === profile.regiao)?.nome
             return (

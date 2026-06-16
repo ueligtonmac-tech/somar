@@ -169,13 +169,12 @@ export async function resolveEscalation(feedbackId: string, adminAnswer: string,
       // Enviar WhatsApp ao consultor se tiver telefone
       const { data: profile } = await service
         .from('profiles')
-        .select('phone, whatsapp')
+        .select('whatsapp')
         .eq('id', fb.user_id)
         .maybeSingle()
 
-      const phone = profile?.phone ?? profile?.whatsapp
-      if (phone) {
-        await sendWhatsApp(phone, notifMessage)
+      if (profile?.whatsapp) {
+        await sendWhatsApp(profile.whatsapp, notifMessage)
       }
     }
   } catch (e) {
