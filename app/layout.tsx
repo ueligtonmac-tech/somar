@@ -8,12 +8,12 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Bot João · Onboarding inteligente da Ultragaz',
+  title: 'HUB Somar · Ultragaz',
   description: 'Plataforma de onboarding para consultores de canais digitais Ultragaz',
   icons: {
-    icon: '/bot-joao.webp',
-    apple: '/bot-joao.webp',
-    shortcut: '/bot-joao.webp',
+    icon: '/ug-icon.jpg',
+    apple: '/ug-icon.jpg',
+    shortcut: '/ug-icon.jpg',
   },
   manifest: '/manifest.webmanifest',
 }
