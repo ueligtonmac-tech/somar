@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'HUB Somar · Ultragaz',
-    short_name: 'HUB Somar',
+    name: 'Bot João · Ultragaz',
+    short_name: 'Bot João',
     description: 'Plataforma de onboarding para consultores de canais digitais Ultragaz',
     start_url: '/trilha',
     display: 'standalone',

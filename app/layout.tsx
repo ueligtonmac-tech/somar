@@ -8,7 +8,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'HUB Somar · Ultragaz',
+  title: 'Bot João · Ultragaz',
   description: 'Plataforma de onboarding para consultores de canais digitais Ultragaz',
   icons: {
     icon: '/ug-icon.jpg',
