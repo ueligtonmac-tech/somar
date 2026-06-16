@@ -13,7 +13,7 @@ async function extractTextFromUrl(url: string): Promise<string> {
   if (!res.ok) throw new Error(`Falha ao baixar PDF: ${res.status}`)
   const buffer = await res.arrayBuffer()
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfParse = require('pdf-parse')
+  const pdfParse = require('pdf-parse/lib/pdf-parse')
   const data = await pdfParse(Buffer.from(buffer))
   return (data.text as string) || ''
 }
