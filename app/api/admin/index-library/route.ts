@@ -4,6 +4,10 @@ import { generateEmbeddingsBatch } from '@/lib/embeddings'
 import { logger } from '@/lib/logger'
 import { NextRequest, NextResponse } from 'next/server'
 
+// Força runtime Node.js (necessário para pdf-parse)
+export const runtime = 'nodejs'
+export const maxDuration = 300 // 5 minutos para processar todos os PDFs
+
 // Extrai texto de um PDF via URL pública usando pdf-parse
 async function extractTextFromUrl(url: string): Promise<string> {
   const res = await fetch(url)

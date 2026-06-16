@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Pacotes Node.js nativos usados em Server Components/API routes
+  // pdf-parse precisa rodar no Node.js runtime (não no Edge)
+  serverExternalPackages: ['pdf-parse'],
+
   // Comprime respostas HTTP — páginas carregam mais rápido
   compress: true,
 
