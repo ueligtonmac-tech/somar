@@ -73,7 +73,8 @@ export default function RagIndexPanel() {
         body: JSON.stringify({ reindex }),
       })
       const data = await res.json()
-      setResultLib(data.message ?? (data.error ? `Erro: ${data.error}` : 'Concluído'))
+      const details = data.errorDetails?.length ? '\n\nDetalhes:\n' + data.errorDetails.slice(0, 3).join('\n') : ''
+      setResultLib((data.message ?? (data.error ? `Erro: ${data.error}` : 'Concluído')) + details)
       await fetchStatus()
     } catch {
       setResultLib('Erro ao indexar biblioteca. Tente novamente.')
