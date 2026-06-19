@@ -7,25 +7,21 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Plataforma de onboarding para consultores de canais digitais Ultragaz',
     start_url: '/trilha',
     display: 'standalone',
-    background_color: '#ffffff',
+    background_color: '#000FFF',
     theme_color: '#000FFF',
     orientation: 'portrait',
     icons: [
       {
-        src: '/ug-icon.jpg',
+        src: '/bot-joao-splash.png',
         sizes: '192x192',
-        type: 'image/jpeg',
+        type: 'image/png',
+        purpose: 'any',
       },
       {
-        src: '/ug-icon.jpg',
+        src: '/bot-joao-splash.png',
         sizes: '512x512',
-        type: 'image/jpeg',
-      },
-      {
-        src: '/ug-icon.jpg',
-        sizes: 'any',
-        type: 'image/jpeg',
-        purpose: 'maskable',
+        type: 'image/png',
+        purpose: 'any',
       },
     ],
   }
