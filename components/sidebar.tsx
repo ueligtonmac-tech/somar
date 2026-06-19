@@ -73,7 +73,16 @@ export default function Sidebar({ profile, modules, progress }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3">
-        <p className="px-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Trilha</p>
+        {/* Nova Trilha Gamificada */}
+        <div className="px-2 mb-3">
+          <Link href="/trilha-nova" onClick={onNavigate}
+            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold transition-all
+              ${pathname.startsWith('/trilha-nova') ? 'bg-[#000FFF] text-white' : 'bg-[#000FFF]/10 text-[#000FFF] hover:bg-[#000FFF]/20'}`}>
+            <span>🚀</span> Nova Trilha Gamificada
+            {!pathname.startsWith('/trilha-nova') && <span className="ml-auto text-[10px] bg-[#000FFF] text-white px-1.5 py-0.5 rounded-full font-black">NOVO</span>}
+          </Link>
+        </div>
+        <p className="px-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Trilha Clássica</p>
         <ul className="space-y-0.5 px-2">
           {modules.map((mod) => {
             const prog = progressMap.get(mod.id)
