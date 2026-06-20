@@ -11,9 +11,12 @@ export const metadata: Metadata = {
   title: 'Bot João · Ultragaz',
   description: 'Plataforma de onboarding para consultores de canais digitais Ultragaz',
   icons: {
-    icon: '/ug-icon.jpg',
-    apple: '/ug-icon.jpg',
-    shortcut: '/ug-icon.jpg',
+    icon: [
+      { url: '/bot-joao-icon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/bot-joao-icon.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: '/bot-joao-icon.png',
+    shortcut: '/bot-joao-icon.png',
   },
   manifest: '/manifest.webmanifest',
 }
