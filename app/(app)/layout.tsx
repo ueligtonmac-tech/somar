@@ -17,7 +17,7 @@ export default async function AppLayout({
 
   if (!user) redirect('/login')
 
-  const [{ data: profile }, { count: unreadCount }] = await Promise.all([
+  const [{ data: profile }, { count: unreadCount }, { data: trailSections }, { data: trailProgress }] = await Promise.all([
     supabase
       .from('profiles')
       .select('full_name, email, role')
@@ -28,6 +28,14 @@ export default async function AppLayout({
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
       .eq('read', false),
+    supabase
+      .from('trail_sections')
+      .select('id, title, order_index')
+      .order('order_index'),
+    supabase
+      .from('trail_user_progress')
+      .select('section_id, quiz_passed, intro_done')
+      .eq('user_id', user.id),
   ])
 
   const safeProfile = profile ?? { full_name: null, email: user.email ?? '', role: 'consultant' }
@@ -38,7 +46,7 @@ export default async function AppLayout({
       <div className="flex h-screen bg-ug-gray-50 overflow-hidden">
         {/* Sidebar — oculta na impressão */}
         <div className="print:hidden">
-          <Sidebar profile={safeProfile} />
+          <Sidebar profile={safeProfile} trailSections={trailSections ?? []} trailProgress={trailProgress ?? []} />
         </div>
         {/* Coluna principal: TopBar (desktop) + conteúdo */}
         <div className="flex-1 flex flex-col overflow-hidden print:overflow-visible print:block">

@@ -25,15 +25,30 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
   const router = useRouter()
   const color = section.trail_blocks?.color ?? '#000FFF'
 
+  // Steps disponíveis: pular flashcards e quiz se vazios (excluindo 'done' que é estado terminal)
+  type ContentStep = 'intro' | 'module' | 'flashcards' | 'quiz'
+  const ALL_CONTENT_STEPS: ContentStep[] = ['intro', 'module', 'flashcards', 'quiz']
+  const availableSteps: ContentStep[] = ALL_CONTENT_STEPS.filter(s => {
+    if (s === 'flashcards') return flashcards.length > 0
+    if (s === 'quiz') return quizQuestions.length > 0
+    return true
+  })
+
   // Determina passo inicial baseado no progresso existente
   const initialStep: Step = (() => {
     if (!progress) return 'intro'
     if (!progress.intro_done) return 'intro'
-    if (!progress.module_done) return 'module'
-    if (!progress.flashcards_done) return 'flashcards'
-    if (!progress.quiz_passed) return 'quiz'
+    if (!progress.module_done) return availableSteps.includes('module') ? 'module' : (availableSteps[availableSteps.indexOf('intro') + 1] ?? 'done')
+    if (!progress.flashcards_done && flashcards.length > 0) return 'flashcards'
+    if (!progress.quiz_passed && quizQuestions.length > 0) return 'quiz'
     return 'done'
   })()
+
+  function getNextAvailable(current: Step): Step {
+    if (current === 'done') return 'done'
+    const idx = availableSteps.indexOf(current as ContentStep)
+    return availableSteps[idx + 1] ?? 'done'
+  }
 
   const [step, setStep] = useState<Step>(initialStep)
   const [saving, setSaving] = useState(false)
@@ -47,9 +62,10 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
   const [quizSubmitted, setQuizSubmitted] = useState(false)
   const [quizScore, setQuizScore] = useState<number | null>(null)
 
-  const STEPS: Step[] = ['intro', 'module', 'flashcards', 'quiz']
-  const stepIndex = STEPS.indexOf(step)
-  const stepPct = step === 'done' ? 100 : Math.round(((stepIndex) / STEPS.length) * 100)
+  // visibleSteps são os steps de conteúdo disponíveis (sem 'done')
+  const visibleSteps = availableSteps
+  const stepIndex = step !== 'done' ? visibleSteps.indexOf(step) : -1
+  const stepPct = step === 'done' ? 100 : stepIndex >= 0 ? Math.round((stepIndex / visibleSteps.length) * 100) : 0
 
   async function markStep(completedStep: Step, extra: Record<string, unknown> = {}) {
     setSaving(true)
@@ -65,9 +81,8 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
   }
 
   async function goNext() {
-    const order: Step[] = ['intro', 'module', 'flashcards', 'quiz', 'done']
-    const next = order[order.indexOf(step) + 1]
     await markStep(step)
+    const next = getNextAvailable(step)
     setStep(next)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -86,9 +101,8 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
   // STEP: INTRO
   // ────────────────────────────────────────
   if (step === 'intro') return (
-    <Layout section={section} color={color} stepPct={stepPct} step={step}>
+    <Layout section={section} color={color} stepPct={stepPct} step={step} visibleSteps={visibleSteps}>
       <div className="space-y-4">
-        {/* Material da biblioteca */}
         {libraryFiles.length > 0 && (
           <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100">
             <p className="text-xs font-bold text-blue-700 uppercase tracking-widest mb-2">📚 Material de apoio</p>
@@ -103,7 +117,6 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
           </div>
         )}
 
-        {/* Introdução */}
         <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
           <h2 className="text-lg font-black text-gray-900 mb-3">{section.intro_title ?? section.title}</h2>
           <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{section.intro_text}</p>
@@ -112,7 +125,7 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
         <button onClick={goNext} disabled={saving}
           className="w-full py-4 rounded-2xl text-white font-black text-base transition-opacity disabled:opacity-50"
           style={{ background: color }}>
-          {saving ? 'Salvando...' : 'Entendi — avançar para o módulo →'}
+          {saving ? 'Salvando...' : visibleSteps.includes('module') ? 'Entendi — avançar para o módulo →' : visibleSteps.includes('flashcards') ? 'Avançar para os flashcards →' : visibleSteps.includes('quiz') ? 'Ir para o quiz →' : 'Concluir seção →'}
         </button>
       </div>
     </Layout>
@@ -122,7 +135,7 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
   // STEP: MÓDULO EXPANDIDO
   // ────────────────────────────────────────
   if (step === 'module') return (
-    <Layout section={section} color={color} stepPct={stepPct} step={step}>
+    <Layout section={section} color={color} stepPct={stepPct} step={step} visibleSteps={visibleSteps}>
       <div className="space-y-4">
         {moduleCards.length === 0 ? (
           <div className="bg-white rounded-2xl p-5 border border-gray-100 text-center text-gray-400">
@@ -160,7 +173,7 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
         <button onClick={goNext} disabled={saving}
           className="w-full py-4 rounded-2xl text-white font-black text-base transition-opacity disabled:opacity-50"
           style={{ background: color }}>
-          {saving ? 'Salvando...' : 'Ótimo — partir para os flashcards 📇'}
+          {saving ? 'Salvando...' : visibleSteps.includes('flashcards') ? 'Ótimo — partir para os flashcards 📇' : visibleSteps.includes('quiz') ? 'Partir para o quiz 📝' : 'Concluir seção →'}
         </button>
       </div>
     </Layout>
@@ -174,26 +187,23 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
     const isLast = cardIndex === flashcards.length - 1
 
     return (
-      <Layout section={section} color={color} stepPct={stepPct} step={step}>
+      <Layout section={section} color={color} stepPct={stepPct} step={step} visibleSteps={visibleSteps}>
         <div className="space-y-4">
           <div className="flex justify-between items-center text-sm text-gray-400">
             <span>Card {cardIndex + 1} de {flashcards.length}</span>
             <span className="font-bold" style={{ color }}>{Math.round(((cardIndex + 1) / flashcards.length) * 100)}%</span>
           </div>
 
-          {/* Card com flip */}
           <div className="relative h-52 cursor-pointer" onClick={() => setFlipped(f => !f)}
             style={{ perspective: '1000px' }}>
-            <div className={`relative w-full h-full transition-transform duration-500`}
+            <div className="relative w-full h-full transition-transform duration-500"
               style={{ transformStyle: 'preserve-3d', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
-              {/* Frente */}
               <div className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center shadow-md"
                 style={{ backfaceVisibility: 'hidden', background: color }}>
                 <p className="text-xs text-white/70 font-bold uppercase tracking-widest mb-3">Pergunta</p>
                 <p className="text-white font-black text-lg leading-snug">{card?.front}</p>
                 <p className="text-white/60 text-xs mt-4">Toque para revelar ↩</p>
               </div>
-              {/* Verso */}
               <div className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center bg-white border-2 shadow-md"
                 style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', borderColor: color }}>
                 <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color }}>Resposta</p>
@@ -213,7 +223,7 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
                 disabled={saving}
                 className="flex-1 py-3 rounded-xl text-white font-black text-sm disabled:opacity-50"
                 style={{ background: color }}>
-                {saving ? '...' : 'Quiz! →'}
+                {saving ? '...' : visibleSteps.includes('quiz') ? 'Quiz! →' : 'Concluir →'}
               </button>
             ) : (
               <button onClick={() => { setCardIndex(i => i + 1); setFlipped(false) }}
@@ -232,7 +242,7 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
   // STEP: QUIZ
   // ────────────────────────────────────────
   if (step === 'quiz') return (
-    <Layout section={section} color={color} stepPct={stepPct} step={step}>
+    <Layout section={section} color={color} stepPct={stepPct} step={step} visibleSteps={visibleSteps}>
       <div className="space-y-5">
         {!quizSubmitted ? (
           <>
@@ -265,7 +275,6 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
           </>
         ) : (
           <div className="space-y-4">
-            {/* Resultado */}
             <div className={`rounded-2xl p-6 text-center ${quizScore! >= 60 ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
               <p className="text-5xl font-black mb-1" style={{ color: quizScore! >= 60 ? '#16a34a' : '#dc2626' }}>{quizScore}%</p>
               <p className="font-bold text-lg">{quizScore! >= 60 ? '🎉 Aprovado!' : '😬 Tente novamente'}</p>
@@ -274,7 +283,6 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
               </p>
             </div>
 
-            {/* Gabarito */}
             <div className="space-y-3">
               {quizQuestions.map((q, qi) => {
                 const chosen = quizAnswers[qi]
@@ -320,7 +328,7 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
   // STEP: DONE
   // ────────────────────────────────────────
   return (
-    <Layout section={section} color={color} stepPct={100} step="done">
+    <Layout section={section} color={color} stepPct={100} step="done" visibleSteps={visibleSteps}>
       <div className="text-center space-y-6 py-8">
         <div className="text-7xl">🏅</div>
         <div>
@@ -339,35 +347,63 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
 
 // ── Layout wrapper ──────────────────────────
 const STEP_LABELS: Record<string, string> = {
-  intro: '1 Introdução',
-  module: '2 Módulo',
-  flashcards: '3 Flashcards',
-  quiz: '4 Quiz',
+  intro: 'Introdução',
+  module: 'Módulo',
+  flashcards: 'Flashcards',
+  quiz: 'Quiz',
   done: '✓ Concluída',
 }
 
-function Layout({ section, color, stepPct, step, children }: {
-  section: Props['section']; color: string; stepPct: number; step: Step; children: React.ReactNode
+function Layout({ section, color, stepPct, step, visibleSteps, children }: {
+  section: Props['section']; color: string; stepPct: number; step: Step; visibleSteps: Step[]; children: React.ReactNode
 }) {
   const router = useRouter()
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Header */}
-      <div className="text-white px-4 pt-6 pb-5" style={{ background: color }}>
-        <button onClick={() => router.push('/trilha')} className="text-white/70 text-sm mb-3 flex items-center gap-1">
-          ← Trilha
-        </button>
-        <p className="text-xs opacity-70 font-bold uppercase tracking-widest">{section.trail_blocks?.title}</p>
-        <h1 className="text-xl font-black mt-0.5">{section.title}</h1>
+      {/* Header — branco com borda colorida à esquerda */}
+      <div className="bg-white border-b border-gray-100 shadow-sm">
+        {/* Breadcrumb */}
+        <div className="px-4 pt-4 pb-2">
+          <button onClick={() => router.push('/trilha')}
+            className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors mb-3">
+            <span>←</span>
+            <span>Trilha</span>
+            {section.trail_blocks?.title && (
+              <>
+                <span className="text-gray-200">›</span>
+                <span className="truncate max-w-[100px]">{section.trail_blocks.title}</span>
+              </>
+            )}
+          </button>
 
-        {/* Steps */}
-        <div className="flex gap-2 mt-4">
-          {(['intro', 'module', 'flashcards', 'quiz'] as Step[]).map(s => (
-            <div key={s} className={`flex-1 text-center text-[10px] font-bold py-1 rounded-full transition-all
-              ${s === step ? 'bg-white text-gray-900' : stepPct >= 100 ? 'bg-white/40 text-white' : 'bg-white/20 text-white/60'}`}>
-              {STEP_LABELS[s]}
-            </div>
-          ))}
+          {/* Título com linha colorida à esquerda */}
+          <div className="flex items-start gap-3">
+            <div className="w-1 self-stretch rounded-full shrink-0 mt-0.5" style={{ background: color, minHeight: '32px' }} />
+            <h1 className="text-lg font-black text-gray-900 leading-snug">{section.title}</h1>
+          </div>
+        </div>
+
+        {/* Tabs de steps — somente steps visíveis */}
+        {visibleSteps.length > 1 && (
+          <div className="flex px-4 gap-1 mt-2">
+            {visibleSteps.map((s, i) => {
+              const isActive = s === step
+              const isDone = visibleSteps.indexOf(step) > i || step === 'done'
+              return (
+                <div key={s}
+                  className={`flex-1 text-center text-[11px] font-semibold py-2 border-b-2 transition-all
+                    ${isActive ? 'border-b-[#000FFF] text-[#000FFF]' : isDone ? 'border-b-green-400 text-green-600' : 'border-b-transparent text-gray-400'}`}
+                  style={isActive ? { borderColor: color, color } : {}}>
+                  {isDone && !isActive ? '✓' : STEP_LABELS[s]}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Barra de progresso discreta */}
+        <div className="h-0.5 bg-gray-100">
+          <div className="h-full transition-all duration-500" style={{ width: `${stepPct}%`, background: color }} />
         </div>
       </div>
 

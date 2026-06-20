@@ -39,37 +39,42 @@ export default function TrailHomeClient({ blocks, sections, progress, badges, to
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Hero */}
-      <div className="bg-[#000FFF] text-white px-5 pt-8 pb-6">
-        <p className="text-xs font-bold uppercase tracking-widest opacity-70 mb-1">Trilha de Capacitação</p>
-        <h1 className="text-2xl font-black mb-4">Sua jornada Ultragaz 🚀</h1>
+      {/* Hero — fundo branco, título azul */}
+      <div className="bg-white border-b border-gray-100 px-5 pt-6 pb-5 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Trilha de Capacitação</p>
+        <h1 className="text-2xl font-black text-[#000FFF] mb-4">Sua jornada Ultragaz 🚀</h1>
 
         {/* Pontos e progresso geral */}
         <div className="flex items-center justify-between mb-3">
           <div>
-            <span className="text-3xl font-black">{totalPoints}</span>
-            <span className="text-sm opacity-70 ml-1">pontos</span>
+            <span className="text-3xl font-black text-gray-900">{totalPoints}</span>
+            <span className="text-sm text-gray-400 ml-1">pontos</span>
           </div>
           <div className="text-right">
-            <span className="text-lg font-bold">{overallPct}%</span>
-            <p className="text-xs opacity-70">concluído</p>
+            <span className="text-lg font-bold text-[#000FFF]">{overallPct}%</span>
+            <p className="text-xs text-gray-400">concluído</p>
           </div>
         </div>
-        <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
           <div
-            className="h-full bg-white rounded-full transition-all duration-700"
-            style={{ width: `${overallPct}%` }}
+            className="h-full rounded-full transition-all duration-700"
+            style={{ width: `${overallPct}%`, background: '#000FFF' }}
           />
         </div>
 
-        {/* Badges */}
-        <div className="flex gap-3 mt-5 overflow-x-auto pb-1 scrollbar-none">
-          {BADGES.map(b => (
-            <div key={b.key} className={`flex flex-col items-center min-w-[56px] ${earnedBadges.has(b.key) ? '' : 'opacity-30'}`}>
-              <span className="text-2xl">{b.icon}</span>
-              <span className="text-[10px] text-white/80 mt-0.5 text-center leading-tight">{b.label}</span>
-            </div>
-          ))}
+        {/* Badges — fundo branco, sem container azul */}
+        <div className="flex gap-4 mt-5 overflow-x-auto pb-1 scrollbar-none">
+          {BADGES.map(b => {
+            const earned = earnedBadges.has(b.key)
+            return (
+              <div key={b.key}
+                title={b.desc}
+                className={`flex flex-col items-center min-w-[52px] transition-opacity ${earned ? 'opacity-100' : 'opacity-30'}`}>
+                <span className="text-[30px] leading-none">{b.icon}</span>
+                <span className="text-[10px] text-gray-500 mt-1 text-center leading-tight font-medium">{b.label}</span>
+              </div>
+            )
+          })}
         </div>
       </div>
 
@@ -83,7 +88,7 @@ export default function TrailHomeClient({ blocks, sections, progress, badges, to
 
           return (
             <div key={block.id} className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-              {/* Header do bloco */}
+              {/* Header do bloco com borda colorida à esquerda */}
               <div className="px-4 py-3 flex items-center gap-3" style={{ borderLeft: `4px solid ${block.color}` }}>
                 <span className="text-2xl">{block.icon}</span>
                 <div className="flex-1 min-w-0">
@@ -107,10 +112,8 @@ export default function TrailHomeClient({ blocks, sections, progress, badges, to
                   const done = p?.quiz_passed ?? false
                   const started = p?.intro_done ?? false
 
-                  // Lógica de desbloqueio: seção 0 sempre livre, demais exigem anterior concluída
                   const prevSection = idx > 0 ? blockSections[idx - 1] : null
                   const prevDone = !prevSection || progressMap[prevSection.id]?.quiz_passed
-                  // Bloco 0 (Módulo 0) sempre desbloqueado
                   const isUnlocked = block.order_index === 0 || prevDone
 
                   return (

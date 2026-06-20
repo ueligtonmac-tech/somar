@@ -9,9 +9,15 @@ import UserMenu from './UserMenu'
 import { useNotifications } from './NotificationProvider'
 
 interface Profile { full_name: string | null; email: string; role: string }
-interface SidebarProps { profile: Profile }
+interface TrailSection { id: string; title: string; order_index: number }
+interface TrailProgress { section_id: string; quiz_passed: boolean; intro_done: boolean }
+interface SidebarProps {
+  profile: Profile
+  trailSections?: TrailSection[]
+  trailProgress?: TrailProgress[]
+}
 
-export default function Sidebar({ profile }: SidebarProps) {
+export default function Sidebar({ profile, trailSections = [], trailProgress = [] }: SidebarProps) {
   const { unreadCount: unreadNotifications } = useNotifications()
   const pathname = usePathname()
   const router = useRouter()
@@ -24,6 +30,8 @@ export default function Sidebar({ profile }: SidebarProps) {
   }
 
   const isTrail = pathname === '/trilha' || pathname.startsWith('/trilha/')
+  const isInTrail = pathname.startsWith('/trilha')
+  const progressMap = Object.fromEntries(trailProgress.map(p => [p.section_id, p]))
 
   const SidebarContent = ({ onNavigate }: { onNavigate?: (() => void) | undefined }) => (
     <aside className="w-64 flex-shrink-0 bg-white flex flex-col h-full">
@@ -52,11 +60,38 @@ export default function Sidebar({ profile }: SidebarProps) {
           href="/trilha"
           onClick={onNavigate}
           className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold transition-all
-            ${isTrail ? 'bg-[#000FFF] text-white' : 'text-gray-700 hover:bg-gray-50'}`}
+            ${pathname === '/trilha' ? 'bg-[#000FFF] text-white' : isInTrail ? 'text-[#000FFF]' : 'text-gray-700 hover:bg-gray-50'}`}
         >
           <TrailIcon active={isTrail} />
           <span>Trilha</span>
         </Link>
+
+        {/* Lista de seções — somente quando estiver dentro de /trilha */}
+        {isInTrail && trailSections.length > 0 && (
+          <div className="ml-3 pl-3 border-l border-gray-100 space-y-0.5 mt-0.5">
+            {trailSections.map((section, idx) => {
+              const p = progressMap[section.id]
+              const done = p?.quiz_passed ?? false
+              const started = p?.intro_done ?? false
+              const isActive = pathname === `/trilha/${section.id}`
+              return (
+                <Link
+                  key={section.id}
+                  href={`/trilha/${section.id}`}
+                  onClick={onNavigate}
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition-all
+                    ${isActive ? 'bg-[#000FFF]/10 text-[#000FFF] font-bold' : 'text-gray-500 hover:bg-gray-50'}`}
+                >
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0
+                    ${done ? 'bg-green-500 text-white' : started ? 'bg-[#000FFF] text-white' : 'bg-gray-100 text-gray-400'}`}>
+                    {done ? '✓' : idx + 1}
+                  </div>
+                  <span className="truncate">{section.title}</span>
+                </Link>
+              )
+            })}
+          </div>
+        )}
 
         {/* Biblioteca */}
         <Link
