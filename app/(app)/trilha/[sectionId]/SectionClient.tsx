@@ -21,7 +21,7 @@ interface Props {
   userId: string
 }
 
-export default function SectionClient({ section, flashcards, quizQuestions, progress, libraryFiles, moduleCards, userId }: Props) {
+export default function SectionClient({ section, flashcards, quizQuestions, progress, libraryFiles, moduleCards }: Props) {
   const router = useRouter()
   const color = section.trail_blocks?.color ?? '#000FFF'
 
