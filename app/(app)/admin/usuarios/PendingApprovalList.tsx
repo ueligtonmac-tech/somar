@@ -20,6 +20,7 @@ function ApproveRow({ user, perfis }: { user: PendingUser; perfis: { slug: strin
   const [perfil, setPerfil] = useState('')
   const [done, setDone] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Auto-ajusta role quando perfil "gerencial" é selecionado
   const handlePerfilChange = (slug: string) => {
@@ -29,17 +30,27 @@ function ApproveRow({ user, perfis }: { user: PendingUser; perfis: { slug: strin
   }
 
   const handleApprove = () => {
+    setError(null)
     startTransition(async () => {
-      await approveUser(user.id, role, perfil || undefined)
-      setDone(true)
+      try {
+        await approveUser(user.id, role, perfil || undefined)
+        setDone(true)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro ao aprovar usuário. Tente novamente.')
+      }
     })
   }
 
   const handleReject = () => {
     if (!confirm(`Rejeitar o cadastro de ${user.full_name || user.email}? O usuário não poderá acessar a plataforma.`)) return
+    setError(null)
     startTransition(async () => {
-      await rejectUser(user.id)
-      setDone(true)
+      try {
+        await rejectUser(user.id)
+        setDone(true)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro ao rejeitar usuário. Tente novamente.')
+      }
     })
   }
 
@@ -47,6 +58,11 @@ function ApproveRow({ user, perfis }: { user: PendingUser; perfis: { slug: strin
 
   return (
     <div className="border-b border-amber-100 last:border-0">
+      {error && (
+        <div className="mx-5 mt-3 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 font-semibold">
+          ⚠️ {error}
+        </div>
+      )}
       {/* Linha principal */}
       <div className="flex items-center gap-4 px-5 py-4 bg-amber-50/60 hover:bg-amber-50 transition-colors">
         {/* Avatar + toggle detalhes */}
