@@ -12,13 +12,21 @@ interface ModuleCard { title: string; scenario: string; challenge: string; expla
 interface Progress { intro_done: boolean; module_done: boolean; flashcards_done: boolean; quiz_passed: boolean; quiz_score: number | null; points_earned: number }
 
 interface Props {
-  section: { id: string; title: string; intro_title: string | null; intro_text: string | null; points_value: number; trail_blocks: { color: string; icon: string; title: string } }
+  section: { id: string; title: string; intro_title: string | null; intro_text: string | null; points_value: number; video_url?: string | null; trail_blocks: { color: string; icon: string; title: string } }
   flashcards: Flashcard[]
   quizQuestions: QuizQuestion[]
   progress: Progress | null
   libraryFiles: LibraryFile[]
   moduleCards: ModuleCard[]
   userId: string
+}
+
+function getEmbedUrl(url: string) {
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/)
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`
+  const vm = url.match(/vimeo\.com\/(\d+)/)
+  if (vm) return `https://player.vimeo.com/video/${vm[1]}`
+  return url
 }
 
 export default function SectionClient({ section, flashcards, quizQuestions, progress, libraryFiles, moduleCards }: Props) {
@@ -114,6 +122,12 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
                 </a>
               ))}
             </div>
+          </div>
+        )}
+
+        {section.video_url && (
+          <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm aspect-video">
+            <iframe src={getEmbedUrl(section.video_url)} className="w-full h-full" allowFullScreen title={section.title} />
           </div>
         )}
 
@@ -340,6 +354,10 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
           style={{ background: color }}>
           Voltar à trilha 🚀
         </button>
+        <a href="/trilha/certificado"
+          className="block w-full py-3 rounded-2xl border-2 border-[#000FFF] text-[#000FFF] font-black text-sm text-center">
+          🎓 Ver meu certificado
+        </a>
       </div>
     </Layout>
   )
