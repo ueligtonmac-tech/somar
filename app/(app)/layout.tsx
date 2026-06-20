@@ -17,28 +17,18 @@ export default async function AppLayout({
 
   if (!user) redirect('/login')
 
-  const [{ data: profile }, { data: modules }, { data: progress }, { count: unreadCount }] =
-    await Promise.all([
-      supabase
-        .from('profiles')
-        .select('full_name, email, role')
-        .eq('id', user.id)
-        .single(),
-      supabase
-        .from('modules')
-        .select('id, slug, title, order_index')
-        .eq('published', true)
-        .order('order_index'),
-      supabase
-        .from('user_progress')
-        .select('module_id, completed, cards_seen')
-        .eq('user_id', user.id),
-      supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('read', false),
-    ])
+  const [{ data: profile }, { count: unreadCount }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('full_name, email, role')
+      .eq('id', user.id)
+      .single(),
+    supabase
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('read', false),
+  ])
 
   const safeProfile = profile ?? { full_name: null, email: user.email ?? '', role: 'consultant' }
   const notifCount = unreadCount ?? 0
@@ -48,11 +38,7 @@ export default async function AppLayout({
       <div className="flex h-screen bg-ug-gray-50 overflow-hidden">
         {/* Sidebar — oculta na impressão */}
         <div className="print:hidden">
-          <Sidebar
-            profile={safeProfile}
-            modules={modules ?? []}
-            progress={progress ?? []}
-          />
+          <Sidebar profile={safeProfile} />
         </div>
         {/* Coluna principal: TopBar (desktop) + conteúdo */}
         <div className="flex-1 flex flex-col overflow-hidden print:overflow-visible print:block">

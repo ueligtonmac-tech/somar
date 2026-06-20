@@ -294,7 +294,7 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
             </div>
 
             {quizScore! >= 60 ? (
-              <button onClick={() => router.push('/trilha-nova')}
+              <button onClick={() => router.push('/trilha')}
                 className="w-full py-4 rounded-2xl text-white font-black text-base"
                 style={{ background: color }}>
                 Continuar trilha 🚀
@@ -327,7 +327,7 @@ export default function SectionClient({ section, flashcards, quizQuestions, prog
           <h2 className="text-2xl font-black text-gray-900">Seção concluída!</h2>
           <p className="text-gray-500 mt-1">+{section.points_value} pontos adicionados</p>
         </div>
-        <button onClick={() => router.push('/trilha-nova')}
+        <button onClick={() => router.push('/trilha')}
           className="w-full py-4 rounded-2xl text-white font-black text-base"
           style={{ background: color }}>
           Voltar à trilha 🚀
@@ -354,7 +354,7 @@ function Layout({ section, color, stepPct, step, children }: {
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
       <div className="text-white px-4 pt-6 pb-5" style={{ background: color }}>
-        <button onClick={() => router.push('/trilha-nova')} className="text-white/70 text-sm mb-3 flex items-center gap-1">
+        <button onClick={() => router.push('/trilha')} className="text-white/70 text-sm mb-3 flex items-center gap-1">
           ← Trilha
         </button>
         <p className="text-xs opacity-70 font-bold uppercase tracking-widest">{section.trail_blocks?.title}</p>

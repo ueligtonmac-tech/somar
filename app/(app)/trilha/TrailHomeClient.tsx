@@ -116,7 +116,7 @@ export default function TrailHomeClient({ blocks, sections, progress, badges, to
                   return (
                     <button
                       key={section.id}
-                      onClick={() => isUnlocked && router.push(`/trilha-nova/${section.id}`)}
+                      onClick={() => isUnlocked && router.push(`/trilha/${section.id}`)}
                       disabled={!isUnlocked}
                       className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors
                         ${isUnlocked ? 'hover:bg-gray-50 active:bg-gray-100' : 'opacity-40 cursor-not-allowed'}`}

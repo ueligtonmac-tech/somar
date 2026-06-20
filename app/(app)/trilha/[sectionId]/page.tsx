@@ -16,7 +16,7 @@ export default async function SectionPage({ params }: { params: { sectionId: str
     .eq('id', sectionId)
     .single()
 
-  if (!section) redirect('/trilha-nova')
+  if (!section) redirect('/trilha')
 
   // 2. Busca tudo em paralelo
   const libraryIds = (section.library_file_ids ?? []) as string[]
