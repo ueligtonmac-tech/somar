@@ -19,7 +19,7 @@ interface FeedbackState {
 
 const BOT_AVATAR = (
   <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-[#000FFF]">
-    <Image src="/bot-joao-mascote.png" alt="Bot João" width={32} height={32} className="object-cover scale-125 translate-y-1" />
+    <Image src="/bot-joao.webp" alt="Bot João" width={32} height={32} className="object-cover scale-125 translate-y-1" />
   </div>
 )
 
@@ -69,7 +69,7 @@ function BotJoaoMobile() {
         aria-label="Abrir Bot João"
       >
         <Image
-          src="/bot-joao-mascote.png"
+          src="/bot-joao.webp"
           alt="Bot João"
           width={64}
           height={64}
@@ -302,7 +302,7 @@ function BotJoaoDesktop() {
         </div>
       )}
 
-      {/* Mascote flutuante desktop — vídeo loopando */}
+      {/* Mascote flutuante desktop — MAIOR */}
       <button
         onClick={() => setOpen(o => !o)}
         className="fixed bottom-4 right-4 z-50 w-36 h-36 drop-shadow-2xl hover:scale-105 transition-transform"
@@ -310,14 +310,13 @@ function BotJoaoDesktop() {
         title="Fale com o Bot João"
         aria-label="Abrir Bot João"
       >
-        <video
-          src="/bot-joao-animated.webm"
-          autoPlay
-          loop
-          muted
-          playsInline
+        <Image
+          src="/bot-joao.webp"
+          alt="Bot João"
+          width={100}
+          height={144}
           className="w-full h-full object-contain"
-          style={{ pointerEvents: 'none' }}
+          priority
         />
         {/* Badge de fechar quando aberto */}
         {open && (
@@ -336,7 +335,7 @@ function BotJoaoDesktop() {
           {/* Header */}
           <div className="bg-[#000FFF] px-4 py-3 flex items-center gap-3 flex-shrink-0">
             <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex-shrink-0">
-              <Image src="/bot-joao-mascote.png" alt="Bot João" width={40} height={40} className="object-contain scale-110" />
+              <Image src="/bot-joao.webp" alt="Bot João" width={40} height={40} className="object-contain scale-110" />
             </div>
             <div className="flex-1">
               <p className="text-white font-bold text-sm">Bot João</p>
