@@ -3,13 +3,13 @@
 import { useRouter } from 'next/navigation'
 
 const BADGES = [
-  { key: 'iniciante',   icon: '🌱', label: 'Iniciante',        desc: 'Completou o Módulo 0' },
-  { key: 'digital',     icon: '📱', label: 'Digital',          desc: 'Concluiu Canais Digitais' },
-  { key: 'hubmaster',   icon: '🖥️', label: 'HUBmaster',        desc: 'Concluiu o HUB Somar' },
-  { key: 'gasexpert',   icon: '⛽', label: 'Especialista Gás', desc: 'Concluiu Vale Gás' },
-  { key: 'engajador',   icon: '🤝', label: 'Engajador',        desc: 'Concluiu AmigU' },
-  { key: 'financeiro',  icon: '💰', label: 'Financeiro',       desc: 'Concluiu Financeiro' },
-  { key: 'master',      icon: '🏆', label: 'Master Ultragaz',  desc: 'Trilha 100% completa' },
+  { key: 'iniciante',  abbr: 'IN', color: '#6366f1', label: 'Iniciante',        desc: 'Completou o Bloco 0' },
+  { key: 'digital',    abbr: 'DG', color: '#000FFF', label: 'Digital',          desc: 'Concluiu Canais Digitais' },
+  { key: 'hubmaster',  abbr: 'HB', color: '#0891b2', label: 'HUBmaster',        desc: 'Concluiu o HUB Somar' },
+  { key: 'gasexpert',  abbr: 'GS', color: '#16a34a', label: 'Especialista Gás', desc: 'Concluiu Vale Gás' },
+  { key: 'engajador',  abbr: 'EN', color: '#ea580c', label: 'Engajador',        desc: 'Concluiu AmigU' },
+  { key: 'financeiro', abbr: 'FN', color: '#7c3aed', label: 'Financeiro',       desc: 'Concluiu Financeiro' },
+  { key: 'master',     abbr: 'MT', color: '#b45309', label: 'Master',           desc: 'Trilha 100% completa' },
 ]
 
 interface Block { id: string; title: string; description: string; icon: string; color: string; order_index: number }
@@ -62,16 +62,18 @@ export default function TrailHomeClient({ blocks, sections, progress, badges, to
           />
         </div>
 
-        {/* Badges — fundo branco, sem container azul */}
-        <div className="flex gap-4 mt-5 overflow-x-auto pb-1 scrollbar-none">
+        {/* Badges */}
+        <div className="flex gap-3 mt-5 overflow-x-auto pb-1 scrollbar-none">
           {BADGES.map(b => {
             const earned = earnedBadges.has(b.key)
             return (
-              <div key={b.key}
-                title={b.desc}
-                className={`flex flex-col items-center min-w-[52px] transition-opacity ${earned ? 'opacity-100' : 'opacity-30'}`}>
-                <span className="text-[30px] leading-none">{b.icon}</span>
-                <span className="text-[10px] text-gray-500 mt-1 text-center leading-tight font-medium">{b.label}</span>
+              <div key={b.key} title={b.desc}
+                className={`flex flex-col items-center min-w-[52px] transition-all ${earned ? 'opacity-100' : 'opacity-25'}`}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-[11px] font-black text-white shadow-sm"
+                  style={{ background: earned ? b.color : '#9ca3af' }}>
+                  {b.abbr}
+                </div>
+                <span className="text-[9px] text-gray-400 mt-1 text-center leading-tight font-semibold uppercase tracking-wide">{b.label}</span>
               </div>
             )
           })}

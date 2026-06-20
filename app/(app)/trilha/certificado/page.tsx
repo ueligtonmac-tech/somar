@@ -2,20 +2,28 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import PrintButton from './PrintButton'
 
-export default async function CertificadoPage() {
+export default async function CertificadoPage({
+  searchParams,
+}: {
+  searchParams: { preview?: string }
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: profile }, { data: progress }] = await Promise.all([
+  const [{ data: profile }, { data: progress }, { data: me }] = await Promise.all([
     supabase.from('profiles').select('full_name, email').eq('id', user.id).single(),
     supabase.from('trail_user_progress').select('quiz_passed, points_earned, completed_at').eq('user_id', user.id),
+    supabase.from('profiles').select('role').eq('id', user.id).single(),
   ])
+
+  const isAdmin = ['admin', 'builder'].includes(me?.role ?? '')
+  const isPreview = searchParams.preview === '1' && isAdmin
 
   const { count: totalSections } = await supabase.from('trail_sections').select('*', { count: 'exact', head: true })
   const doneSections = (progress ?? []).filter(p => p.quiz_passed).length
   const totalPoints = (progress ?? []).reduce((s, p) => s + (p.points_earned ?? 0), 0)
-  const completed = doneSections >= (totalSections ?? 999)
+  const completed = isPreview || doneSections >= (totalSections ?? 999)
 
   const name = profile?.full_name ?? profile?.email ?? 'Consultor'
   const completedAt = progress?.find(p => p.completed_at)?.completed_at
@@ -37,6 +45,11 @@ export default async function CertificadoPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 print:bg-white print:p-0">
+      {isPreview && (
+        <div className="mb-4 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700 font-semibold print:hidden">
+          👁️ Modo pré-visualização — os dados são do seu perfil. O consultor verá os dados dele.
+        </div>
+      )}
       <div className="mb-6 flex gap-3 print:hidden">
         <a href="/trilha" className="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-50">← Voltar à trilha</a>
         <PrintButton />
