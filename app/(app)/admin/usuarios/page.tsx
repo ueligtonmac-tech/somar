@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import UserManagementTable from './UserManagementTable'
 import PendingApprovalList from './PendingApprovalList'
@@ -46,6 +47,12 @@ export default async function UsuariosPage() {
 
     if (!me || !['admin', 'builder'].includes(me.role ?? '')) redirect('/trilha')
 
+    // Service client bypassa RLS para consultas administrativas
+    const service = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
     // Busca usuários, pendentes e tabelas de referência em paralelo
     const [
       { data: activeProfiles, error: activeErr },
@@ -55,12 +62,12 @@ export default async function UsuariosPage() {
       { data: perfisData },
       { data: regioesData },
     ] = await Promise.all([
-      supabase
+      service
         .from('profiles')
         .select('id, full_name, email, role, perfil, funcao, cidade, regiao, whatsapp, created_at')
         .eq('active', true)
         .order('created_at', { ascending: false }),
-      supabase
+      service
         .from('profiles')
         .select('id, full_name, email, whatsapp, funcao, cidade, regiao, created_at')
         .eq('active', false)
@@ -68,7 +75,7 @@ export default async function UsuariosPage() {
         .is('rejected_at', null)
         .order('created_at', { ascending: false }),
       // Cadastros iniciados mas não concluídos (não completou onboarding)
-      supabase
+      service
         .from('profiles')
         .select('id, full_name, email, whatsapp, funcao, cidade, regiao, created_at')
         .eq('active', false)
@@ -76,18 +83,18 @@ export default async function UsuariosPage() {
         .is('rejected_at', null)
         .order('created_at', { ascending: false }),
       // Cadastros rejeitados
-      supabase
+      service
         .from('profiles')
         .select('id, full_name, email, created_at, rejected_at')
         .eq('active', false)
         .not('rejected_at', 'is', null)
         .order('rejected_at', { ascending: false }),
-      supabase
+      service
         .from('perfis_consultor')
         .select('slug, nome')
         .eq('ativo', true)
         .order('ordem'),
-      supabase
+      service
         .from('regioes_geograficas')
         .select('slug, nome')
         .eq('ativo', true)
