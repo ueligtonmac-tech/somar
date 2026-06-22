@@ -21,7 +21,6 @@ export default function Loading() {
           width: 90,
           height: 90,
           objectFit: 'contain',
-          mixBlendMode: 'screen',
           animation: 'bjSpin 1.4s linear infinite',
         }}
       />
