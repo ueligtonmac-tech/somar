@@ -130,14 +130,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/cadastro-rejeitado', request.url))
   }
 
-  // ── 8. Usuário inativo (aguardando aprovação) ──
-  if (!safeProfile?.active) {
+  // ── 8. Usuário inativo (aguardando aprovação) — admin/builder sempre passa ──
+  const isAdminRole = ADMIN_ROLES.includes(safeProfile?.role ?? '')
+  if (!safeProfile?.active && !isAdminRole) {
     return NextResponse.redirect(new URL('/aguardando-aprovacao', request.url))
   }
 
   // ── 9. Rotas de admin — verificar role ──
   if (ADMIN_ROUTES.some(r => pathname.startsWith(r))) {
-    if (!ADMIN_ROLES.includes(safeProfile?.role ?? '')) {
+    if (!isAdminRole) {
       return NextResponse.redirect(new URL('/trilha', request.url))
     }
   }
