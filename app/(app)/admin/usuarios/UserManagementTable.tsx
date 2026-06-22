@@ -4,11 +4,11 @@ import { useState, useTransition, useMemo } from 'react'
 import { updateUserRole, updateUserPhone, resendAccessEmail } from './actions'
 import type { UserProfile, RefItem } from './types'
 
-const ROLES = ['consultor', 'gerencial', 'builder', 'admin'] as const
+const ROLES = ['consultant', 'gerencial', 'builder', 'admin'] as const
 type Role = typeof ROLES[number]
 
 const ROLE_LABELS: Record<Role, string> = {
-  consultor: 'Consultor',
+  consultant: 'Consultor',
   gerencial: 'Gerencial',
   builder: 'Builder',
   admin: 'Admin',
@@ -218,7 +218,7 @@ export default function UserManagementTable({ users, perfis, regioes }: {
 
         <div className="divide-y divide-gray-50">
           {filtered.map(profile => {
-            const role = (ROLES.includes(profile.role as Role) ? profile.role : 'consultor') as Role
+            const role = (ROLES.includes(profile.role as Role) ? profile.role : 'consultant') as Role
             const phone = profile.whatsapp
             const perfilNome = perfis.find(p => p.slug === profile.perfil)?.nome
             const regiaoNome = regioes.find(r => r.slug === profile.regiao)?.nome

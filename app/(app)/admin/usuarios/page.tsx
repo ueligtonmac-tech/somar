@@ -26,6 +26,7 @@ interface PendingRow {
   cidade: string | null
   regiao: string | null
   created_at: string
+  rejected_at?: string | null
 }
 
 export const dynamic = 'force-dynamic'
@@ -48,6 +49,8 @@ export default async function UsuariosPage() {
     const [
       { data: activeProfiles, error: activeErr },
       { data: pendingProfiles, error: pendingErr },
+      { data: incompleteProfiles },
+      { data: rejectedProfiles },
       { data: perfisData },
       { data: regioesData },
     ] = await Promise.all([
@@ -61,7 +64,23 @@ export default async function UsuariosPage() {
         .select('id, full_name, email, whatsapp, funcao, cidade, regiao, created_at')
         .eq('active', false)
         .eq('onboarding_complete', true)
+        .is('rejected_at', null)
         .order('created_at', { ascending: false }),
+      // Cadastros iniciados mas não concluídos (não completou onboarding)
+      supabase
+        .from('profiles')
+        .select('id, full_name, email, whatsapp, funcao, cidade, regiao, created_at')
+        .eq('active', false)
+        .eq('onboarding_complete', false)
+        .is('rejected_at', null)
+        .order('created_at', { ascending: false }),
+      // Cadastros rejeitados
+      supabase
+        .from('profiles')
+        .select('id, full_name, email, created_at, rejected_at')
+        .eq('active', false)
+        .not('rejected_at', 'is', null)
+        .order('rejected_at', { ascending: false }),
       supabase
         .from('perfis_consultor')
         .select('slug, nome')
@@ -76,6 +95,25 @@ export default async function UsuariosPage() {
 
     if (activeErr) logger.error('profiles query error', { context: 'admin/usuarios', error: activeErr })
     if (pendingErr) logger.error('pending profiles query error', { context: 'admin/usuarios', error: pendingErr })
+
+    const incomplete = (incompleteProfiles ?? []).map(p => ({
+      id: p.id,
+      full_name: p.full_name ?? null,
+      email: p.email ?? null,
+      whatsapp: p.whatsapp ?? null,
+      funcao: p.funcao ?? null,
+      cidade: p.cidade ?? null,
+      regiao: p.regiao ?? null,
+      created_at: p.created_at,
+    }))
+
+    const rejected = (rejectedProfiles ?? []).map(p => ({
+      id: p.id,
+      full_name: p.full_name ?? null,
+      email: p.email ?? null,
+      created_at: p.created_at,
+      rejected_at: p.rejected_at ?? null,
+    }))
 
     const users = ((activeProfiles ?? []) as ProfileRow[]).map(p => ({
       id: p.id,
@@ -130,6 +168,60 @@ export default async function UsuariosPage() {
 
         {/* Seção de aprovações pendentes */}
         <PendingApprovalList users={pending} perfis={perfisData ?? []} />
+
+        {/* Cadastros incompletos */}
+        {incomplete.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-gray-400" />
+              <h2 className="text-base font-black text-gray-900">Cadastro Incompleto</h2>
+              <span className="text-xs bg-gray-100 text-gray-600 font-bold px-2.5 py-1 rounded-full">{incomplete.length}</span>
+              <span className="text-xs text-gray-400 font-medium">Iniciaram o cadastro mas não finalizaram</span>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              {incomplete.map(u => (
+                <div key={u.id} className="flex items-center gap-4 px-5 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-gray-400">{(u.full_name ?? u.email ?? '?').charAt(0).toUpperCase()}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-700 truncate">{u.full_name && u.full_name !== u.email ? u.full_name : '—'}</p>
+                    <p className="text-xs text-gray-400 truncate">{u.email}</p>
+                  </div>
+                  <span className="text-xs text-gray-400 flex-shrink-0">{new Date(u.created_at).toLocaleDateString('pt-BR')}</span>
+                  <span className="text-[10px] bg-gray-100 text-gray-500 font-bold px-2 py-1 rounded-full flex-shrink-0">Incompleto</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Cadastros rejeitados */}
+        {rejected.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
+              <h2 className="text-base font-black text-gray-900">Rejeitados</h2>
+              <span className="text-xs bg-red-100 text-red-600 font-bold px-2.5 py-1 rounded-full">{rejected.length}</span>
+            </div>
+            <div className="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
+              {rejected.map(u => (
+                <div key={u.id} className="flex items-center gap-4 px-5 py-3 border-b border-red-50 last:border-0 hover:bg-red-50/30">
+                  <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-red-400">{(u.full_name ?? u.email ?? '?').charAt(0).toUpperCase()}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-700 truncate">{u.full_name && u.full_name !== u.email ? u.full_name : '—'}</p>
+                    <p className="text-xs text-gray-400 truncate">{u.email}</p>
+                  </div>
+                  <span className="text-xs text-red-400 flex-shrink-0">
+                    Rejeitado em {new Date(u.rejected_at ?? u.created_at).toLocaleDateString('pt-BR')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Tabela de usuários ativos */}
         {users.length > 0 && (
