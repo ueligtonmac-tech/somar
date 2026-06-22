@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import UserManagementTable from './UserManagementTable'
 import PendingApprovalList from './PendingApprovalList'
+import IncompleteList from './IncompleteList'
 import { logger } from '@/lib/logger'
 
 interface ProfileRow {
@@ -169,32 +170,8 @@ export default async function UsuariosPage() {
         {/* Seção de aprovações pendentes */}
         <PendingApprovalList users={pending} perfis={perfisData ?? []} />
 
-        {/* Cadastros incompletos */}
-        {incomplete.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-gray-400" />
-              <h2 className="text-base font-black text-gray-900">Cadastro Incompleto</h2>
-              <span className="text-xs bg-gray-100 text-gray-600 font-bold px-2.5 py-1 rounded-full">{incomplete.length}</span>
-              <span className="text-xs text-gray-400 font-medium">Iniciaram o cadastro mas não finalizaram</span>
-            </div>
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-              {incomplete.map(u => (
-                <div key={u.id} className="flex items-center gap-4 px-5 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-gray-400">{(u.full_name ?? u.email ?? '?').charAt(0).toUpperCase()}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-700 truncate">{u.full_name && u.full_name !== u.email ? u.full_name : '—'}</p>
-                    <p className="text-xs text-gray-400 truncate">{u.email}</p>
-                  </div>
-                  <span className="text-xs text-gray-400 flex-shrink-0">{new Date(u.created_at).toLocaleDateString('pt-BR')}</span>
-                  <span className="text-[10px] bg-gray-100 text-gray-500 font-bold px-2 py-1 rounded-full flex-shrink-0">Incompleto</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Cadastros incompletos — com botão de liberar acesso */}
+        <IncompleteList users={incomplete} />
 
         {/* Cadastros rejeitados */}
         {rejected.length > 0 && (

@@ -13,23 +13,23 @@ export default async function AdminPage() {
 
   const [
     { data: profiles },
-    { data: modules },
+    { count: totalSections },
     { data: allProgress },
   ] = await Promise.all([
     supabase.from('profiles').select('id, full_name, email, role, active, whatsapp, created_at').order('created_at', { ascending: false }),
-    supabase.from('modules').select('id, title, order_index').order('order_index'),
-    supabase.from('user_progress').select('user_id, module_id, completed'),
+    supabase.from('trail_sections').select('*', { count: 'exact', head: true }),
+    supabase.from('trail_user_progress').select('user_id, quiz_passed'),
   ])
 
   const totalUsers = profiles?.length ?? 0
   const activeUsers = profiles?.filter(p => p.active).length ?? 0
-  const totalModules = modules?.length ?? 0
-  const completions = allProgress?.filter(p => p.completed).length ?? 0
+  const totalModules = totalSections ?? 0
+  const completions = allProgress?.filter(p => p.quiz_passed).length ?? 0
 
-  // Progresso por usuário
+  // Progresso por usuário (seções com quiz aprovado)
   const progressByUser = new Map<string, number>()
   allProgress?.forEach(p => {
-    if (p.completed) {
+    if (p.quiz_passed) {
       progressByUser.set(p.user_id, (progressByUser.get(p.user_id) ?? 0) + 1)
     }
   })

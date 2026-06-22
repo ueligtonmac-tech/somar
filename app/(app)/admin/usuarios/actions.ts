@@ -67,6 +67,43 @@ export async function approveUser(userId: string, role: string, perfil?: string)
   revalidatePath('/admin/usuarios')
 }
 
+export async function forceApproveUser(userId: string) {
+  const { service } = await requireAdmin()
+
+  const { data: target } = await service
+    .from('profiles')
+    .select('full_name, email, whatsapp')
+    .eq('id', userId)
+    .single()
+
+  if (!target) throw new Error('Usuário não encontrado')
+
+  const { error } = await service
+    .from('profiles')
+    .update({ active: true, onboarding_complete: true, rejected_at: null })
+    .eq('id', userId)
+
+  if (error) throw new Error('Erro ao liberar acesso: ' + error.message)
+
+  const displayName = target.full_name || target.email || 'Usuário'
+  const userEmail = target.email || ''
+
+  await service.from('notifications').insert({
+    user_id: userId,
+    type: 'account_approved',
+    title: '✅ Acesso liberado!',
+    message: 'Seu acesso foi liberado. Complete seu perfil ao entrar na plataforma.',
+    metadata: {},
+  })
+
+  const { sendEmail, templateAcessoLiberado } = await import('@/lib/email')
+  if (userEmail) {
+    sendEmail({ to: userEmail, subject: '✅ Acesso liberado — Bot João', html: templateAcessoLiberado(displayName) }).catch(() => {})
+  }
+
+  revalidatePath('/admin/usuarios')
+}
+
 export async function resendAccessEmail(userId: string) {
   const { service } = await requireAdmin()
 
