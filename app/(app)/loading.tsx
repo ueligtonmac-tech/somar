@@ -5,7 +5,7 @@ export default function Loading() {
       <div style={{ animation: 'bjPulse 1.2s ease-in-out infinite' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/bot-joao-icon.png"
+          src="/bot-joao-icon1.png"
           alt="Bot João"
           width={80}
           height={80}
