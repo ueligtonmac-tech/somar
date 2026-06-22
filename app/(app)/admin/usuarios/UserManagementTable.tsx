@@ -17,26 +17,38 @@ const ROLE_LABELS: Record<Role, string> = {
 function RoleCell({ userId, currentRole }: { userId: string; currentRole: string }) {
   const [isPending, startTransition] = useTransition()
   const [value, setValue] = useState(currentRole)
+  const [error, setError] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newRole = e.target.value
+    const prev = value
     setValue(newRole)
+    setError(null)
     startTransition(async () => {
-      await updateUserRole(userId, newRole)
+      try {
+        await updateUserRole(userId, newRole)
+      } catch (err) {
+        setValue(prev) // reverte visualmente
+        setError(err instanceof Error ? err.message : 'Erro ao atualizar perfil')
+        setTimeout(() => setError(null), 4000)
+      }
     })
   }
 
   return (
-    <select
-      value={value}
-      onChange={handleChange}
-      disabled={isPending}
-      className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white font-semibold text-gray-700 focus:outline-none focus:border-[#000FFF] focus:ring-1 focus:ring-[#000FFF]/20 transition-colors cursor-pointer disabled:opacity-60"
-    >
-      {ROLES.map(r => (
-        <option key={r} value={r}>{ROLE_LABELS[r]}</option>
-      ))}
-    </select>
+    <div className="flex flex-col gap-1">
+      <select
+        value={value}
+        onChange={handleChange}
+        disabled={isPending}
+        className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white font-semibold text-gray-700 focus:outline-none focus:border-[#000FFF] focus:ring-1 focus:ring-[#000FFF]/20 transition-colors cursor-pointer disabled:opacity-60"
+      >
+        {ROLES.map(r => (
+          <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+        ))}
+      </select>
+      {error && <span className="text-[10px] text-red-500 font-semibold">{error}</span>}
+    </div>
   )
 }
 
@@ -47,9 +59,13 @@ function PhoneCell({ userId, currentPhone }: { userId: string; currentPhone: str
 
   const handleSave = () => {
     startTransition(async () => {
-      await updateUserPhone(userId, value)
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
+      try {
+        await updateUserPhone(userId, value)
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
+      } catch {
+        // erro silencioso — não derruba a página
+      }
     })
   }
 

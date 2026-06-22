@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useTransition, useState } from 'react'
 import { toggleUserActive, changeUserRole } from './actions'
 
 interface Profile {
@@ -23,6 +23,7 @@ export default function UserRow({
   totalModules: number
 }) {
   const [pending, startTransition] = useTransition()
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const initials = (profile.full_name ?? profile.email)
     .split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
@@ -38,6 +39,11 @@ export default function UserRow({
 
   return (
     <div className={`px-4 md:px-6 py-4 transition-colors ${pending ? 'opacity-50' : ''}`}>
+      {actionError && (
+        <div className="mb-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 font-semibold">
+          ⚠️ {actionError}
+        </div>
+      )}
       {/* Mobile layout */}
       <div className="md:hidden flex items-start gap-3">
         <div className="w-10 h-10 rounded-full bg-[#000FFF]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -58,7 +64,7 @@ export default function UserRow({
             </div>
             <span className="text-xs font-bold text-gray-500">{completedModules}/{totalModules}</span>
             <button
-              onClick={() => startTransition(() => toggleUserActive(profile.id, !profile.active))}
+              onClick={() => startTransition(async () => { try { await toggleUserActive(profile.id, !profile.active) } catch (e) { setActionError(e instanceof Error ? e.message : 'Erro'); setTimeout(() => setActionError(null), 4000) } })}
               className={`text-xs px-3 py-1 rounded-full font-bold transition-colors ${
                 profile.active
                   ? 'bg-green-50 text-green-600 hover:bg-red-50 hover:text-red-600'
@@ -90,7 +96,7 @@ export default function UserRow({
         {/* Role */}
         <select
           value={profile.role}
-          onChange={e => startTransition(() => changeUserRole(profile.id, e.target.value))}
+          onChange={e => { const v = e.target.value; startTransition(async () => { try { await changeUserRole(profile.id, v) } catch (err) { setActionError(err instanceof Error ? err.message : 'Erro'); setTimeout(() => setActionError(null), 4000) } }) }}
           className="text-xs font-bold rounded-lg px-2 py-1.5 border border-gray-100 bg-gray-50 outline-none cursor-pointer"
           style={{ color: roleInfo.color }}
         >
@@ -109,7 +115,7 @@ export default function UserRow({
 
         {/* Toggle ativo */}
         <button
-          onClick={() => startTransition(() => toggleUserActive(profile.id, !profile.active))}
+          onClick={() => startTransition(async () => { try { await toggleUserActive(profile.id, !profile.active) } catch (e) { setActionError(e instanceof Error ? e.message : 'Erro'); setTimeout(() => setActionError(null), 4000) } })}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
             profile.active ? 'bg-[#000FFF]' : 'bg-gray-200'
           }`}
