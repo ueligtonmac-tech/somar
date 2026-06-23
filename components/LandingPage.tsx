@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-const VIDEO_SRC = '/bot-joao-animated.mp4'
+const VIDEO_SRC = '/demo-botjoao.mp4'
 
 const PILLARS = [
   {
@@ -42,46 +42,6 @@ const CHAT_DEMO = [
   { from: 'bot',  text: 'Pelo link hub.ultragaz.com.br com seu login de revendedor. Lá você encontra manuais, campanhas ativas, contatos de suporte e o histórico das suas solicitações. 💡' },
 ]
 
-/* ── Respostas inteligentes para o modo interativo ───────────── */
-type BotResponse = { keywords: string[]; answer: string }
-const BOT_RESPONSES: BotResponse[] = [
-  {
-    keywords: ['vale gás', 'vale gas', 'benefício', 'beneficio', 'cpf', 'map', 'validar'],
-    answer: 'Para validar o Vale Gás Social acesse o MAP → Benefícios → Vale Gás. Insira o CPF do cliente, confirme o endereço e clique em Validar. O benefício é creditado em até 2 horas. Se o cliente não aparecer, peça o NIS e use a busca avançada. 🔵'
-  },
-  {
-    keywords: ['hub', 'somar', 'portal', 'acesso'],
-    answer: 'O HUB Somar é seu portal central de gestão. Acesse em hub.ultragaz.com.br com seu login de revendedor. Lá estão manuais, campanhas ativas, suporte e histórico de solicitações. 💡'
-  },
-  {
-    keywords: ['app', 'aplicativo', 'celular', 'pedido', 'pedidos'],
-    answer: 'O App Ultragaz permite fazer pedidos, consultar histórico, acompanhar entregas e gerenciar clientes — tudo pelo celular. Disponível para Android e iOS. 📱'
-  },
-  {
-    keywords: ['amigu', 'amig', 'fidelidade', 'pontos', 'programa'],
-    answer: 'O AmigU é o programa de fidelidade da Ultragaz para clientes finais. Você como revendedor pode incentivar o cadastro pelo App — cada recarga acumula pontos que o cliente troca por produtos. 🏆'
-  },
-  {
-    keywords: ['trilha', 'curso', 'treinamento', 'aprender', 'módulo', 'modulo'],
-    answer: 'A Trilha de Capacitação tem módulos progressivos sobre todos os canais digitais Ultragaz. Você avança no seu ritmo e ganha certificado ao concluir. Quer conhecer os módulos disponíveis? 📚'
-  },
-  {
-    keywords: ['entrega', 'prazo', 'cilindro', 'botijão', 'botijao'],
-    answer: 'O prazo de entrega varia por região. Pelo App você acompanha em tempo real o status de cada pedido. Para reclamações de prazo, abra um chamado pelo HUB Somar com o número do pedido. 🚚'
-  },
-  {
-    keywords: ['senha', 'login', 'acessar', 'entrar', 'cadastro'],
-    answer: 'Para recuperar o acesso ao MAP ou App, use a opção "Esqueci minha senha" na tela de login. Para o HUB Somar, entre em contato com seu gerente de canal. Posso te ajudar com mais alguma dúvida? 🔐'
-  },
-]
-
-function getBotReply(userText: string): string {
-  const lower = userText.toLowerCase()
-  for (const r of BOT_RESPONSES) {
-    if (r.keywords.some(k => lower.includes(k))) return r.answer
-  }
-  return 'Boa pergunta! Essa informação específica está detalhada na nossa trilha de capacitação. Que tal criar seu acesso e explorar todos os módulos? 😊'
-}
 
 /* ── Modal Trial ─────────────────────────────────────────────── */
 function TrialModal({ onClose }: { onClose: () => void }) {
@@ -181,79 +141,85 @@ function TrialModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-/* ── Chat interativo (demo → live → identificação) ───────────── */
-type Msg = { from: 'user' | 'bot' | 'identify'; text: string }
+/* ── Chat demo com API real ───────────────────────────────────── */
+type Msg = { from: 'user' | 'bot' | 'cta'; text: string }
+type HistoryEntry = { role: 'user' | 'assistant'; content: string }
 
 function DemoChat({ onIdentify }: { onIdentify: () => void }) {
-  // Fase: 'demo' = animação automática | 'live' = usuário digita | 'asked' = bot pediu identificação
-  const [phase, setPhase]       = useState<'demo' | 'live' | 'asked'>('demo')
-  const [demoIdx, setDemoIdx]   = useState(0)
-  const [demoKey, setDemoKey]   = useState(0)
-  const [messages, setMessages] = useState<Msg[]>([])
-  const [input, setInput]       = useState('')
-  const [typing, setTyping]     = useState(false)
+  const [phase, setPhase]         = useState<'demo' | 'live' | 'done'>('demo')
+  const [demoIdx, setDemoIdx]     = useState(0)
+  const [demoKey, setDemoKey]     = useState(0)
+  const [messages, setMessages]   = useState<Msg[]>([])
+  const [history, setHistory]     = useState<HistoryEntry[]>([])
+  const [input, setInput]         = useState('')
+  const [typing, setTyping]       = useState(false)
   const [exchanges, setExchanges] = useState(0)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const msgsRef   = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLInputElement>(null)
 
-  // ── Fase demo: animação automática ──
+  // Animação demo
   useEffect(() => {
     if (phase !== 'demo') return
     if (demoIdx < CHAT_DEMO.length) {
-      const delay = demoIdx === 0 ? 800 : 1600
-      const t = setTimeout(() => setDemoIdx(i => i + 1), delay)
+      const t = setTimeout(() => setDemoIdx(i => i + 1), demoIdx === 0 ? 800 : 1600)
       return () => clearTimeout(t)
     }
-    // Reinicia o loop após pausa
     const t = setTimeout(() => { setDemoIdx(0); setDemoKey(k => k + 1) }, 4000)
     return () => clearTimeout(t)
   }, [phase, demoIdx])
 
-  // ── Scroll automático ──
+  // Scroll para o fundo sempre que mudar conteúdo
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    const el = msgsRef.current
+    if (el) el.scrollTop = el.scrollHeight
   }, [demoIdx, messages, typing])
 
-  // ── Usuário ativa o chat (onFocus no input ou clique no botão enviar) ──
   const activateChat = () => {
     if (phase !== 'demo') return
-    // Congela a animação e migra as mensagens já visíveis para o modo live
     const shown = CHAT_DEMO.slice(0, Math.max(demoIdx, 1))
     setMessages(shown.map(m => ({ from: m.from as 'user' | 'bot', text: m.text })))
     setPhase('live')
+    setTimeout(() => inputRef.current?.focus(), 50)
   }
 
-  // ── Enviar mensagem ──
   const sendMessage = async () => {
     const text = input.trim()
-    if (!text || typing) return
-    activateChat() // garante modo live mesmo se clicar direto no botão enviar
+    if (!text || typing || phase === 'done') return
+    if (phase === 'demo') activateChat()
     setInput('')
 
-    const userMsg: Msg = { from: 'user', text }
-    setMessages(prev => [...prev, userMsg])
+    // Adiciona msg do usuário
+    setMessages(prev => [...prev, { from: 'user', text }])
     setTyping(true)
 
-    await new Promise(r => setTimeout(r, 1200 + Math.random() * 600))
-    setTyping(false)
+    const newHistory: HistoryEntry[] = [...history, { role: 'user', content: text }]
 
-    const newExchanges = exchanges + 1
-    setExchanges(newExchanges)
+    try {
+      const res = await fetch('/api/demo/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history }),
+      })
+      const data = await res.json()
+      const reply: string = data.reply ?? 'Desculpe, tive um probleminha aqui. Tente de novo! 😅'
 
-    if (newExchanges >= 2 && phase !== 'asked') {
-      // Após 2 trocas, bot pede identificação
-      setPhase('asked')
-      const botReply = getBotReply(text)
-      setMessages(prev => [...prev, { from: 'bot', text: botReply }])
-      await new Promise(r => setTimeout(r, 800))
-      setMessages(prev => [...prev, {
-        from: 'bot',
-        text: 'Adorei conversar com você! 😊 Para continuar com acesso completo à trilha e ao Bot João, me fala seu nome e e-mail — crio seu acesso agora mesmo.'
-      }])
-      setMessages(prev => [...prev, { from: 'identify', text: '' }])
-    } else {
-      const botReply = getBotReply(text)
-      setMessages(prev => [...prev, { from: 'bot', text: botReply }])
+      setTyping(false)
+      setMessages(prev => [...prev, { from: 'bot', text: reply }])
+      setHistory([...newHistory, { role: 'assistant', content: reply }])
+
+      const newExchanges = exchanges + 1
+      setExchanges(newExchanges)
+
+      // Após 2 trocas reais, mostra CTA de acesso
+      if (newExchanges >= 2) {
+        setPhase('done')
+        setTimeout(() => {
+          setMessages(prev => [...prev, { from: 'cta', text: '' }])
+        }, 600)
+      }
+    } catch {
+      setTyping(false)
+      setMessages(prev => [...prev, { from: 'bot', text: 'Ops, tive uma falha. Tente novamente! 😅' }])
     }
   }
 
@@ -261,58 +227,55 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
   }
 
-  // ── Renderização das mensagens (modo demo ou live) ──
-  const demoMessages = CHAT_DEMO.slice(0, demoIdx)
-
   return (
-    <div className="flex flex-col h-full">
-      {/* Área de mensagens — altura fixa, não muda */}
-      <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto pb-2"
-        style={{ scrollbarWidth: 'none' }}>
+    /* Container com altura exatamente fixa — NADA aqui cresce */
+    <div className="flex flex-col" style={{ height: '320px' }}>
+
+      {/* Área de mensagens com scroll interno */}
+      <div ref={msgsRef} className="flex-1 overflow-y-auto flex flex-col gap-2.5"
+        style={{ scrollbarWidth: 'none', minHeight: 0 }}>
 
         {phase === 'demo' ? (
           <div key={demoKey} className="flex flex-col gap-2.5">
-            {demoMessages.map((msg, i) => (
-              <ChatBubble key={i} from={msg.from as 'user' | 'bot'} text={msg.text} />
+            {CHAT_DEMO.slice(0, demoIdx).map((m, i) => (
+              <Bubble key={i} from={m.from as 'user'|'bot'} text={m.text} />
             ))}
-            {demoIdx < CHAT_DEMO.length && <TypingIndicator />}
+            {demoIdx < CHAT_DEMO.length && <Dots />}
           </div>
         ) : (
           <>
-            {messages.map((msg, i) =>
-              msg.from === 'identify'
-                ? <InlineIdentify key={i} onIdentify={onIdentify} />
-                : <ChatBubble key={i} from={msg.from} text={msg.text} />
+            {messages.map((m, i) =>
+              m.from === 'cta'
+                ? <CtaBlock key={i} onIdentify={onIdentify} />
+                : <Bubble key={i} from={m.from as 'user'|'bot'} text={m.text} />
             )}
-            {typing && <TypingIndicator />}
+            {typing && <Dots />}
           </>
         )}
-
-        <div ref={bottomRef} />
       </div>
 
-      {/* Input SEMPRE visível, mesma altura em qualquer fase */}
-      <div className="mt-2 flex items-center gap-2 bg-gray-100 rounded-2xl px-3 py-2 shrink-0">
+      {/* Input — altura fixa, sempre presente */}
+      <div className="mt-3 flex items-center gap-2 bg-gray-100 rounded-2xl px-3 py-2 shrink-0">
         <input
           ref={inputRef}
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKey}
           onFocus={activateChat}
-          placeholder={phase === 'demo' ? 'Experimente perguntar algo...' : 'Digite sua pergunta...'}
-          disabled={phase === 'asked'}
-          className="flex-1 bg-transparent text-[13px] text-gray-800 placeholder-gray-400
-            font-medium outline-none disabled:opacity-40"
+          disabled={phase === 'done'}
+          placeholder={phase === 'done' ? 'Crie seu acesso para continuar ↑' : 'Experimente perguntar algo...'}
+          className="flex-1 bg-transparent text-[13px] text-gray-700 placeholder-gray-400
+            font-medium outline-none disabled:cursor-not-allowed"
         />
         <button
           onClick={sendMessage}
-          disabled={!input.trim() || typing || phase === 'asked'}
-          className="w-8 h-8 rounded-full bg-[#000FFF] disabled:opacity-30 flex items-center
+          disabled={!input.trim() || typing || phase === 'done'}
+          className="w-8 h-8 rounded-full bg-[#000FFF] disabled:opacity-25 flex items-center
             justify-center shrink-0 transition-opacity"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
-            <line x1="22" y1="2" x2="11" y2="13" stroke="white" strokeWidth="2"/>
-            <polygon points="22 2 15 22 11 13 2 9 22 2" fill="white"/>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2" fill="white" stroke="none"/>
           </svg>
         </button>
       </div>
@@ -320,33 +283,30 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
   )
 }
 
-function ChatBubble({ from, text }: { from: 'user' | 'bot'; text: string }) {
+function Bubble({ from, text }: { from: 'user'|'bot'; text: string }) {
   return (
-    <div className={`flex ${from === 'user' ? 'justify-end' : 'justify-start'}`}
-      style={{ animation: 'fadeUp 0.3s ease both' }}>
+    <div className={`flex shrink-0 ${from === 'user' ? 'justify-end' : 'justify-start'}`}
+      style={{ animation: 'fadeUp 0.28s ease both' }}>
       {from === 'bot' && (
-        <div className="w-7 h-7 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2 mt-0.5">
-          <Image src="/bot-joao-icon1.png" alt="" width={18} height={18} />
+        <div className="w-6 h-6 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2 mt-0.5">
+          <Image src="/bot-joao-icon1.png" alt="" width={14} height={14} />
         </div>
       )}
-      <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed font-medium
-        ${from === 'user'
-          ? 'bg-[#000FFF] text-white rounded-br-sm'
-          : 'bg-gray-100 text-gray-800 rounded-bl-sm'
-        }`}>
+      <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed font-medium
+        ${from === 'user' ? 'bg-[#000FFF] text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'}`}>
         {text}
       </div>
     </div>
   )
 }
 
-function TypingIndicator() {
+function Dots() {
   return (
-    <div className="flex justify-start" style={{ animation: 'fadeUp 0.3s ease both' }}>
-      <div className="w-7 h-7 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2">
-        <Image src="/bot-joao-icon1.png" alt="" width={18} height={18} />
+    <div className="flex justify-start shrink-0" style={{ animation: 'fadeUp 0.28s ease both' }}>
+      <div className="w-6 h-6 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2">
+        <Image src="/bot-joao-icon1.png" alt="" width={14} height={14} />
       </div>
-      <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center">
+      <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-3.5 py-3 flex gap-1 items-center">
         {[0,1,2].map(i => (
           <span key={i} className="w-1.5 h-1.5 rounded-full bg-gray-400"
             style={{ animation: `bounce 1.2s ease ${i * 0.18}s infinite` }} />
@@ -356,21 +316,23 @@ function TypingIndicator() {
   )
 }
 
-function InlineIdentify({ onIdentify }: { onIdentify: () => void }) {
+function CtaBlock({ onIdentify }: { onIdentify: () => void }) {
   return (
-    <div className="flex justify-start" style={{ animation: 'fadeUp 0.4s ease both' }}>
-      <div className="w-7 h-7 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2 mt-1">
-        <Image src="/bot-joao-icon1.png" alt="" width={18} height={18} />
+    <div className="flex justify-start shrink-0" style={{ animation: 'fadeUp 0.4s ease both' }}>
+      <div className="w-6 h-6 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2 mt-1">
+        <Image src="/bot-joao-icon1.png" alt="" width={14} height={14} />
       </div>
-      <div className="bg-[#000FFF]/8 border border-[#000FFF]/20 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[80%]">
+      <div className="bg-blue-50 border border-blue-100 rounded-2xl rounded-bl-sm px-3.5 py-3 max-w-[84%]">
+        <p className="text-[12px] text-gray-600 mb-2.5 leading-relaxed">
+          Gostei de conversar! 😊 Para continuar com acesso à trilha completa e ao Bot João treinado com toda a base Ultragaz, crie seu acesso:
+        </p>
         <button
           onClick={onIdentify}
-          className="w-full bg-[#000FFF] text-white text-[13px] font-black rounded-xl px-4 py-2.5
+          className="w-full bg-[#000FFF] text-white text-[12px] font-black rounded-xl px-3 py-2
             hover:bg-[#0009cc] transition-colors"
         >
-          → Criar meu acesso completo
+          → Criar acesso de demonstração
         </button>
-        <p className="text-[11px] text-gray-400 text-center mt-2">3 dias de acesso à plataforma completa</p>
       </div>
     </div>
   )
@@ -596,8 +558,8 @@ export default function LandingPage() {
               className="hidden lg:flex flex-col pb-0"
               style={{ animation: 'fadeUp .7s ease .35s both' }}
             >
-              <div className="bg-white rounded-t-3xl shadow-2xl p-5 max-w-sm mx-auto lg:mx-0 lg:ml-auto flex flex-col"
-                style={{ height: '420px' }}>
+              <div className="bg-white rounded-t-3xl shadow-2xl p-5 max-w-sm mx-auto lg:mx-0 lg:ml-auto flex flex-col overflow-hidden"
+                style={{ height: '460px', minHeight: '460px', maxHeight: '460px' }}>
                 <div className="flex items-center gap-2.5 pb-3 mb-3 border-b border-gray-100 shrink-0">
                   <Image src="/bot-joao-icon1.png" alt="Bot João" width={32} height={32} />
                   <div>
