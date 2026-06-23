@@ -141,6 +141,7 @@ function TrialModal({ onClose }: { onClose: () => void }) {
 /* ── Chat animado ─────────────────────────────────────────────── */
 function AnimatedChat() {
   const [visible, setVisible] = useState(0)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (visible >= CHAT_DEMO.length) return
@@ -148,8 +149,15 @@ function AnimatedChat() {
     return () => clearTimeout(t)
   }, [visible])
 
+  // Auto-scroll para a última mensagem
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [visible])
+
   return (
-    <div className="flex flex-col gap-3">
+    /* Altura fixa — o card não cresce, só o conteúdo interno rola */
+    <div className="flex flex-col gap-3 h-52 overflow-y-auto pr-1"
+      style={{ scrollbarWidth: 'none' }}>
       {CHAT_DEMO.slice(0, visible).map((msg, i) => (
         <div
           key={i}
@@ -185,6 +193,7 @@ function AnimatedChat() {
           </div>
         </div>
       )}
+      <div ref={bottomRef} />
     </div>
   )
 }
