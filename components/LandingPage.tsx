@@ -164,7 +164,7 @@ function AnimatedChat() {
   }, [visible])
 
   return (
-    <div key={key} className="flex flex-col gap-2.5 h-48 overflow-hidden">
+    <div key={key} className="flex flex-col gap-2.5 h-72 overflow-hidden">
       {CHAT_DEMO.slice(0, visible).map((msg, i) => (
         <div
           key={i}
