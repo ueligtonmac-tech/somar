@@ -63,7 +63,7 @@ export default function SectionEditor({
   const [sectionSaved, setSectionSaved] = useState(false)
 
   // Cards
-  const [moduleCards, setModuleCards] = useState<Card[]>(initialModuleCards)
+  const [moduleCards] = useState<Card[]>(initialModuleCards)
   const [cardsAiLoading, setCardsAiLoading] = useState(false)
   const [cardsAiResult, setCardsAiResult] = useState<string | null>(null)
   const [expandedCard, setExpandedCard] = useState<string | null>(null)
