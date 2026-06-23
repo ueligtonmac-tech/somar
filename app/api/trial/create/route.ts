@@ -26,7 +26,17 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
 
     if (existing) {
-      // Qualquer conta existente → gera magic link direto (sem passar pela tela de login)
+      // Se é um consultor_trial ou conta sem role completo, atualiza para trial
+      const needsTrialUpgrade = !existing.active || existing.role === 'consultor_trial'
+      if (needsTrialUpgrade) {
+        await adminClient.from('profiles').update({
+          role: 'consultor_trial',
+          active: true,
+          onboarding_complete: true,
+          trial_expires_at: trialExpiresAt,
+        }).eq('email', normalizedEmail)
+      }
+      // Gera magic link direto
       const origin = req.nextUrl.origin
       const { data: linkData, error: linkErr } = await adminClient.auth.admin.generateLink({
         type: 'magiclink',

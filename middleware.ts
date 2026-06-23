@@ -111,18 +111,21 @@ export async function middleware(request: NextRequest) {
       ).data
     : profile
 
-  // ── 4b. Trial expirado → tela específica ──
+  // ── 4b. Trial ──
   if (safeProfile?.role === 'consultor_trial') {
     const expiresAt = (safeProfile as { trial_expires_at?: string | null }).trial_expires_at
     if (expiresAt && new Date(expiresAt) < new Date()) {
       if (!pathname.startsWith('/trial-expirado')) {
         return NextResponse.redirect(new URL('/trial-expirado', request.url))
       }
+      return supabaseResponse
     }
-    // Trial válido: bloquear acesso a /admin
+    // Trial válido: bloquear /admin, liberar todo o resto direto
     if (ADMIN_ROUTES.some(r => pathname.startsWith(r))) {
       return NextResponse.redirect(new URL('/trilha', request.url))
     }
+    // Pula onboarding, aprovação e demais checks — trial vai direto
+    return supabaseResponse
   }
 
   // ── 5. Rotas de pendência — permitir mesmo sem aprovação ──
