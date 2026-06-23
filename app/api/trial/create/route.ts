@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       const { data: linkData, error: linkErr } = await adminClient.auth.admin.generateLink({
         type: 'magiclink',
         email: normalizedEmail,
-        options: { redirectTo: `${origin}/auth/callback?next=/trilha` },
+        options: { redirectTo: `${origin}/auth/magic` },
       })
       if (linkErr || !linkData) {
         return NextResponse.json({ error: 'Erro ao gerar link de acesso.' }, { status: 500 })
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     const { data: linkData, error: linkErr } = await adminClient.auth.admin.generateLink({
       type: 'magiclink',
       email: normalizedEmail,
-      options: { redirectTo: `${origin}/auth/callback?next=/trilha` },
+      options: { redirectTo: `${origin}/auth/magic` },
     })
 
     if (linkErr || !linkData) {
