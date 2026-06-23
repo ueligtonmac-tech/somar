@@ -69,10 +69,7 @@ export async function middleware(request: NextRequest) {
     if (user && pathname === '/login') {
       return NextResponse.redirect(new URL('/trilha', request.url))
     }
-    // Usuário logado que acessa `/` vai para /trilha
-    if (user && pathname === '/') {
-      return NextResponse.redirect(new URL('/trilha', request.url))
-    }
+    // `/` é pública para todos — logados podem ver a landing normalmente
     return supabaseResponse
   }
 
