@@ -66,6 +66,7 @@ function TrialModal({ onClose }: { onClose: () => void }) {
       setError(data.error || 'Erro ao criar acesso. Tente novamente.')
       return
     }
+    console.log('[trial] actionLink:', data.actionLink)
     window.location.href = data.actionLink
   }
 
