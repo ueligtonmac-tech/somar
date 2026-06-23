@@ -362,89 +362,77 @@ function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: stri
   return <span ref={ref}>{val}{suffix}</span>
 }
 
-/* ── Vídeo local com thumbnail, clique para play e toggle áudio ─ */
+/* ── Vídeo ───────────────────────────────────────────────────── */
 function AutoplayVideo() {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const wrapRef  = useRef<HTMLDivElement>(null)
   const [playing, setPlaying] = useState(false)
   const [muted,   setMuted]   = useState(true)
 
-  // Autoplay muted quando 30% do container entra na tela
+  // Autoplay silencioso ao entrar na viewport
   useEffect(() => {
-    const wrap = wrapRef.current
-    if (!wrap) return
+    const video = videoRef.current
+    if (!video) return
     const obs = new IntersectionObserver(([e]) => {
-      const video = videoRef.current
-      if (!video) return
       if (e.isIntersecting) {
-        video.muted = true
-        setMuted(true)
+        video.muted = true; setMuted(true)
         video.play().then(() => setPlaying(true)).catch(() => {})
       } else {
-        video.pause()
-        setPlaying(false)
+        video.pause(); setPlaying(false)
       }
-    }, { threshold: 0.3 })
-    obs.observe(wrap)
+    }, { threshold: 0.25 })
+    obs.observe(video)
     return () => obs.disconnect()
   }, [])
 
-  const handleClick = () => {
-    const video = videoRef.current
-    if (!video) return
-    if (video.paused) {
-      video.play().then(() => setPlaying(true)).catch(() => {})
-    } else {
-      video.pause()
-      setPlaying(false)
-    }
+  const play = () => {
+    const v = videoRef.current
+    if (!v) return
+    v.play().then(() => setPlaying(true)).catch(() => {})
   }
 
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation()
-    const video = videoRef.current
-    if (!video) return
-    video.muted = !video.muted
-    setMuted(video.muted)
+    const v = videoRef.current
+    if (!v) return
+    v.muted = !v.muted
+    setMuted(v.muted)
   }
 
   return (
-    <div
-      ref={wrapRef}
-      className="relative rounded-3xl overflow-hidden shadow-2xl cursor-pointer select-none"
-      style={{ aspectRatio: '16/9', background: '#0a0a1a' }}
-      onClick={handleClick}
-    >
+    <div className="relative rounded-3xl overflow-hidden shadow-2xl select-none"
+      style={{ aspectRatio: '16/9' }}>
+
+      {/* O vídeo ocupa 100% — é o elemento clicável */}
       <video
         ref={videoRef}
         src={VIDEO_SRC}
         poster="/bot-joao-splash.png"
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        className="w-full h-full object-cover"
+        muted loop playsInline preload="auto"
+        className="w-full h-full object-cover block cursor-pointer"
+        onClick={play}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
       />
 
-      {/* Overlay play/pause */}
-      <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300
-        ${playing ? 'opacity-0 pointer-events-none' : 'bg-black/40 opacity-100'}`}>
-        <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-2xl
-          hover:scale-110 transition-transform duration-200">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="#000FFF">
-            <polygon points="5 3 19 12 5 21 5 3"/>
-          </svg>
+      {/* Overlay só quando pausado — pointer-events-none para não bloquear o vídeo */}
+      {!playing && (
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer"
+          style={{ pointerEvents: 'none' }}
+        >
+          <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-2xl">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="#000FFF">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Botão de áudio */}
+      {/* Botão de áudio — único elemento com pointer-events ativos sobre o vídeo */}
       <button
         onClick={toggleMute}
-        className="absolute bottom-4 right-4 w-11 h-11 rounded-full bg-black/60 backdrop-blur-sm
-          flex items-center justify-center text-white hover:bg-black/80 transition-colors z-10 shadow-lg"
-        title={muted ? 'Ativar áudio' : 'Silenciar'}
+        className="absolute bottom-4 right-4 w-11 h-11 rounded-full bg-black/60
+          flex items-center justify-center text-white hover:bg-black/80 transition-colors z-10"
       >
         {muted ? (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
