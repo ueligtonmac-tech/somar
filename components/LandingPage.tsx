@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-const VIDEO_SRC = '/V%C3%ADdeo%202.mp4'
+const VIDEO_SRC = '/bot-joao-animated.mp4'
 
 const PILLARS = [
   {
@@ -141,54 +141,59 @@ function TrialModal({ onClose }: { onClose: () => void }) {
 /* ── Chat animado ─────────────────────────────────────────────── */
 function AnimatedChat() {
   const [visible, setVisible] = useState(0)
+  const [key, setKey] = useState(0) // força restart
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (visible >= CHAT_DEMO.length) return
-    const t = setTimeout(() => setVisible(v => v + 1), visible === 0 ? 600 : 1400)
-    return () => clearTimeout(t)
+    if (visible < CHAT_DEMO.length) {
+      const delay = visible === 0 ? 800 : 1600
+      const t = setTimeout(() => setVisible(v => v + 1), delay)
+      return () => clearTimeout(t)
+    } else {
+      // Após mostrar tudo, aguarda 3s e reinicia
+      const t = setTimeout(() => {
+        setVisible(0)
+        setKey(k => k + 1)
+      }, 3000)
+      return () => clearTimeout(t)
+    }
   }, [visible])
 
-  // Auto-scroll para a última mensagem
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [visible])
 
   return (
-    /* Altura fixa — o card não cresce, só o conteúdo interno rola */
-    <div className="flex flex-col gap-3 h-52 overflow-y-auto pr-1"
-      style={{ scrollbarWidth: 'none' }}>
+    <div key={key} className="flex flex-col gap-2.5 h-48 overflow-hidden">
       {CHAT_DEMO.slice(0, visible).map((msg, i) => (
         <div
           key={i}
           className={`flex ${msg.from === 'user' ? 'justify-end' : 'justify-start'}`}
-          style={{ animation: 'fadeUp 0.35s ease both' }}
+          style={{ animation: 'fadeUp 0.3s ease both' }}
         >
           {msg.from === 'bot' && (
             <div className="w-7 h-7 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2 mt-0.5">
               <Image src="/bot-joao-icon1.png" alt="" width={18} height={18} />
             </div>
           )}
-          <div
-            className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed font-medium
-              ${msg.from === 'user'
-                ? 'bg-[#000FFF] text-white rounded-br-sm'
-                : 'bg-gray-100 text-gray-800 rounded-bl-sm'
-              }`}
-          >
+          <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed font-medium
+            ${msg.from === 'user'
+              ? 'bg-[#000FFF] text-white rounded-br-sm'
+              : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+            }`}>
             {msg.text}
           </div>
         </div>
       ))}
       {visible < CHAT_DEMO.length && (
-        <div className="flex justify-start">
+        <div className="flex justify-start" style={{ animation: 'fadeUp 0.3s ease both' }}>
           <div className="w-7 h-7 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2">
             <Image src="/bot-joao-icon1.png" alt="" width={18} height={18} />
           </div>
-          <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1 items-center">
+          <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center">
             {[0,1,2].map(i => (
               <span key={i} className="w-1.5 h-1.5 rounded-full bg-gray-400"
-                style={{ animation: `bounce 1.2s ease ${i * 0.2}s infinite` }} />
+                style={{ animation: `bounce 1.2s ease ${i * 0.18}s infinite` }} />
             ))}
           </div>
         </div>
@@ -231,22 +236,26 @@ function AutoplayVideo() {
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
+    const tryPlay = () => video.play().then(() => setPlaying(true)).catch(() => {})
     const obs = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          video.play().then(() => setPlaying(true)).catch(() => {})
-        } else {
-          video.pause()
-          setPlaying(false)
-        }
+        if (entry.isIntersecting) { tryPlay() }
+        else { video.pause(); setPlaying(false) }
       },
-      { threshold: 0.4 }
+      { threshold: 0.3 }
     )
     obs.observe(video)
     return () => obs.disconnect()
   }, [])
 
-  const toggleMute = () => {
+  const handlePlayClick = () => {
+    const video = videoRef.current
+    if (!video) return
+    video.play().then(() => setPlaying(true)).catch(() => {})
+  }
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation()
     const video = videoRef.current
     if (!video) return
     video.muted = !video.muted
@@ -254,33 +263,49 @@ function AutoplayVideo() {
   }
 
   return (
-    <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-gray-200 bg-black"
-      style={{ aspectRatio: '16/9' }}>
+    <div
+      className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900 cursor-pointer"
+      style={{ aspectRatio: '16/9' }}
+      onClick={handlePlayClick}
+    >
       <video
         ref={videoRef}
         src={VIDEO_SRC}
         muted
         loop
         playsInline
-        preload="metadata"
+        preload="auto"
         className="w-full h-full object-cover"
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
       />
-      {/* Botão de áudio */}
+
+      {/* Overlay play — aparece só quando pausado */}
+      {!playing && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 transition-opacity">
+          <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-2xl
+            hover:scale-110 transition-transform duration-200">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="#000FFF">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </div>
+        </div>
+      )}
+
+      {/* Botão de áudio — sempre visível no canto */}
       <button
         onClick={toggleMute}
-        className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm
-          flex items-center justify-center text-white hover:bg-black/80 transition-colors z-10"
+        className="absolute bottom-4 right-4 w-11 h-11 rounded-full bg-black/60 backdrop-blur-sm
+          flex items-center justify-center text-white hover:bg-black/80 transition-colors z-10 shadow-lg"
         title={muted ? 'Ativar áudio' : 'Silenciar'}
       >
         {muted ? (
-          /* Speaker muted */
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
             <line x1="23" y1="9" x2="17" y2="15"/>
             <line x1="17" y1="9" x2="23" y2="15"/>
           </svg>
         ) : (
-          /* Speaker on */
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
@@ -288,16 +313,6 @@ function AutoplayVideo() {
           </svg>
         )}
       </button>
-      {/* Overlay play hint se não iniciou */}
-      {!playing && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-          <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-xl">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000FFF">
-              <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
