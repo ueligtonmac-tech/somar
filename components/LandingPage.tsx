@@ -214,20 +214,20 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [demoIdx, messages, typing])
 
-  // ── Usuário ativa o chat ──
+  // ── Usuário ativa o chat (onFocus no input ou clique no botão enviar) ──
   const activateChat = () => {
     if (phase !== 'demo') return
-    setPhase('live')
-    // Mantém as mensagens demo que já apareceram como contexto visual
-    const shown = CHAT_DEMO.slice(0, Math.max(demoIdx, 2))
+    // Congela a animação e migra as mensagens já visíveis para o modo live
+    const shown = CHAT_DEMO.slice(0, Math.max(demoIdx, 1))
     setMessages(shown.map(m => ({ from: m.from as 'user' | 'bot', text: m.text })))
-    setTimeout(() => inputRef.current?.focus(), 50)
+    setPhase('live')
   }
 
   // ── Enviar mensagem ──
   const sendMessage = async () => {
     const text = input.trim()
     if (!text || typing) return
+    activateChat() // garante modo live mesmo se clicar direto no botão enviar
     setInput('')
 
     const userMsg: Msg = { from: 'user', text }
@@ -266,12 +266,11 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Área de mensagens */}
-      <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto pr-0.5 pb-2"
+      {/* Área de mensagens — altura fixa, não muda */}
+      <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto pb-2"
         style={{ scrollbarWidth: 'none' }}>
 
         {phase === 'demo' ? (
-          /* Mensagens animadas automáticas */
           <div key={demoKey} className="flex flex-col gap-2.5">
             {demoMessages.map((msg, i) => (
               <ChatBubble key={i} from={msg.from as 'user' | 'bot'} text={msg.text} />
@@ -279,7 +278,6 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
             {demoIdx < CHAT_DEMO.length && <TypingIndicator />}
           </div>
         ) : (
-          /* Mensagens ao vivo */
           <>
             {messages.map((msg, i) =>
               msg.from === 'identify'
@@ -293,44 +291,31 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input — aparece no modo live, esconde após pedir identificação */}
-      {phase === 'demo' && (
+      {/* Input SEMPRE visível, mesma altura em qualquer fase */}
+      <div className="mt-2 flex items-center gap-2 bg-gray-100 rounded-2xl px-3 py-2 shrink-0">
+        <input
+          ref={inputRef}
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={handleKey}
+          onFocus={activateChat}
+          placeholder={phase === 'demo' ? 'Experimente perguntar algo...' : 'Digite sua pergunta...'}
+          disabled={phase === 'asked'}
+          className="flex-1 bg-transparent text-[13px] text-gray-800 placeholder-gray-400
+            font-medium outline-none disabled:opacity-40"
+        />
         <button
-          onClick={activateChat}
-          className="mt-2 w-full flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition-colors
-            rounded-2xl px-4 py-3 text-[13px] text-gray-400 font-medium text-left"
+          onClick={sendMessage}
+          disabled={!input.trim() || typing || phase === 'asked'}
+          className="w-8 h-8 rounded-full bg-[#000FFF] disabled:opacity-30 flex items-center
+            justify-center shrink-0 transition-opacity"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+            <line x1="22" y1="2" x2="11" y2="13" stroke="white" strokeWidth="2"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2" fill="white"/>
           </svg>
-          Experimente perguntar algo...
         </button>
-      )}
-
-      {phase === 'live' && (
-        <div className="mt-2 flex items-center gap-2 bg-gray-100 rounded-2xl px-3 py-2">
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKey}
-            placeholder="Digite sua pergunta..."
-            className="flex-1 bg-transparent text-[13px] text-gray-800 placeholder-gray-400
-              font-medium outline-none"
-          />
-          <button
-            onClick={sendMessage}
-            disabled={!input.trim() || typing}
-            className="w-8 h-8 rounded-full bg-[#000FFF] disabled:opacity-30 flex items-center
-              justify-center shrink-0 transition-opacity"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
-              <line x1="22" y1="2" x2="11" y2="13" stroke="white" strokeWidth="2"/>
-              <polygon points="22 2 15 22 11 13 2 9 22 2" fill="white"/>
-            </svg>
-          </button>
-        </div>
-      )}
+      </div>
     </div>
   )
 }
