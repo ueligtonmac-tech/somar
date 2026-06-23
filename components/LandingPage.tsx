@@ -34,11 +34,54 @@ const PILLARS = [
 ]
 
 const CHAT_DEMO = [
-  { from: 'user', text: 'Como valido o Vale Gás no MAP?' },
-  { from: 'bot',  text: 'Acesse o MAP → Benefícios → Vale Gás. Insira o CPF do cliente, confirme o endereço e clique em Validar. O benefício é processado em até 2 horas.' },
-  { from: 'user', text: 'E se o cliente não aparecer no sistema?' },
-  { from: 'bot',  text: 'Nesse caso, peça o NIS do cliente e tente pela busca avançada. Se ainda não localizar, acione o suporte via HUB com o código de erro.' },
+  { from: 'user', text: 'Oi João! Como funciona o Vale Gás?' },
+  { from: 'bot',  text: 'Oi! O Vale Gás Social é um benefício federal. Pelo MAP você valida direto: acesse Benefícios → Vale Gás, insira o CPF do cliente e confirme o endereço. Processado em até 2 horas! 🔵' },
+  { from: 'user', text: 'E o App Ultragaz, para que serve?' },
+  { from: 'bot',  text: 'O App é o canal digital do revendedor. Você pode fazer pedidos, consultar histórico, acompanhar entregas e gerenciar clientes — tudo pelo celular, sem precisar ligar para a central. 📱' },
+  { from: 'user', text: 'Como acesso o HUB Somar?' },
+  { from: 'bot',  text: 'Pelo link hub.ultragaz.com.br com seu login de revendedor. Lá você encontra manuais, campanhas ativas, contatos de suporte e o histórico das suas solicitações. 💡' },
 ]
+
+/* ── Respostas inteligentes para o modo interativo ───────────── */
+type BotResponse = { keywords: string[]; answer: string }
+const BOT_RESPONSES: BotResponse[] = [
+  {
+    keywords: ['vale gás', 'vale gas', 'benefício', 'beneficio', 'cpf', 'map', 'validar'],
+    answer: 'Para validar o Vale Gás Social acesse o MAP → Benefícios → Vale Gás. Insira o CPF do cliente, confirme o endereço e clique em Validar. O benefício é creditado em até 2 horas. Se o cliente não aparecer, peça o NIS e use a busca avançada. 🔵'
+  },
+  {
+    keywords: ['hub', 'somar', 'portal', 'acesso'],
+    answer: 'O HUB Somar é seu portal central de gestão. Acesse em hub.ultragaz.com.br com seu login de revendedor. Lá estão manuais, campanhas ativas, suporte e histórico de solicitações. 💡'
+  },
+  {
+    keywords: ['app', 'aplicativo', 'celular', 'pedido', 'pedidos'],
+    answer: 'O App Ultragaz permite fazer pedidos, consultar histórico, acompanhar entregas e gerenciar clientes — tudo pelo celular. Disponível para Android e iOS. 📱'
+  },
+  {
+    keywords: ['amigu', 'amig', 'fidelidade', 'pontos', 'programa'],
+    answer: 'O AmigU é o programa de fidelidade da Ultragaz para clientes finais. Você como revendedor pode incentivar o cadastro pelo App — cada recarga acumula pontos que o cliente troca por produtos. 🏆'
+  },
+  {
+    keywords: ['trilha', 'curso', 'treinamento', 'aprender', 'módulo', 'modulo'],
+    answer: 'A Trilha de Capacitação tem módulos progressivos sobre todos os canais digitais Ultragaz. Você avança no seu ritmo e ganha certificado ao concluir. Quer conhecer os módulos disponíveis? 📚'
+  },
+  {
+    keywords: ['entrega', 'prazo', 'cilindro', 'botijão', 'botijao'],
+    answer: 'O prazo de entrega varia por região. Pelo App você acompanha em tempo real o status de cada pedido. Para reclamações de prazo, abra um chamado pelo HUB Somar com o número do pedido. 🚚'
+  },
+  {
+    keywords: ['senha', 'login', 'acessar', 'entrar', 'cadastro'],
+    answer: 'Para recuperar o acesso ao MAP ou App, use a opção "Esqueci minha senha" na tela de login. Para o HUB Somar, entre em contato com seu gerente de canal. Posso te ajudar com mais alguma dúvida? 🔐'
+  },
+]
+
+function getBotReply(userText: string): string {
+  const lower = userText.toLowerCase()
+  for (const r of BOT_RESPONSES) {
+    if (r.keywords.some(k => lower.includes(k))) return r.answer
+  }
+  return 'Boa pergunta! Essa informação específica está detalhada na nossa trilha de capacitação. Que tal criar seu acesso e explorar todos os módulos? 😊'
+}
 
 /* ── Modal Trial ─────────────────────────────────────────────── */
 function TrialModal({ onClose }: { onClose: () => void }) {
@@ -138,67 +181,212 @@ function TrialModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-/* ── Chat animado ─────────────────────────────────────────────── */
-function AnimatedChat() {
-  const [visible, setVisible] = useState(0)
-  const [key, setKey] = useState(0) // força restart
-  const bottomRef = useRef<HTMLDivElement>(null)
+/* ── Chat interativo (demo → live → identificação) ───────────── */
+type Msg = { from: 'user' | 'bot' | 'identify'; text: string }
 
+function DemoChat({ onIdentify }: { onIdentify: () => void }) {
+  // Fase: 'demo' = animação automática | 'live' = usuário digita | 'asked' = bot pediu identificação
+  const [phase, setPhase]       = useState<'demo' | 'live' | 'asked'>('demo')
+  const [demoIdx, setDemoIdx]   = useState(0)
+  const [demoKey, setDemoKey]   = useState(0)
+  const [messages, setMessages] = useState<Msg[]>([])
+  const [input, setInput]       = useState('')
+  const [typing, setTyping]     = useState(false)
+  const [exchanges, setExchanges] = useState(0)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const inputRef  = useRef<HTMLInputElement>(null)
+
+  // ── Fase demo: animação automática ──
   useEffect(() => {
-    if (visible < CHAT_DEMO.length) {
-      const delay = visible === 0 ? 800 : 1600
-      const t = setTimeout(() => setVisible(v => v + 1), delay)
-      return () => clearTimeout(t)
-    } else {
-      // Após mostrar tudo, aguarda 3s e reinicia
-      const t = setTimeout(() => {
-        setVisible(0)
-        setKey(k => k + 1)
-      }, 3000)
+    if (phase !== 'demo') return
+    if (demoIdx < CHAT_DEMO.length) {
+      const delay = demoIdx === 0 ? 800 : 1600
+      const t = setTimeout(() => setDemoIdx(i => i + 1), delay)
       return () => clearTimeout(t)
     }
-  }, [visible])
+    // Reinicia o loop após pausa
+    const t = setTimeout(() => { setDemoIdx(0); setDemoKey(k => k + 1) }, 4000)
+    return () => clearTimeout(t)
+  }, [phase, demoIdx])
 
+  // ── Scroll automático ──
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-  }, [visible])
+  }, [demoIdx, messages, typing])
+
+  // ── Usuário ativa o chat ──
+  const activateChat = () => {
+    if (phase !== 'demo') return
+    setPhase('live')
+    // Mantém as mensagens demo que já apareceram como contexto visual
+    const shown = CHAT_DEMO.slice(0, Math.max(demoIdx, 2))
+    setMessages(shown.map(m => ({ from: m.from as 'user' | 'bot', text: m.text })))
+    setTimeout(() => inputRef.current?.focus(), 50)
+  }
+
+  // ── Enviar mensagem ──
+  const sendMessage = async () => {
+    const text = input.trim()
+    if (!text || typing) return
+    setInput('')
+
+    const userMsg: Msg = { from: 'user', text }
+    setMessages(prev => [...prev, userMsg])
+    setTyping(true)
+
+    await new Promise(r => setTimeout(r, 1200 + Math.random() * 600))
+    setTyping(false)
+
+    const newExchanges = exchanges + 1
+    setExchanges(newExchanges)
+
+    if (newExchanges >= 2 && phase !== 'asked') {
+      // Após 2 trocas, bot pede identificação
+      setPhase('asked')
+      const botReply = getBotReply(text)
+      setMessages(prev => [...prev, { from: 'bot', text: botReply }])
+      await new Promise(r => setTimeout(r, 800))
+      setMessages(prev => [...prev, {
+        from: 'bot',
+        text: 'Adorei conversar com você! 😊 Para continuar com acesso completo à trilha e ao Bot João, me fala seu nome e e-mail — crio seu acesso agora mesmo.'
+      }])
+      setMessages(prev => [...prev, { from: 'identify', text: '' }])
+    } else {
+      const botReply = getBotReply(text)
+      setMessages(prev => [...prev, { from: 'bot', text: botReply }])
+    }
+  }
+
+  const handleKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
+  }
+
+  // ── Renderização das mensagens (modo demo ou live) ──
+  const demoMessages = CHAT_DEMO.slice(0, demoIdx)
 
   return (
-    <div key={key} className="flex flex-col gap-2.5 h-72 overflow-hidden">
-      {CHAT_DEMO.slice(0, visible).map((msg, i) => (
-        <div
-          key={i}
-          className={`flex ${msg.from === 'user' ? 'justify-end' : 'justify-start'}`}
-          style={{ animation: 'fadeUp 0.3s ease both' }}
-        >
-          {msg.from === 'bot' && (
-            <div className="w-7 h-7 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2 mt-0.5">
-              <Image src="/bot-joao-icon1.png" alt="" width={18} height={18} />
-            </div>
-          )}
-          <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed font-medium
-            ${msg.from === 'user'
-              ? 'bg-[#000FFF] text-white rounded-br-sm'
-              : 'bg-gray-100 text-gray-800 rounded-bl-sm'
-            }`}>
-            {msg.text}
-          </div>
-        </div>
-      ))}
-      {visible < CHAT_DEMO.length && (
-        <div className="flex justify-start" style={{ animation: 'fadeUp 0.3s ease both' }}>
-          <div className="w-7 h-7 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2">
-            <Image src="/bot-joao-icon1.png" alt="" width={18} height={18} />
-          </div>
-          <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center">
-            {[0,1,2].map(i => (
-              <span key={i} className="w-1.5 h-1.5 rounded-full bg-gray-400"
-                style={{ animation: `bounce 1.2s ease ${i * 0.18}s infinite` }} />
+    <div className="flex flex-col h-full">
+      {/* Área de mensagens */}
+      <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto pr-0.5 pb-2"
+        style={{ scrollbarWidth: 'none' }}>
+
+        {phase === 'demo' ? (
+          /* Mensagens animadas automáticas */
+          <div key={demoKey} className="flex flex-col gap-2.5">
+            {demoMessages.map((msg, i) => (
+              <ChatBubble key={i} from={msg.from as 'user' | 'bot'} text={msg.text} />
             ))}
+            {demoIdx < CHAT_DEMO.length && <TypingIndicator />}
           </div>
+        ) : (
+          /* Mensagens ao vivo */
+          <>
+            {messages.map((msg, i) =>
+              msg.from === 'identify'
+                ? <InlineIdentify key={i} onIdentify={onIdentify} />
+                : <ChatBubble key={i} from={msg.from} text={msg.text} />
+            )}
+            {typing && <TypingIndicator />}
+          </>
+        )}
+
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input — aparece no modo live, esconde após pedir identificação */}
+      {phase === 'demo' && (
+        <button
+          onClick={activateChat}
+          className="mt-2 w-full flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition-colors
+            rounded-2xl px-4 py-3 text-[13px] text-gray-400 font-medium text-left"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Experimente perguntar algo...
+        </button>
+      )}
+
+      {phase === 'live' && (
+        <div className="mt-2 flex items-center gap-2 bg-gray-100 rounded-2xl px-3 py-2">
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleKey}
+            placeholder="Digite sua pergunta..."
+            className="flex-1 bg-transparent text-[13px] text-gray-800 placeholder-gray-400
+              font-medium outline-none"
+          />
+          <button
+            onClick={sendMessage}
+            disabled={!input.trim() || typing}
+            className="w-8 h-8 rounded-full bg-[#000FFF] disabled:opacity-30 flex items-center
+              justify-center shrink-0 transition-opacity"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+              <line x1="22" y1="2" x2="11" y2="13" stroke="white" strokeWidth="2"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2" fill="white"/>
+            </svg>
+          </button>
         </div>
       )}
-      <div ref={bottomRef} />
+    </div>
+  )
+}
+
+function ChatBubble({ from, text }: { from: 'user' | 'bot'; text: string }) {
+  return (
+    <div className={`flex ${from === 'user' ? 'justify-end' : 'justify-start'}`}
+      style={{ animation: 'fadeUp 0.3s ease both' }}>
+      {from === 'bot' && (
+        <div className="w-7 h-7 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2 mt-0.5">
+          <Image src="/bot-joao-icon1.png" alt="" width={18} height={18} />
+        </div>
+      )}
+      <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed font-medium
+        ${from === 'user'
+          ? 'bg-[#000FFF] text-white rounded-br-sm'
+          : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+        }`}>
+        {text}
+      </div>
+    </div>
+  )
+}
+
+function TypingIndicator() {
+  return (
+    <div className="flex justify-start" style={{ animation: 'fadeUp 0.3s ease both' }}>
+      <div className="w-7 h-7 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2">
+        <Image src="/bot-joao-icon1.png" alt="" width={18} height={18} />
+      </div>
+      <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center">
+        {[0,1,2].map(i => (
+          <span key={i} className="w-1.5 h-1.5 rounded-full bg-gray-400"
+            style={{ animation: `bounce 1.2s ease ${i * 0.18}s infinite` }} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function InlineIdentify({ onIdentify }: { onIdentify: () => void }) {
+  return (
+    <div className="flex justify-start" style={{ animation: 'fadeUp 0.4s ease both' }}>
+      <div className="w-7 h-7 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2 mt-1">
+        <Image src="/bot-joao-icon1.png" alt="" width={18} height={18} />
+      </div>
+      <div className="bg-[#000FFF]/8 border border-[#000FFF]/20 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[80%]">
+        <button
+          onClick={onIdentify}
+          className="w-full bg-[#000FFF] text-white text-[13px] font-black rounded-xl px-4 py-2.5
+            hover:bg-[#0009cc] transition-colors"
+        >
+          → Criar meu acesso completo
+        </button>
+        <p className="text-[11px] text-gray-400 text-center mt-2">3 dias de acesso à plataforma completa</p>
+      </div>
     </div>
   )
 }
@@ -407,23 +595,24 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Chat preview flutuante */}
+            {/* Chat interativo flutuante */}
             <div
-              className="hidden lg:block pb-0"
+              className="hidden lg:flex flex-col pb-0"
               style={{ animation: 'fadeUp .7s ease .35s both' }}
             >
-              <div className="bg-white rounded-t-3xl shadow-2xl p-5 max-w-sm mx-auto lg:mx-0 lg:ml-auto">
-                <div className="flex items-center gap-2.5 pb-3 mb-3 border-b border-gray-100">
+              <div className="bg-white rounded-t-3xl shadow-2xl p-5 max-w-sm mx-auto lg:mx-0 lg:ml-auto flex flex-col"
+                style={{ height: '420px' }}>
+                <div className="flex items-center gap-2.5 pb-3 mb-3 border-b border-gray-100 shrink-0">
                   <Image src="/bot-joao-icon1.png" alt="Bot João" width={32} height={32} />
                   <div>
                     <p className="text-sm font-black text-gray-900">Bot João</p>
                     <div className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                      <span className="text-[10px] text-gray-400 font-semibold">Online agora</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400" style={{ animation: 'pulse2 2s infinite' }} />
+                      <span className="text-[10px] text-gray-400 font-semibold">Online — experimente aqui</span>
                     </div>
                   </div>
                 </div>
-                <AnimatedChat />
+                <DemoChat onIdentify={() => setModal(true)} />
               </div>
             </div>
           </div>
