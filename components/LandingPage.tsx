@@ -188,7 +188,6 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
     if (phase === 'demo') activateChat()
     setInput('')
 
-    // Adiciona msg do usuário
     setMessages(prev => [...prev, { from: 'user', text }])
     setTyping(true)
 
@@ -200,22 +199,45 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, history }),
       })
-      const data = await res.json()
-      const reply: string = data.reply ?? 'Desculpe, tive um probleminha aqui. Tente de novo! 😅'
 
+      if (!res.ok || !res.body) throw new Error('falha')
+
+      // Adiciona msg vazia do bot e vai preenchendo via stream
       setTyping(false)
-      setMessages(prev => [...prev, { from: 'bot', text: reply }])
-      setHistory([...newHistory, { role: 'assistant', content: reply }])
+      setMessages(prev => [...prev, { from: 'bot', text: '' }])
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let full = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const chunk = decoder.decode(value, { stream: true })
+        full += chunk
+        // Remove markdown: **, __, ##, #, `
+        const clean = full
+          .replace(/\*\*(.+?)\*\*/g, '$1')
+          .replace(/__(.+?)__/g, '$1')
+          .replace(/#{1,6}\s*/g, '')
+          .replace(/`{1,3}([^`]*)`{1,3}/g, '$1')
+          .replace(/\*/g, '')
+          .replace(/_/g, ' ')
+        setMessages(prev => {
+          const copy = [...prev]
+          copy[copy.length - 1] = { from: 'bot', text: clean }
+          return copy
+        })
+      }
+
+      setHistory([...newHistory, { role: 'assistant', content: full }])
 
       const newExchanges = exchanges + 1
       setExchanges(newExchanges)
 
-      // Após 2 trocas reais, mostra CTA de acesso
       if (newExchanges >= 2) {
         setPhase('done')
-        setTimeout(() => {
-          setMessages(prev => [...prev, { from: 'cta', text: '' }])
-        }, 600)
+        setTimeout(() => setMessages(prev => [...prev, { from: 'cta', text: '' }]), 800)
       }
     } catch {
       setTyping(false)
