@@ -340,7 +340,36 @@ export default function CompletarCadastroPage() {
           </button>
         </form>
 
-        <p style={{ color: '#d1d5db', fontSize: '0.65rem', textAlign: 'center', marginTop: '2rem' }}>
+        {/* Botão Sair */}
+        <button
+          type="button"
+          onClick={async () => {
+            const supabase = createClient()
+            await supabase.auth.signOut()
+            window.location.href = '/'
+          }}
+          style={{
+            display: 'block',
+            width: '100%',
+            marginTop: '0.875rem',
+            background: 'transparent',
+            border: '1.5px solid #e5e7eb',
+            borderRadius: '0.875rem',
+            padding: '0.75rem',
+            fontSize: '0.85rem',
+            fontWeight: 700,
+            color: '#9ca3af',
+            cursor: 'pointer',
+            fontFamily: 'Mangueira, system-ui, sans-serif',
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => { (e.target as HTMLButtonElement).style.color = '#ef4444'; (e.target as HTMLButtonElement).style.borderColor = '#ef4444' }}
+          onMouseLeave={e => { (e.target as HTMLButtonElement).style.color = '#9ca3af'; (e.target as HTMLButtonElement).style.borderColor = '#e5e7eb' }}
+        >
+          Sair da conta
+        </button>
+
+        <p style={{ color: '#d1d5db', fontSize: '0.65rem', textAlign: 'center', marginTop: '1.5rem' }}>
           © 2026 Arkanjia · Bot João · Ultragaz
         </p>
       </div>

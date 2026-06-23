@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-const VIDEO_SRC = '/demo-botjoao.mp4'
+const VIDEO_SRC = '/botjoao-demo.mp4'
 
 const PILLARS = [
   {
@@ -387,46 +387,8 @@ function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: stri
 
 /* ── Vídeo ───────────────────────────────────────────────────── */
 function AutoplayVideo() {
-  const ref    = useRef<HTMLVideoElement>(null)
-  const wrapRef = useRef<HTMLDivElement>(null)
-  const [muted,   setMuted]   = useState(true)
-  const [playing, setPlaying] = useState(false)
-
-  const doPlay = () => {
-    const v = ref.current
-    if (!v) return
-    v.muted = true
-    setMuted(true)
-    v.play().then(() => setPlaying(true)).catch(() => {})
-  }
-
-  useEffect(() => {
-    const v = ref.current
-    if (!v) return
-    // Força o browser a iniciar o carregamento imediatamente
-    v.load()
-
-    const wrap = wrapRef.current
-    if (!wrap) return
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        // Se já carregou: play direto. Se não: aguarda canplaythrough
-        if (v.readyState >= 3) {
-          v.play().then(() => setPlaying(true)).catch(() => {})
-        } else {
-          const onReady = () => {
-            v.play().then(() => setPlaying(true)).catch(() => {})
-            v.removeEventListener('canplaythrough', onReady)
-          }
-          v.addEventListener('canplaythrough', onReady)
-        }
-      } else {
-        v.pause()
-      }
-    }, { threshold: 0.15 })
-    obs.observe(wrap)
-    return () => obs.disconnect()
-  }, [])
+  const ref  = useRef<HTMLVideoElement>(null)
+  const [muted, setMuted] = useState(true)
 
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -434,33 +396,30 @@ function AutoplayVideo() {
     v.muted = !v.muted; setMuted(v.muted)
   }
 
+  const handleClick = () => {
+    const v = ref.current; if (!v) return
+    if (v.paused) { v.muted = true; setMuted(true); v.play().catch(() => {}) }
+    else v.pause()
+  }
+
   return (
-    <div ref={wrapRef} className="relative rounded-3xl overflow-hidden shadow-2xl"
+    <div className="relative rounded-3xl overflow-hidden shadow-2xl"
       style={{ aspectRatio: '16/9', background: '#0a1628' }}>
 
+      {/* autoPlay nativo — browser cuida do play sem JS customizado */}
       <video
         ref={ref}
-        muted loop playsInline preload="auto"
-        className="w-full h-full object-cover block"
-        onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        className="w-full h-full object-cover block cursor-pointer"
+        onClick={handleClick}
         src={VIDEO_SRC}
       />
 
-      {/* Botão play — sempre visível quando pausado */}
-      {!playing && (
-        <button type="button" onClick={doPlay}
-          className="absolute inset-0 w-full h-full flex items-center justify-center
-            bg-black/30 hover:bg-black/20 transition-colors border-0 cursor-pointer">
-          <span className="w-20 h-20 rounded-full bg-white/95 flex items-center justify-center shadow-2xl hover:scale-110 transition-transform">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="#000FFF">
-              <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
-          </span>
-        </button>
-      )}
-
-      {/* Botão de áudio — sempre visível */}
+      {/* Botão de áudio */}
       <button type="button" onClick={toggleMute}
         className="absolute bottom-4 right-4 z-10 w-11 h-11 rounded-full bg-black/60 hover:bg-black/80
           flex items-center justify-center text-white shadow-lg transition-colors">
