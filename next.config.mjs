@@ -1,5 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Redireciona rotas legadas permanentemente
+  async redirects() {
+    return [
+      {
+        source: '/admin/cards',
+        destination: '/admin/trilha',
+        permanent: true,
+      },
+      {
+        source: '/admin/cards/:path*',
+        destination: '/admin/trilha',
+        permanent: true,
+      },
+    ]
+  },
+
   // Pacotes Node.js nativos usados em Server Components/API routes
   // pdf-parse precisa rodar no Node.js runtime (não no Edge)
   serverExternalPackages: ['pdf-parse'],
