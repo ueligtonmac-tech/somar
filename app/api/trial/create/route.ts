@@ -26,13 +26,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
 
     if (existing) {
-      if (existing.role !== 'consultor_trial') {
-        return NextResponse.json({
-          error: 'Este e-mail já possui uma conta. Faça login normalmente.',
-          redirect: '/login',
-        }, { status: 409 })
-      }
-      // Já tem trial → reenviar magic link
+      // Qualquer conta existente → gera magic link direto (sem passar pela tela de login)
       const origin = req.nextUrl.origin
       const { data: linkData, error: linkErr } = await adminClient.auth.admin.generateLink({
         type: 'magiclink',
