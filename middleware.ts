@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/login', '/cadastro', '/esqueci-senha', '/auth/callback', '/auth/reset-password', '/politica', '/termos']
+const PUBLIC_ROUTES = ['/', '/login', '/cadastro', '/esqueci-senha', '/auth/callback', '/auth/reset-password', '/politica', '/termos', '/trial-expirado', '/api/trial']
 const PENDING_ROUTES = ['/completar-cadastro', '/aguardando-aprovacao']
 const ADMIN_ROUTES = ['/admin']
 const ADMIN_ROLES = ['admin', 'builder']
@@ -65,8 +65,12 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // ── 1. Rotas públicas — sem autenticação ──
-  if (PUBLIC_ROUTES.some(r => pathname.startsWith(r))) {
+  if (PUBLIC_ROUTES.some(r => pathname === r || (r !== '/' && pathname.startsWith(r)))) {
     if (user && pathname === '/login') {
+      return NextResponse.redirect(new URL('/trilha', request.url))
+    }
+    // Usuário logado que acessa `/` vai para /trilha
+    if (user && pathname === '/') {
       return NextResponse.redirect(new URL('/trilha', request.url))
     }
     return supabaseResponse
@@ -93,11 +97,11 @@ export async function middleware(request: NextRequest) {
   // faz fallback sem ela — evita loop infinito em deploys graduais.
   const { data: profile, error: profileErr } = await supabase
     .from('profiles')
-    .select('role, active, onboarding_complete, rejected_at')
+    .select('role, active, onboarding_complete, rejected_at, trial_expires_at')
     .eq('id', user.id)
     .single()
 
-  // Fallback: coluna rejected_at pode não existir ainda
+  // Fallback: colunas novas podem não existir ainda em deploys graduais
   const safeProfile = profileErr
     ? (await supabase
         .from('profiles')
@@ -106,6 +110,20 @@ export async function middleware(request: NextRequest) {
         .single()
       ).data
     : profile
+
+  // ── 4b. Trial expirado → tela específica ──
+  if (safeProfile?.role === 'consultor_trial') {
+    const expiresAt = (safeProfile as { trial_expires_at?: string | null }).trial_expires_at
+    if (expiresAt && new Date(expiresAt) < new Date()) {
+      if (!pathname.startsWith('/trial-expirado')) {
+        return NextResponse.redirect(new URL('/trial-expirado', request.url))
+      }
+    }
+    // Trial válido: bloquear acesso a /admin
+    if (ADMIN_ROUTES.some(r => pathname.startsWith(r))) {
+      return NextResponse.redirect(new URL('/trilha', request.url))
+    }
+  }
 
   // ── 5. Rotas de pendência — permitir mesmo sem aprovação ──
   if (PENDING_ROUTES.some(r => pathname.startsWith(r))) {
