@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/', '/login', '/cadastro', '/esqueci-senha', '/auth/callback', '/auth/magic', '/auth/reset-password', '/politica', '/termos', '/trial-expirado', '/api/trial', '/api/demo']
+const PUBLIC_ROUTES = ['/', '/login', '/cadastro', '/esqueci-senha', '/auth/callback', '/auth/magic', '/auth/signout', '/auth/reset-password', '/politica', '/termos', '/trial-expirado', '/api/trial', '/api/demo']
 const PENDING_ROUTES = ['/completar-cadastro', '/aguardando-aprovacao']
 const ADMIN_ROUTES = ['/admin']
 const ADMIN_ROLES = ['admin', 'builder']
