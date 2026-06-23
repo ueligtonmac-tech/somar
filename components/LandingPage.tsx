@@ -390,29 +390,35 @@ function AutoplayVideo() {
   const [playing, setPlaying] = useState(false)
   const [muted,   setMuted]   = useState(true)
 
-  // Autoplay silencioso ao entrar na viewport
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
     const obs = new IntersectionObserver(([e]) => {
       if (e.isIntersecting) {
-        video.muted = true; setMuted(true)
+        video.muted = true
+        setMuted(true)
         video.play().then(() => setPlaying(true)).catch(() => {})
       } else {
-        video.pause(); setPlaying(false)
+        video.pause()
+        setPlaying(false)
       }
     }, { threshold: 0.25 })
     obs.observe(video)
     return () => obs.disconnect()
   }, [])
 
-  const play = () => {
+  const handlePlayPause = () => {
     const v = videoRef.current
     if (!v) return
-    v.play().then(() => setPlaying(true)).catch(() => {})
+    if (v.paused) {
+      v.play().then(() => setPlaying(true)).catch(() => {})
+    } else {
+      v.pause()
+      setPlaying(false)
+    }
   }
 
-  const toggleMute = (e: React.MouseEvent) => {
+  const handleMute = (e: React.MouseEvent) => {
     e.stopPropagation()
     const v = videoRef.current
     if (!v) return
@@ -421,40 +427,57 @@ function AutoplayVideo() {
   }
 
   return (
-    <div className="relative rounded-3xl overflow-hidden shadow-2xl select-none"
-      style={{ aspectRatio: '16/9' }}>
+    <div className="relative rounded-3xl overflow-hidden shadow-2xl"
+      style={{ aspectRatio: '16/9', background: '#0a1628' }}>
 
-      {/* O vídeo ocupa 100% — é o elemento clicável */}
+      {/* Vídeo base — sem onClick para evitar conflito */}
       <video
         ref={videoRef}
-        src={VIDEO_SRC}
         poster="/bot-joao-splash.png"
         muted loop playsInline preload="auto"
-        className="w-full h-full object-cover block cursor-pointer"
-        onClick={play}
+        className="w-full h-full object-cover block"
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
-      />
+      >
+        <source src={VIDEO_SRC} type="video/mp4" />
+      </video>
 
-      {/* Overlay só quando pausado — pointer-events-none para não bloquear o vídeo */}
+      {/* Botão play: ocupa toda a área quando pausado */}
       {!playing && (
-        <div
-          className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer"
-          style={{ pointerEvents: 'none' }}
+        <button
+          onClick={handlePlayPause}
+          className="absolute inset-0 w-full h-full flex items-center justify-center bg-black/30
+            hover:bg-black/20 transition-colors cursor-pointer border-0"
         >
-          <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-2xl">
+          <span className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-2xl
+            hover:scale-110 transition-transform duration-200">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="#000FFF">
               <polygon points="5 3 19 12 5 21 5 3"/>
             </svg>
-          </div>
-        </div>
+          </span>
+        </button>
       )}
 
-      {/* Botão de áudio — único elemento com pointer-events ativos sobre o vídeo */}
+      {/* Botão pause — pequeno, aparece quando tocando */}
+      {playing && (
+        <button
+          onClick={handlePlayPause}
+          className="absolute inset-0 w-full h-full flex items-center justify-center
+            opacity-0 hover:opacity-100 hover:bg-black/10 transition-all cursor-pointer border-0"
+        >
+          <span className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+              <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+            </svg>
+          </span>
+        </button>
+      )}
+
+      {/* Botão de áudio */}
       <button
-        onClick={toggleMute}
+        onClick={handleMute}
         className="absolute bottom-4 right-4 w-11 h-11 rounded-full bg-black/60
-          flex items-center justify-center text-white hover:bg-black/80 transition-colors z-10"
+          flex items-center justify-center text-white hover:bg-black/80 transition-colors z-20 shadow-lg"
       >
         {muted ? (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
