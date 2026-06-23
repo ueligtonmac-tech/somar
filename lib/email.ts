@@ -50,7 +50,7 @@ export function templateCadastroPendente(nome: string): string {
   const safeName = escapeHtml(nome)
   return `
     <div style="font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 24px;">
-      <img src="https://botjoao.com.br/logo.png" alt="Ultragaz" width="140" style="margin-bottom: 32px;" />
+      <img src="https://botjoao.com.br/bot-joao-icon1.png" alt="Bot João" width="80" style="margin-bottom: 24px;display:block;" />
       <h1 style="color: #111; font-size: 24px; font-weight: 900; margin-bottom: 8px;">Cadastro recebido! 🎉</h1>
       <p style="color: #6b7280; font-size: 15px; line-height: 1.6;">
         Olá, <strong style="color: #111;">${safeName}</strong>!<br /><br />
@@ -77,7 +77,7 @@ export function templateAcessoLiberado(nome: string): string {
 
     <!-- Header -->
     <div style="background:#000FFF;border-radius:20px 20px 0 0;padding:32px 40px;text-align:center;">
-      <img src="https://botjoao.com.br/logo-white.png" alt="Ultragaz" width="130" style="height:auto;" onerror="this.style.display='none'" />
+      <img src="https://botjoao.com.br/bot-joao-icon1.png" alt="Bot João" width="80" style="height:auto;display:block;margin:0 auto;" />
       <p style="color:rgba(255,255,255,0.7);font-size:13px;margin:12px 0 0;letter-spacing:0.5px;">BOT JOÃO · HUB SOMAR</p>
     </div>
 
@@ -147,7 +147,7 @@ export function templateNovoUsuarioAdmin(nome: string, email: string): string {
   const safeEmail = escapeHtml(email)
   return `
     <div style="font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 24px;">
-      <img src="https://botjoao.com.br/logo.png" alt="Ultragaz" width="140" style="margin-bottom: 32px;" />
+      <img src="https://botjoao.com.br/bot-joao-icon1.png" alt="Bot João" width="80" style="margin-bottom: 24px;display:block;" />
       <h1 style="color: #111; font-size: 22px; font-weight: 900; margin-bottom: 8px;">🆕 Novo cadastro pendente</h1>
       <p style="color: #6b7280; font-size: 15px; line-height: 1.6;">
         Um novo usuário aguarda aprovação no <strong style="color: #000FFF;">Bot João</strong>:
