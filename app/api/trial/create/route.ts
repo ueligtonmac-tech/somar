@@ -21,14 +21,15 @@ export async function POST(req: NextRequest) {
     // Verificar se e-mail já tem conta trial
     const { data: existing } = await adminClient
       .from('profiles')
-      .select('id, role, trial_expires_at, active')
+      .select('id, role, trial_expires_at, active, onboarding_complete')
       .eq('email', normalizedEmail)
       .maybeSingle()
 
     if (existing) {
-      // Se é um consultor_trial ou conta sem role completo, atualiza para trial
-      const needsTrialUpgrade = !existing.active || existing.role === 'consultor_trial'
-      if (needsTrialUpgrade) {
+      // Atualiza para trial se: não está ativo, já é trial, ou onboarding incompleto
+      // Não rebaixa quem já tem conta completa (active + onboarding_complete)
+      const isFullAccount = existing.active && existing.onboarding_complete && existing.role !== 'consultor_trial'
+      if (!isFullAccount) {
         await adminClient.from('profiles').update({
           role: 'consultor_trial',
           active: true,
