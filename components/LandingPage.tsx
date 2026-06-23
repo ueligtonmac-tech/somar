@@ -400,31 +400,42 @@ function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: stri
   return <span ref={ref}>{val}{suffix}</span>
 }
 
-/* ── Vídeo local com autoplay ao scroll e toggle de áudio ────── */
+/* ── Vídeo local com thumbnail, clique para play e toggle áudio ─ */
 function AutoplayVideo() {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [muted, setMuted] = useState(true)
+  const wrapRef  = useRef<HTMLDivElement>(null)
   const [playing, setPlaying] = useState(false)
+  const [muted,   setMuted]   = useState(true)
 
+  // Autoplay muted quando 30% do container entra na tela
   useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-    const tryPlay = () => video.play().then(() => setPlaying(true)).catch(() => {})
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) { tryPlay() }
-        else { video.pause(); setPlaying(false) }
-      },
-      { threshold: 0.3 }
-    )
-    obs.observe(video)
+    const wrap = wrapRef.current
+    if (!wrap) return
+    const obs = new IntersectionObserver(([e]) => {
+      const video = videoRef.current
+      if (!video) return
+      if (e.isIntersecting) {
+        video.muted = true
+        setMuted(true)
+        video.play().then(() => setPlaying(true)).catch(() => {})
+      } else {
+        video.pause()
+        setPlaying(false)
+      }
+    }, { threshold: 0.3 })
+    obs.observe(wrap)
     return () => obs.disconnect()
   }, [])
 
-  const handlePlayClick = () => {
+  const handleClick = () => {
     const video = videoRef.current
     if (!video) return
-    video.play().then(() => setPlaying(true)).catch(() => {})
+    if (video.paused) {
+      video.play().then(() => setPlaying(true)).catch(() => {})
+    } else {
+      video.pause()
+      setPlaying(false)
+    }
   }
 
   const toggleMute = (e: React.MouseEvent) => {
@@ -437,35 +448,36 @@ function AutoplayVideo() {
 
   return (
     <div
-      className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900 cursor-pointer"
-      style={{ aspectRatio: '16/9' }}
-      onClick={handlePlayClick}
+      ref={wrapRef}
+      className="relative rounded-3xl overflow-hidden shadow-2xl cursor-pointer select-none"
+      style={{ aspectRatio: '16/9', background: '#0a0a1a' }}
+      onClick={handleClick}
     >
       <video
         ref={videoRef}
         src={VIDEO_SRC}
+        poster="/bot-joao-splash.png"
         muted
         loop
         playsInline
-        preload="auto"
+        preload="metadata"
         className="w-full h-full object-cover"
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
       />
 
-      {/* Overlay play — aparece só quando pausado */}
-      {!playing && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40 transition-opacity">
-          <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-2xl
-            hover:scale-110 transition-transform duration-200">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="#000FFF">
-              <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
-          </div>
+      {/* Overlay play/pause */}
+      <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300
+        ${playing ? 'opacity-0 pointer-events-none' : 'bg-black/40 opacity-100'}`}>
+        <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-2xl
+          hover:scale-110 transition-transform duration-200">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="#000FFF">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
         </div>
-      )}
+      </div>
 
-      {/* Botão de áudio — sempre visível no canto */}
+      {/* Botão de áudio */}
       <button
         onClick={toggleMute}
         className="absolute bottom-4 right-4 w-11 h-11 rounded-full bg-black/60 backdrop-blur-sm
@@ -475,8 +487,7 @@ function AutoplayVideo() {
         {muted ? (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-            <line x1="23" y1="9" x2="17" y2="15"/>
-            <line x1="17" y1="9" x2="23" y2="15"/>
+            <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
           </svg>
         ) : (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
