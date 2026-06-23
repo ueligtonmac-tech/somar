@@ -46,23 +46,26 @@ export async function approveUser(userId: string, role: string, perfil?: string)
   const displayName = target.full_name || target.email || 'Usuário'
   const userEmail = target.email || ''
 
-  await service.from('notifications').insert({
-    user_id: userId,
-    type: 'account_approved',
-    title: '✅ Acesso liberado!',
-    message: 'Seu perfil foi aprovado com sucesso. Você já pode acessar a plataforma.',
-    metadata: { role, perfil: perfil ?? null },
-  })
+  try {
+    await service.from('notifications').insert({
+      user_id: userId,
+      type: 'account_approved',
+      title: '✅ Acesso liberado!',
+      message: 'Seu perfil foi aprovado com sucesso. Você já pode acessar a plataforma.',
+      metadata: { role, perfil: perfil ?? null },
+    })
+  } catch { /* notificação não crítica */ }
 
-  const { sendWhatsApp } = await import('@/lib/whatsapp')
-  const { sendEmail, templateAcessoLiberado } = await import('@/lib/email')
-
-  if (target.whatsapp) {
-    sendWhatsApp(target.whatsapp, `✅ *Acesso liberado no Bot João!*\n\nOlá, ${displayName}! Seu cadastro foi aprovado.\n\nAcesse agora: https://botjoao.com.br/login`).catch(() => {})
-  }
-  if (userEmail) {
-    sendEmail({ to: userEmail, subject: '✅ Acesso liberado — Bot João', html: templateAcessoLiberado(displayName) }).catch(() => {})
-  }
+  try {
+    const { sendWhatsApp } = await import('@/lib/whatsapp')
+    const { sendEmail, templateAcessoLiberado } = await import('@/lib/email')
+    if (target.whatsapp) {
+      sendWhatsApp(target.whatsapp, `✅ *Acesso liberado no Bot João!*\n\nOlá, ${displayName}! Seu cadastro foi aprovado.\n\nAcesse agora: https://botjoao.com.br/login`).catch(() => {})
+    }
+    if (userEmail) {
+      sendEmail({ to: userEmail, subject: '✅ Acesso liberado — Bot João', html: templateAcessoLiberado(displayName) }).catch(() => {})
+    }
+  } catch { /* envio não crítico */ }
 
   revalidatePath('/admin/usuarios')
 }
@@ -88,18 +91,22 @@ export async function forceApproveUser(userId: string) {
   const displayName = target.full_name || target.email || 'Usuário'
   const userEmail = target.email || ''
 
-  await service.from('notifications').insert({
-    user_id: userId,
-    type: 'account_approved',
-    title: '✅ Acesso liberado!',
-    message: 'Seu acesso foi liberado. Complete seu perfil ao entrar na plataforma.',
-    metadata: {},
-  })
+  try {
+    await service.from('notifications').insert({
+      user_id: userId,
+      type: 'account_approved',
+      title: '✅ Acesso liberado!',
+      message: 'Seu acesso foi liberado. Complete seu perfil ao entrar na plataforma.',
+      metadata: {},
+    })
+  } catch { /* notificação não crítica */ }
 
-  const { sendEmail, templateAcessoLiberado } = await import('@/lib/email')
-  if (userEmail) {
-    sendEmail({ to: userEmail, subject: '✅ Acesso liberado — Bot João', html: templateAcessoLiberado(displayName) }).catch(() => {})
-  }
+  try {
+    const { sendEmail, templateAcessoLiberado } = await import('@/lib/email')
+    if (userEmail) {
+      sendEmail({ to: userEmail, subject: '✅ Acesso liberado — Bot João', html: templateAcessoLiberado(displayName) }).catch(() => {})
+    }
+  } catch { /* envio não crítico */ }
 
   revalidatePath('/admin/usuarios')
 }
@@ -154,14 +161,15 @@ export async function rejectUser(userId: string) {
     if (err2) throw new Error('Erro ao rejeitar usuário: ' + err2.message)
   }
 
-  // Notificação in-app para o usuário rejeitado
-  await service.from('notifications').insert({
-    user_id: userId,
-    type: 'account_rejected',
-    title: '❌ Cadastro não aprovado',
-    message: 'Seu cadastro não foi aprovado neste momento. Entre em contato com o administrador para mais informações.',
-    metadata: {},
-  })
+  try {
+    await service.from('notifications').insert({
+      user_id: userId,
+      type: 'account_rejected',
+      title: '❌ Cadastro não aprovado',
+      message: 'Seu cadastro não foi aprovado neste momento. Entre em contato com o administrador para mais informações.',
+      metadata: {},
+    })
+  } catch { /* notificação não crítica */ }
 
   revalidatePath('/admin/usuarios')
 }

@@ -69,16 +69,10 @@ export default async function AdminPage() {
           </Link>
           <Link
             href="/admin/trilha"
-            className="flex items-center gap-2 bg-white border-2 border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-bold hover:border-[#000FFF] hover:text-[#000FFF] transition-colors"
-          >
-            🗺️ Editor da Trilha
-          </Link>
-          <Link
-            href="/admin/cards"
             className="flex items-center gap-2 bg-[#000FFF] text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Editar Cards
+            Editor da Trilha
           </Link>
         </div>
       </div>
