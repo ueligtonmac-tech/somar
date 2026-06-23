@@ -386,47 +386,63 @@ function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: stri
 
 /* ── Vídeo ───────────────────────────────────────────────────── */
 function AutoplayVideo() {
-  const ref = useRef<HTMLVideoElement>(null)
-  const [muted, setMuted] = useState(true)
+  const ref  = useRef<HTMLVideoElement>(null)
+  const [muted,   setMuted]   = useState(true)
   const [playing, setPlaying] = useState(false)
+  const [ready,   setReady]   = useState(false)
 
-  useEffect(() => {
+  // Garante que o vídeo está pronto antes de tentar play
+  const doPlay = () => {
     const v = ref.current
     if (!v) return
+    v.muted = true
+    setMuted(true)
+    const attempt = () => v.play().then(() => setPlaying(true)).catch(() => {})
+    if (v.readyState >= 3) { attempt() }
+    else { v.addEventListener('canplay', attempt, { once: true }) }
+  }
+
+  // IntersectionObserver no container
+  const wrapRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const wrap = wrapRef.current
+    if (!wrap) return
     const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        v.muted = true
-        setMuted(true)
-        v.play().catch(() => {})
-      } else {
-        v.pause()
-      }
-    }, { threshold: 0.3 })
-    obs.observe(v)
+      if (e.isIntersecting) { doPlay() }
+      else { ref.current?.pause() }
+    }, { threshold: 0.2 })
+    obs.observe(wrap)
     return () => obs.disconnect()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const v = ref.current; if (!v) return
+    v.muted = !v.muted; setMuted(v.muted)
+  }
+
   return (
-    <div className="relative rounded-3xl overflow-hidden shadow-2xl"
+    <div ref={wrapRef} className="relative rounded-3xl overflow-hidden shadow-2xl"
       style={{ aspectRatio: '16/9', background: '#0a1628' }}>
 
+      {/* SEM poster — mostra o primeiro frame do vídeo correto */}
       <video
         ref={ref}
-        src={VIDEO_SRC}
-        poster="/bot-joao-splash.png"
         muted loop playsInline preload="auto"
         className="w-full h-full object-cover block"
+        onCanPlay={() => setReady(true)}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
-      />
+      >
+        <source src={VIDEO_SRC} type="video/mp4" />
+      </video>
 
-      {/* Play button — visível apenas quando pausado */}
-      {!playing && (
-        <button
-          type="button"
-          onClick={() => { ref.current?.play().catch(() => {}) }}
-          className="absolute inset-0 w-full h-full flex items-center justify-center bg-black/25 hover:bg-black/15 transition-colors border-0 cursor-pointer"
-        >
+      {/* Overlay play — só aparece quando pausado E pronto */}
+      {ready && !playing && (
+        <button type="button" onClick={doPlay}
+          className="absolute inset-0 w-full h-full flex items-center justify-center
+            bg-black/20 hover:bg-black/10 transition-colors border-0 cursor-pointer">
           <span className="w-20 h-20 rounded-full bg-white/95 flex items-center justify-center shadow-2xl hover:scale-110 transition-transform">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="#000FFF">
               <polygon points="5 3 19 12 5 21 5 3"/>
@@ -435,18 +451,10 @@ function AutoplayVideo() {
         </button>
       )}
 
-      {/* Botão de áudio */}
-      <button
-        type="button"
-        onClick={() => {
-          const v = ref.current
-          if (!v) return
-          v.muted = !v.muted
-          setMuted(v.muted)
-        }}
+      {/* Botão de áudio — sempre visível */}
+      <button type="button" onClick={toggleMute}
         className="absolute bottom-4 right-4 z-10 w-11 h-11 rounded-full bg-black/60 hover:bg-black/80
-          flex items-center justify-center text-white shadow-lg transition-colors"
-      >
+          flex items-center justify-center text-white shadow-lg transition-colors">
         {muted ? (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
