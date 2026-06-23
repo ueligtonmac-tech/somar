@@ -1,23 +1,12 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
-import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { generateEmbedding } from '@/lib/embeddings'
 import { sendWhatsApp } from '@/lib/whatsapp'
+import { requireAdmin } from '@/lib/auth'
 
 async function assertAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['admin', 'builder'].includes(profile.role)) throw new Error('Sem permissão')
-  // Service client bypassa RLS para operações admin
-  const service = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-  return { supabase, service, user }
+  return requireAdmin()
 }
 
 /** Aprova um feedback e salva na base de conhecimento */
@@ -85,13 +74,13 @@ export async function rejectFeedback(feedbackId: string) {
 
 /** Resolve escalonamento: admin escreve resposta que será entregue ao usuário */
 export async function resolveEscalation(feedbackId: string, adminAnswer: string, addToKnowledge: boolean) {
-  const { service, user } = await assertAdmin()
+  const { service, userId } = await assertAdmin()
 
   // Tenta update com campos extras; se falhar por colunas inexistentes, usa só reviewed
   const { error } = await service.from('bot_feedback').update({
     reviewed: true,
     admin_answer: adminAnswer,
-    reviewed_by: user.id,
+    reviewed_by: userId,
     reviewed_at: new Date().toISOString(),
   }).eq('id', feedbackId)
 

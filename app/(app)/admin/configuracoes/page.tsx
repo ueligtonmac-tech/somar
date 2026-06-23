@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import RefTable from './RefTable'
 import {
@@ -13,15 +14,20 @@ export default async function ConfiguracoesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const service = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  const { data: me } = await service.from('profiles').select('role').eq('id', user.id).single()
   if (!me || !['admin', 'builder'].includes(me.role ?? '')) redirect('/trilha')
 
   const [{ data: perfis }, { data: regioes }] = await Promise.all([
-    supabase
+    service
       .from('perfis_consultor')
       .select('id, slug, nome, descricao, ordem, ativo')
       .order('ordem'),
-    supabase
+    service
       .from('regioes_geograficas')
       .select('id, slug, nome, descricao, ordem, ativo')
       .order('ordem'),

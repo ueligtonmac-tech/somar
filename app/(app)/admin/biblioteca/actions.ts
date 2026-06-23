@@ -1,17 +1,10 @@
 'use server'
 
-import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireAdmin } from '@/lib/auth'
 
 export async function deleteLibraryFile(id: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!me || !['admin', 'builder'].includes(me.role)) throw new Error('Sem permissão')
-
-  const service = await createServiceClient()
+  const { service } = await requireAdmin()
 
   // Busca o arquivo para pegar o path no storage
   const { data: file } = await service.from('library_files').select('file_name').eq('id', id).single()
@@ -25,14 +18,7 @@ export async function deleteLibraryFile(id: string) {
 }
 
 export async function toggleLibraryFile(id: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Não autenticado')
-
-  const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!me || !['admin', 'builder'].includes(me.role)) throw new Error('Sem permissão')
-
-  const service = await createServiceClient()
+  const { service } = await requireAdmin()
   const { data: current } = await service.from('library_files').select('active').eq('id', id).single()
   const newActive = !current?.active
 

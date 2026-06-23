@@ -9,13 +9,13 @@ export default async function TrailAdminPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-  const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!me || !['admin', 'builder'].includes(me.role)) redirect('/trilha')
-
   const service = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
+
+  const { data: me } = await service.from('profiles').select('role').eq('id', user.id).single()
+  if (!me || !['admin', 'builder'].includes(me.role)) redirect('/trilha')
 
   const [{ data: blocks }, { data: sections }, { data: flashcards }, { data: quizQuestions }] = await Promise.all([
     service.from('trail_blocks').select('*').order('order_index'),

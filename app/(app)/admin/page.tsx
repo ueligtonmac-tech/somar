@@ -12,14 +12,14 @@ export default async function AdminPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!me || !['admin', 'builder'].includes(me.role)) redirect('/trilha')
-
-  // Service client para queries que precisam bypasasr RLS
+  // Service client para queries que precisam bypassar RLS
   const service = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
+
+  const { data: me } = await service.from('profiles').select('role').eq('id', user.id).single()
+  if (!me || !['admin', 'builder'].includes(me.role)) redirect('/trilha')
 
   const [
     { data: profiles },
