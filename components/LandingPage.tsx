@@ -386,112 +386,21 @@ function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: stri
 
 /* ── Vídeo ───────────────────────────────────────────────────── */
 function AutoplayVideo() {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [playing, setPlaying] = useState(false)
-  const [muted,   setMuted]   = useState(true)
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        video.muted = true
-        setMuted(true)
-        video.play().then(() => setPlaying(true)).catch(() => {})
-      } else {
-        video.pause()
-        setPlaying(false)
-      }
-    }, { threshold: 0.25 })
-    obs.observe(video)
-    return () => obs.disconnect()
-  }, [])
-
-  const handlePlayPause = () => {
-    const v = videoRef.current
-    if (!v) return
-    if (v.paused) {
-      v.play().then(() => setPlaying(true)).catch(() => {})
-    } else {
-      v.pause()
-      setPlaying(false)
-    }
-  }
-
-  const handleMute = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    const v = videoRef.current
-    if (!v) return
-    v.muted = !v.muted
-    setMuted(v.muted)
-  }
-
   return (
-    <div className="relative rounded-3xl overflow-hidden shadow-2xl"
-      style={{ aspectRatio: '16/9', background: '#0a1628' }}>
-
-      {/* Vídeo base — sem onClick para evitar conflito */}
+    <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+      <style>{`
+        .demo-video { width:100%; display:block; border-radius:1.5rem; }
+        .demo-video::-webkit-media-controls { border-radius:1.5rem; }
+      `}</style>
       <video
-        ref={videoRef}
+        className="demo-video"
+        src={VIDEO_SRC}
         poster="/bot-joao-splash.png"
-        muted loop playsInline preload="auto"
-        className="w-full h-full object-cover block"
-        onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
-      >
-        <source src={VIDEO_SRC} type="video/mp4" />
-      </video>
-
-      {/* Botão play: ocupa toda a área quando pausado */}
-      {!playing && (
-        <button
-          onClick={handlePlayPause}
-          className="absolute inset-0 w-full h-full flex items-center justify-center bg-black/30
-            hover:bg-black/20 transition-colors cursor-pointer border-0"
-        >
-          <span className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-2xl
-            hover:scale-110 transition-transform duration-200">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="#000FFF">
-              <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
-          </span>
-        </button>
-      )}
-
-      {/* Botão pause — pequeno, aparece quando tocando */}
-      {playing && (
-        <button
-          onClick={handlePlayPause}
-          className="absolute inset-0 w-full h-full flex items-center justify-center
-            opacity-0 hover:opacity-100 hover:bg-black/10 transition-all cursor-pointer border-0"
-        >
-          <span className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-              <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
-            </svg>
-          </span>
-        </button>
-      )}
-
-      {/* Botão de áudio */}
-      <button
-        onClick={handleMute}
-        className="absolute bottom-4 right-4 w-11 h-11 rounded-full bg-black/60
-          flex items-center justify-center text-white hover:bg-black/80 transition-colors z-20 shadow-lg"
-      >
-        {muted ? (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-            <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
-          </svg>
-        ) : (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-          </svg>
-        )}
-      </button>
+        controls
+        playsInline
+        preload="metadata"
+        style={{ aspectRatio: '16/9', background: '#0a1628' }}
+      />
     </div>
   )
 }
