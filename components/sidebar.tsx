@@ -135,17 +135,6 @@ export default function Sidebar({ profile, trailSections = [], trailProgress = [
 
       {/* Footer */}
       <div className="border-t border-gray-100 px-4 py-3 space-y-1">
-        {/* Voltar ao site */}
-        <Link
-          href="/"
-          onClick={onNavigate}
-          className="flex items-center gap-2 text-xs text-gray-400 hover:text-[#000FFF] transition-colors py-1.5 font-semibold"
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-          Voltar ao site
-        </Link>
         {profile.role !== 'consultant' && (
           <Link
             href="/admin"
