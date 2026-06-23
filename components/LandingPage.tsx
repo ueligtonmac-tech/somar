@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-const VIDEO_ID = 'Cpw2eXnaOoc'
+const VIDEO_SRC = '/V%C3%ADdeo%202.mp4'
 
 const PILLARS = [
   {
@@ -213,10 +213,89 @@ function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: stri
   return <span ref={ref}>{val}{suffix}</span>
 }
 
+/* ── Vídeo local com autoplay ao scroll e toggle de áudio ────── */
+function AutoplayVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [muted, setMuted] = useState(true)
+  const [playing, setPlaying] = useState(false)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().then(() => setPlaying(true)).catch(() => {})
+        } else {
+          video.pause()
+          setPlaying(false)
+        }
+      },
+      { threshold: 0.4 }
+    )
+    obs.observe(video)
+    return () => obs.disconnect()
+  }, [])
+
+  const toggleMute = () => {
+    const video = videoRef.current
+    if (!video) return
+    video.muted = !video.muted
+    setMuted(video.muted)
+  }
+
+  return (
+    <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-gray-200 bg-black"
+      style={{ aspectRatio: '16/9' }}>
+      <video
+        ref={videoRef}
+        src={VIDEO_SRC}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        className="w-full h-full object-cover"
+      />
+      {/* Botão de áudio */}
+      <button
+        onClick={toggleMute}
+        className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm
+          flex items-center justify-center text-white hover:bg-black/80 transition-colors z-10"
+        title={muted ? 'Ativar áudio' : 'Silenciar'}
+      >
+        {muted ? (
+          /* Speaker muted */
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <line x1="23" y1="9" x2="17" y2="15"/>
+            <line x1="17" y1="9" x2="23" y2="15"/>
+          </svg>
+        ) : (
+          /* Speaker on */
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          </svg>
+        )}
+      </button>
+      {/* Overlay play hint se não iniciou */}
+      {!playing && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+          <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-xl">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#000FFF">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 /* ── Landing Page ─────────────────────────────────────────────── */
 export default function LandingPage() {
-  const [modal, setModal]           = useState(false)
-  const [videoPlaying, setVideoPlaying] = useState(false)
+  const [modal, setModal] = useState(false)
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: "'Mangueira', system-ui, sans-serif" }}>
@@ -353,38 +432,7 @@ export default function LandingPage() {
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 text-center mb-8">
             Conheça o Bot João em ação
           </h2>
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-gray-200"
-            style={{ paddingBottom: '56.25%' }}>
-            {videoPlaying ? (
-              <iframe
-                src={`https://www.youtube-nocookie.com/embed/${VIDEO_ID}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`}
-                title="Bot João — Apresentação"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="absolute inset-0 w-full h-full"
-              />
-            ) : (
-              <button
-                onClick={() => setVideoPlaying(true)}
-                className="absolute inset-0 w-full h-full group"
-                style={{
-                  backgroundImage: `url(https://img.youtube.com/vi/${VIDEO_ID}/maxresdefault.jpg)`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              >
-                <div className="absolute inset-0 bg-[#000FFF]/40 group-hover:bg-[#000FFF]/30 transition-colors" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-2xl
-                    group-hover:scale-110 transition-transform duration-200">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="#000FFF">
-                      <polygon points="5 3 19 12 5 21 5 3"/>
-                    </svg>
-                  </div>
-                </div>
-              </button>
-            )}
-          </div>
+          <AutoplayVideo />
         </div>
       </section>
 
