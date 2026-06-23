@@ -228,8 +228,8 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
   }
 
   return (
-    /* Container com altura exatamente fixa — NADA aqui cresce */
-    <div className="flex flex-col" style={{ height: '320px' }}>
+    /* Ocupa exatamente o espaço que o pai definiu — não define própria altura */
+    <div className="flex flex-col h-full">
 
       {/* Área de mensagens com scroll interno */}
       <div ref={msgsRef} className="flex-1 overflow-y-auto flex flex-col gap-2.5"
@@ -502,7 +502,7 @@ export default function LandingPage() {
         <Image src="/onda-bg.png" alt="" fill className="object-cover opacity-5 pointer-events-none" />
 
         <div className="relative max-w-6xl mx-auto px-5 pt-16 pb-0">
-          <div className="grid lg:grid-cols-2 gap-12 items-end">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
 
             {/* Texto */}
             <div className="text-center lg:text-left pb-12 lg:pb-16">
@@ -553,14 +553,23 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Chat interativo flutuante */}
-            <div
-              className="hidden lg:flex flex-col pb-0"
-              style={{ animation: 'fadeUp .7s ease .35s both' }}
-            >
-              <div className="bg-white rounded-t-3xl shadow-2xl p-5 max-w-sm mx-auto lg:mx-0 lg:ml-auto flex flex-col overflow-hidden"
-                style={{ height: '460px', minHeight: '460px', maxHeight: '460px' }}>
-                <div className="flex items-center gap-2.5 pb-3 mb-3 border-b border-gray-100 shrink-0">
+            {/* Chat interativo flutuante — dimensões 100% bloqueadas */}
+            <div className="hidden lg:block self-start" style={{ animation: 'fadeUp .7s ease .35s both' }}>
+              <div
+                className="bg-white rounded-t-3xl shadow-2xl ml-auto overflow-hidden"
+                style={{
+                  width: '360px',
+                  height: '480px',
+                  minWidth: '360px',
+                  maxWidth: '360px',
+                  minHeight: '480px',
+                  maxHeight: '480px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                {/* Header fixo */}
+                <div className="flex items-center gap-2.5 px-5 pt-5 pb-4 border-b border-gray-100 shrink-0">
                   <Image src="/bot-joao-icon1.png" alt="Bot João" width={32} height={32} />
                   <div>
                     <p className="text-sm font-black text-gray-900">Bot João</p>
@@ -570,7 +579,10 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </div>
-                <DemoChat onIdentify={() => setModal(true)} />
+                {/* Chat ocupa o espaço restante exato */}
+                <div className="flex-1 px-5 pb-5 overflow-hidden" style={{ minHeight: 0 }}>
+                  <DemoChat onIdentify={() => setModal(true)} />
+                </div>
               </div>
             </div>
           </div>
