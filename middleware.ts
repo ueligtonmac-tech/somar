@@ -142,7 +142,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── 6. Usuário com onboarding incompleto → completar cadastro ──
-  if (!safeProfile?.onboarding_complete) {
+  // Admin/builder nunca precisam completar cadastro (já têm acesso direto)
+  const isAdminRole = ADMIN_ROLES.includes(safeProfile?.role ?? '')
+  if (!safeProfile?.onboarding_complete && !isAdminRole) {
     return NextResponse.redirect(new URL('/completar-cadastro', request.url))
   }
 
@@ -152,7 +154,6 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── 8. Usuário inativo (aguardando aprovação) — admin/builder sempre passa ──
-  const isAdminRole = ADMIN_ROLES.includes(safeProfile?.role ?? '')
   if (!safeProfile?.active && !isAdminRole) {
     return NextResponse.redirect(new URL('/aguardando-aprovacao', request.url))
   }
