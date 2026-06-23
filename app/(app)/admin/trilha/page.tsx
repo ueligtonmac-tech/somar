@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+
+export const dynamic = 'force-dynamic'
 
 export default async function TrailAdminPage() {
   const supabase = await createClient()
@@ -9,11 +12,16 @@ export default async function TrailAdminPage() {
   const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!me || !['admin', 'builder'].includes(me.role)) redirect('/trilha')
 
+  const service = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   const [{ data: blocks }, { data: sections }, { data: flashcards }, { data: quizQuestions }] = await Promise.all([
-    supabase.from('trail_blocks').select('*').order('order_index'),
-    supabase.from('trail_sections').select('id, block_id, title, order_index, points_value, video_url').order('order_index'),
-    supabase.from('trail_flashcards').select('id, section_id'),
-    supabase.from('trail_quiz_questions').select('id, section_id'),
+    service.from('trail_blocks').select('*').order('order_index'),
+    service.from('trail_sections').select('id, block_id, title, order_index, points_value, video_url').order('order_index'),
+    service.from('trail_flashcards').select('id, section_id'),
+    service.from('trail_quiz_questions').select('id, section_id'),
   ])
 
   const flashMap = new Map<string, number>()

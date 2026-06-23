@@ -1,9 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import UserRow from './UserRow'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminPage() {
+  // Auth via anon client (necessário para validar sessão)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -11,14 +15,20 @@ export default async function AdminPage() {
   const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!me || !['admin', 'builder'].includes(me.role)) redirect('/trilha')
 
+  // Service client para queries que precisam bypasasr RLS
+  const service = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   const [
     { data: profiles },
     { count: totalSections },
     { data: allProgress },
   ] = await Promise.all([
-    supabase.from('profiles').select('id, full_name, email, role, active, whatsapp, created_at').order('created_at', { ascending: false }),
-    supabase.from('trail_sections').select('*', { count: 'exact', head: true }),
-    supabase.from('trail_user_progress').select('user_id, quiz_passed'),
+    service.from('profiles').select('id, full_name, email, role, active, whatsapp, created_at').order('created_at', { ascending: false }),
+    service.from('trail_sections').select('*', { count: 'exact', head: true }),
+    service.from('trail_user_progress').select('user_id, quiz_passed'),
   ])
 
   const totalUsers = profiles?.length ?? 0
@@ -26,7 +36,6 @@ export default async function AdminPage() {
   const totalModules = totalSections ?? 0
   const completions = allProgress?.filter(p => p.quiz_passed).length ?? 0
 
-  // Progresso por usuário (seções com quiz aprovado)
   const progressByUser = new Map<string, number>()
   allProgress?.forEach(p => {
     if (p.quiz_passed) {
@@ -100,7 +109,6 @@ export default async function AdminPage() {
           <span className="text-xs text-gray-400 bg-gray-50 px-3 py-1 rounded-full font-semibold">{totalUsers} usuários</span>
         </div>
 
-        {/* Header da tabela — desktop */}
         <div className="hidden md:grid grid-cols-[1fr_1fr_120px_100px_80px_80px] gap-4 px-6 py-3 bg-gray-50 text-xs font-bold text-gray-400 uppercase tracking-wider">
           <span>Nome</span>
           <span>E-mail</span>
