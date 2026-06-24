@@ -736,37 +736,37 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
 
 const SCREENS = [
   {
-    src: '/screens/screen-login.mov',
+    src: '/screens/screen-login.mp4',
     label: 'Acesso seguro',
     caption: 'Login com e-mail corporativo ou Google',
     color: '#7c3aed',
   },
   {
-    src: '/screens/screen-trilha.mov',
+    src: '/screens/screen-trilha.mp4',
     label: 'Trilha de aprendizado',
     caption: 'Módulos progressivos com pontos e conquistas',
     color: '#000FFF',
   },
   {
-    src: '/screens/botjoao-avancando.mov',
+    src: '/screens/botjoao-avancando.mp4',
     label: 'Bot João em ação',
     caption: 'IA que responde dúvidas sobre a Ultragaz em tempo real',
     color: '#0891b2',
   },
   {
-    src: '/screens/screen-biblioteca.mov',
+    src: '/screens/screen-biblioteca.mp4',
     label: 'Biblioteca de materiais',
     caption: 'PDFs e guias sempre disponíveis para download',
     color: '#16a34a',
   },
   {
-    src: '/screens/screen-escalonamento.mov',
+    src: '/screens/screen-escalonamento.mp4',
     label: 'Escalonamento de revendas',
     caption: 'Visualize o crescimento da sua carteira',
     color: '#ea580c',
   },
   {
-    src: '/screens/botjoao-flutuante.mov',
+    src: '/screens/botjoao-flutuante.mp4',
     label: 'Assistente sempre disponível',
     caption: 'Bot João acessível em qualquer tela da plataforma',
     color: '#6366f1',
@@ -839,7 +839,6 @@ function ScreenCard({ screen }: { screen: typeof SCREENS[0] }) {
             }}
           >
             <source src={screen.src} type="video/mp4" />
-            <source src={screen.src} type="video/quicktime" />
           </video>
           {/* Fallback se vídeo não existir */}
           <div
