@@ -736,31 +736,31 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
 
 const SCREENS = [
   {
-    src: '/screens/screen-trilha.png',
+    src: '/screens/screen-trilha.mp4',
     label: 'Trilha de aprendizado',
     caption: 'Módulos progressivos com pontos e conquistas',
     color: '#000FFF',
   },
   {
-    src: '/screens/screen-modulo.png',
+    src: '/screens/screen-modulo.mp4',
     label: 'Módulos de conteúdo',
     caption: 'Material rico, estruturado e prático',
     color: '#6366f1',
   },
   {
-    src: '/screens/screen-chat.png',
+    src: '/screens/screen-chat.mp4',
     label: 'Bot João — IA integrada',
     caption: 'Assistente treinado para dúvidas Ultragaz',
     color: '#0891b2',
   },
   {
-    src: '/screens/screen-biblioteca.png',
+    src: '/screens/screen-biblioteca.mp4',
     label: 'Biblioteca de materiais',
     caption: 'PDFs e guias sempre disponíveis para download',
     color: '#16a34a',
   },
   {
-    src: '/screens/screen-login.png',
+    src: '/screens/screen-login.mp4',
     label: 'Acesso seguro',
     caption: 'Login com e-mail corporativo ou Google',
     color: '#7c3aed',
@@ -817,14 +817,15 @@ function ScreenCard({ screen }: { screen: typeof SCREENS[0] }) {
           </div>
         </div>
 
-        {/* Screenshot */}
+        {/* Vídeo da tela */}
         <div className="relative overflow-hidden" style={{ height: '220px', background: '#f5f6ff' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <video
             src={screen.src}
-            alt={screen.label}
+            autoPlay
+            muted
+            loop
+            playsInline
             className="w-full h-full object-cover object-top"
-            loading="lazy"
             onError={e => {
               const el = e.currentTarget
               el.style.display = 'none'
@@ -832,7 +833,7 @@ function ScreenCard({ screen }: { screen: typeof SCREENS[0] }) {
               if (fb) fb.style.display = 'flex'
             }}
           />
-          {/* Fallback se imagem não existir */}
+          {/* Fallback se vídeo não existir */}
           <div
             className="absolute inset-0 flex-col gap-3 items-center justify-center"
             style={{ display: 'none', background: `linear-gradient(135deg, ${screen.color}22, ${screen.color}08)` }}
