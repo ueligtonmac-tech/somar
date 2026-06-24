@@ -613,6 +613,36 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
         </div>
       </section>
 
+      {/* ══ DEMO CHAT MOBILE (só aparece em telas pequenas) ══ */}
+      <section className="block lg:hidden bg-[#000FFF] px-5 py-12">
+        <p className="text-xs font-black uppercase tracking-widest text-blue-300 text-center mb-2">Experimente agora</p>
+        <h2 className="text-xl font-black text-white text-center mb-6">
+          Converse com o Bot João
+        </h2>
+        <div className="max-w-sm mx-auto">
+          <div
+            className="bg-white rounded-3xl shadow-2xl overflow-hidden"
+            style={{ height: '520px', display: 'flex', flexDirection: 'column' }}
+          >
+            {/* Header */}
+            <div className="flex items-center gap-2.5 px-5 pt-5 pb-4 border-b border-gray-100 shrink-0">
+              <Image src="/bot-joao-icon1.png" alt="Bot João" width={32} height={32} />
+              <div>
+                <p className="text-sm font-black text-gray-900">Bot João</p>
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400" style={{ animation: 'pulse2 2s infinite' }} />
+                  <span className="text-[10px] text-gray-400 font-semibold">Online — experimente aqui</span>
+                </div>
+              </div>
+            </div>
+            {/* Chat */}
+            <div className="flex-1 px-4 pb-4 overflow-hidden" style={{ minHeight: 0 }}>
+              <DemoChat onIdentify={() => setModal(true)} />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ══ PILARES ══════════════════════════════════════════ */}
       <section className="bg-white py-16 px-5">
         <div className="max-w-5xl mx-auto">
