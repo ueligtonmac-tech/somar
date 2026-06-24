@@ -358,7 +358,7 @@ function BotJoaoDesktop() {
       {open && (
         <div
           className="fixed bottom-44 right-4 z-50 w-[390px] max-w-[calc(100vw-20px)] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
-          style={{ height: '530px' }}
+          style={{ height: '530px', maxHeight: 'calc(100vh - 190px)' }}
         >
           {/* Header */}
           <div className="bg-[#000FFF] px-4 py-3 flex items-center gap-3 flex-shrink-0">
