@@ -21,16 +21,20 @@ export default function FeedbackCard({ item }: { item: FeedbackItem }) {
 
   if (done) return null
 
-  const scoreColor = item.score >= 9 ? 'bg-green-100 text-green-700'
-    : item.score >= 7 ? 'bg-blue-100 text-blue-700'
-    : 'bg-yellow-100 text-yellow-700'
+  // Badge por tipo de feedback
+  const badge = item.score === 10
+    ? { icon: '👍', label: 'Feedback Positivo', color: 'bg-green-100 text-green-700' }
+    : item.score >= 7
+    ? { icon: '★', label: `${item.score}/10`, color: 'bg-blue-100 text-blue-700' }
+    : { icon: '★', label: `${item.score}/10`, color: 'bg-yellow-100 text-yellow-700' }
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       {/* Header */}
       <div className="flex items-start gap-3 px-5 py-4 border-b border-gray-50">
-        <span className={`px-2.5 py-1 rounded-full text-xs font-black flex-shrink-0 ${scoreColor}`}>
-          ★ {item.score}/10
+        <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-black flex-shrink-0 ${badge.color}`}>
+          <span>{badge.icon}</span>
+          {badge.label}
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-xs text-gray-400 mb-1">

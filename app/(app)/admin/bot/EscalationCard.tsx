@@ -43,21 +43,29 @@ export default function EscalationCard({ item }: { item: EscalationItem }) {
 
   if (done) return null
 
-  const urgency = item.score <= 3 ? { label: 'Urgente', color: 'bg-red-100 text-red-700 border-red-200' }
-    : item.score <= 5 ? { label: 'Médio', color: 'bg-orange-100 text-orange-700 border-orange-200' }
-    : { label: 'Baixo', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' }
+  // Detecta tipo de feedback pelo score
+  const feedbackType = item.score === 1
+    ? { icon: '👎', label: 'Thumbs Down', desc: 'Resposta marcada como não útil', color: 'bg-red-100 text-red-700 border-red-200' }
+    : item.score === 3
+    ? { icon: '🤔', label: 'CSAT Negativo', desc: 'Conversa avaliada negativamente', color: 'bg-orange-100 text-orange-700 border-orange-200' }
+    : item.score <= 3
+    ? { icon: '⚠', label: 'Urgente', desc: `Score ${item.score}/10`, color: 'bg-red-100 text-red-700 border-red-200' }
+    : item.score <= 5
+    ? { icon: '⚠', label: 'Médio', desc: `Score ${item.score}/10`, color: 'bg-orange-100 text-orange-700 border-orange-200' }
+    : { icon: '⚠', label: 'Baixo', desc: `Score ${item.score}/10`, color: 'bg-yellow-100 text-yellow-700 border-yellow-200' }
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       {/* Header */}
       <div className="flex items-start gap-3 px-5 py-4 border-b border-gray-50">
-        <span className={`px-2.5 py-1 rounded-full text-xs font-black border flex-shrink-0 ${urgency.color}`}>
-          ⚠ {urgency.label}
+        <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-black border flex-shrink-0 ${feedbackType.color}`}>
+          <span>{feedbackType.icon}</span>
+          {feedbackType.label}
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-xs text-gray-400 mb-1">
             {item.user_name || 'Consultor'} · {new Date(item.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-            <span className="ml-2 text-gray-300">· Score: {item.score}/10</span>
+            <span className="ml-2 text-gray-300">· {feedbackType.desc}</span>
           </p>
           <p className="font-semibold text-gray-900 text-sm leading-snug">{item.question}</p>
         </div>
@@ -65,7 +73,9 @@ export default function EscalationCard({ item }: { item: EscalationItem }) {
 
       {/* Resposta original do bot */}
       <div className="px-5 py-3 bg-red-50/50">
-        <p className="text-xs font-bold text-red-400 uppercase tracking-wider mb-1.5">Resposta do Bot (insatisfatória)</p>
+        <p className="text-xs font-bold text-red-400 uppercase tracking-wider mb-1.5">
+          {item.score === 3 ? 'Conversa avaliada negativamente (CSAT)' : 'Resposta marcada como não útil (👎)'}
+        </p>
         <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">{item.answer}</p>
         <button
           onClick={() => setShowConversation(e => !e)}

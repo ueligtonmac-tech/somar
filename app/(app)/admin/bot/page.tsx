@@ -203,7 +203,7 @@ export default async function BotAdminPage({
             <div className="flex flex-col items-center justify-center py-20 text-gray-400">
               <span className="text-5xl mb-4">🧠</span>
               <p className="font-semibold text-gray-500">Nenhuma resposta aguardando aprovação</p>
-              <p className="text-sm mt-1">Quando usuários avaliarem respostas com ≥ 7, elas aparecerão aqui</p>
+              <p className="text-sm mt-1">Quando consultores marcarem 👍 ou avaliarem positivamente no CSAT, as respostas aparecerão aqui para você aprovar</p>
             </div>
           ) : (
             <>
@@ -211,7 +211,7 @@ export default async function BotAdminPage({
                 <span className="text-blue-500 text-lg mt-0.5">ℹ️</span>
                 <div>
                   <p className="text-sm font-semibold text-blue-800">Como funciona o aprendizado</p>
-                  <p className="text-xs text-blue-600 mt-0.5">Respostas aprovadas são adicionadas à base de conhecimento e o Bot João passa a usar esse conteúdo como contexto nas próximas conversas. Você pode editar a resposta antes de aprovar.</p>
+                  <p className="text-xs text-blue-600 mt-0.5">Respostas que os consultores marcaram com 👍 ou avaliaram positivamente no CSAT aparecem aqui. Aprove para adicionar à base de conhecimento — o Bot João passa a usar esse conteúdo nas próximas conversas. Você pode editar antes de aprovar.</p>
                 </div>
               </div>
               <div className="space-y-4">
@@ -237,15 +237,18 @@ export default async function BotAdminPage({
             <div className="flex flex-col items-center justify-center py-20 text-gray-400">
               <span className="text-5xl mb-4">✅</span>
               <p className="font-semibold text-gray-500">Nenhum escalonamento pendente</p>
-              <p className="text-sm mt-1">Quando usuários avaliarem respostas com &lt; 7, elas aparecerão aqui</p>
+              <p className="text-sm mt-1">Quando consultores marcarem 👎 em uma resposta ou responderem negativamente ao CSAT, aparecerá aqui</p>
             </div>
           ) : (
             <>
               <div className="bg-red-50 border border-red-100 rounded-2xl px-5 py-3 mb-5 flex items-start gap-3">
                 <span className="text-red-500 text-lg mt-0.5">🚨</span>
                 <div>
-                  <p className="text-sm font-semibold text-red-800">Respostas insatisfatórias</p>
-                  <p className="text-xs text-red-500 mt-0.5">Essas perguntas não foram bem respondidas pelo bot. Escreva a resposta correta para enviar ao consultor. Itens mais urgentes (score menor) aparecem primeiro.</p>
+                  <p className="text-sm font-semibold text-red-800">Respostas que precisam de atenção</p>
+                  <p className="text-xs text-red-500 mt-0.5">
+                    <strong>👎 Thumbs Down</strong> — consultor disse que uma resposta específica não ajudou. &nbsp;
+                    <strong>🤔 CSAT Negativo</strong> — conversa avaliada como "poderia ser melhor" ao final. Escreva a resposta correta e envie ao consultor. Os mais urgentes aparecem primeiro.
+                  </p>
                 </div>
               </div>
               <div className="space-y-4">
