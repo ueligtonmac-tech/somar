@@ -135,7 +135,7 @@ export default function Sidebar({ profile, trailSections = [], trailProgress = [
 
       {/* Footer */}
       <div className="border-t border-gray-100 px-4 py-3 space-y-1">
-        {profile.role !== 'consultant' && (
+        {profile.role === 'admin' && (
           <Link
             href="/admin"
             onClick={onNavigate}
@@ -206,24 +206,34 @@ export default function Sidebar({ profile, trailSections = [], trailProgress = [
 
       {/* ── Mobile: barra inferior ── */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 flex items-center justify-around px-2 py-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
-        <Link href="/trilha" className={`flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-colors ${isTrail ? 'text-[#000FFF]' : 'text-gray-400'}`}>
+        <Link href="/trilha" className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${isTrail ? 'text-[#000FFF]' : 'text-gray-400'}`}>
           <HomeIcon active={isTrail} />
           <span className="text-[10px] font-bold">Trilha</span>
         </Link>
-        <Link href="/chat" className={`flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-colors ${pathname === '/chat' ? 'text-[#000FFF]' : 'text-gray-400'}`}>
+        <Link href="/chat" className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${pathname === '/chat' ? 'text-[#000FFF]' : 'text-gray-400'}`}>
           <ChatIcon />
           <span className="text-[10px] font-bold">Bot João</span>
         </Link>
-        <Link href="/notificacoes" className={`relative flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-colors ${pathname === '/notificacoes' ? 'text-[#000FFF]' : 'text-gray-400'}`}>
+        {/* Biblioteca — destaque central */}
+        <Link
+          href="/biblioteca"
+          className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors relative ${pathname === '/biblioteca' ? 'text-[#000FFF]' : 'text-gray-400'}`}
+        >
+          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center -mt-5 shadow-lg transition-colors ${pathname === '/biblioteca' ? 'bg-[#000FFF]' : 'bg-[#000FFF]'}`}>
+            <BibliotecaIcon mobile />
+          </div>
+          <span className="text-[10px] font-bold text-[#000FFF]">Biblioteca</span>
+        </Link>
+        <Link href="/notificacoes" className={`relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${pathname === '/notificacoes' ? 'text-[#000FFF]' : 'text-gray-400'}`}>
           <BellIcon />
           {unreadNotifications > 0 && (
-            <span className="absolute top-0 right-2 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+            <span className="absolute top-0 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
               {unreadNotifications > 9 ? '9+' : unreadNotifications}
             </span>
           )}
           <span className="text-[10px] font-bold">Avisos</span>
         </Link>
-        <button onClick={handleLogout} className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl text-gray-400 hover:text-red-500 transition-colors">
+        <button onClick={handleLogout} className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-400 hover:text-red-500 transition-colors">
           <LogoutIcon />
           <span className="text-[10px] font-bold">Sair</span>
         </button>
@@ -253,8 +263,8 @@ function SettingsIcon() {
 function LogoutIcon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
 }
-function BibliotecaIcon() {
-  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+function BibliotecaIcon({ mobile }: { mobile?: boolean }) {
+  return <svg width={mobile ? 20 : 18} height={mobile ? 20 : 18} viewBox="0 0 24 24" fill="none" stroke={mobile ? 'white' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
 }
 function BellIcon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
