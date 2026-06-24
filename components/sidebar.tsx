@@ -206,24 +206,27 @@ export default function Sidebar({ profile, trailSections = [], trailProgress = [
 
       {/* ── Mobile: barra inferior ── */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 flex items-center justify-around px-2 py-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+        {/* Trilha */}
         <Link href="/trilha" className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${isTrail ? 'text-[#000FFF]' : 'text-gray-400'}`}>
           <HomeIcon active={isTrail} />
           <span className="text-[10px] font-bold">Trilha</span>
         </Link>
-        <Link href="/chat" className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${pathname === '/chat' ? 'text-[#000FFF]' : 'text-gray-400'}`}>
-          <ChatIcon />
-          <span className="text-[10px] font-bold">Bot João</span>
+
+        {/* Biblioteca */}
+        <Link href="/biblioteca" className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${pathname === '/biblioteca' ? 'text-[#000FFF]' : 'text-gray-400'}`}>
+          <BibliotecaIcon />
+          <span className="text-[10px] font-bold">Biblioteca</span>
         </Link>
-        {/* Biblioteca — destaque central */}
-        <Link
-          href="/biblioteca"
-          className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors relative ${pathname === '/biblioteca' ? 'text-[#000FFF]' : 'text-gray-400'}`}
-        >
-          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center -mt-5 shadow-lg transition-colors ${pathname === '/biblioteca' ? 'bg-[#000FFF]' : 'bg-[#000FFF]'}`}>
-            <BibliotecaIcon mobile />
+
+        {/* Bot João — destaque central elevado */}
+        <Link href="/chat" className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors relative">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center -mt-6 shadow-lg transition-all ${pathname === '/chat' ? 'bg-blue-700 scale-105' : 'bg-[#000FFF]'}`}>
+            <ChatIconWhite />
           </div>
-          <span className="text-[10px] font-bold text-[#000FFF]">Biblioteca</span>
+          <span className="text-[10px] font-bold text-[#000FFF]">Bot João</span>
         </Link>
+
+        {/* Avisos */}
         <Link href="/notificacoes" className={`relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${pathname === '/notificacoes' ? 'text-[#000FFF]' : 'text-gray-400'}`}>
           <BellIcon />
           {unreadNotifications > 0 && (
@@ -233,6 +236,8 @@ export default function Sidebar({ profile, trailSections = [], trailProgress = [
           )}
           <span className="text-[10px] font-bold">Avisos</span>
         </Link>
+
+        {/* Sair */}
         <button onClick={handleLogout} className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-400 hover:text-red-500 transition-colors">
           <LogoutIcon />
           <span className="text-[10px] font-bold">Sair</span>
@@ -256,6 +261,9 @@ function TrailIcon({ active }: { active: boolean }) {
 }
 function ChatIcon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="flex-shrink-0"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+}
+function ChatIconWhite() {
+  return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
 }
 function SettingsIcon() {
   return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
