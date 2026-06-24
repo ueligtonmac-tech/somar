@@ -154,27 +154,55 @@ type Msg = { from: 'user' | 'bot' | 'cta'; text: string }
 type HistoryEntry = { role: 'user' | 'assistant'; content: string }
 
 function DemoChat({ onIdentify }: { onIdentify: () => void }) {
-  const [phase, setPhase]         = useState<'demo' | 'live' | 'done'>('demo')
-  const [demoIdx, setDemoIdx]     = useState(0)
-  const [demoKey, setDemoKey]     = useState(0)
-  const [messages, setMessages]   = useState<Msg[]>([])
-  const [history, setHistory]     = useState<HistoryEntry[]>([])
-  const [input, setInput]         = useState('')
-  const [typing, setTyping]       = useState(false)
-  const [exchanges, setExchanges] = useState(0)
+  const [phase, setPhase]           = useState<'demo' | 'live' | 'done'>('demo')
+  const [demoIdx, setDemoIdx]       = useState(0)   // mensagens completamente exibidas
+  const [demoKey, setDemoKey]       = useState(0)
+  const [currentTyped, setCurrentTyped] = useState('') // chars da msg sendo digitada
+  const [messages, setMessages]     = useState<Msg[]>([])
+  const [history, setHistory]       = useState<HistoryEntry[]>([])
+  const [input, setInput]           = useState('')
+  const [typing, setTyping]         = useState(false)
+  const [exchanges, setExchanges]   = useState(0)
   const msgsRef   = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLInputElement>(null)
 
-  // Animação demo
+  // Animação demo com typewriter natural
   useEffect(() => {
     if (phase !== 'demo') return
-    if (demoIdx < CHAT_DEMO.length) {
-      const t = setTimeout(() => setDemoIdx(i => i + 1), demoIdx === 0 ? 800 : 1600)
+
+    // Todas as mensagens concluídas → aguarda e reinicia
+    if (demoIdx >= CHAT_DEMO.length) {
+      const t = setTimeout(() => { setDemoIdx(0); setCurrentTyped(''); setDemoKey(k => k + 1) }, 4000)
       return () => clearTimeout(t)
     }
-    const t = setTimeout(() => { setDemoIdx(0); setDemoKey(k => k + 1) }, 4000)
-    return () => clearTimeout(t)
-  }, [phase, demoIdx])
+
+    const currentMsg = CHAT_DEMO[demoIdx]
+
+    if (currentMsg.from === 'user') {
+      // Mensagem do usuário: aparece rápido, letra a letra (30ms)
+      if (currentTyped.length < currentMsg.text.length) {
+        const t = setTimeout(() => setCurrentTyped(currentMsg.text.slice(0, currentTyped.length + 1)), 30)
+        return () => clearTimeout(t)
+      }
+      // Terminou de "digitar" — pausa curta e avança
+      const t = setTimeout(() => { setDemoIdx(i => i + 1); setCurrentTyped('') }, 500)
+      return () => clearTimeout(t)
+    } else {
+      // Mensagem do bot: pausa inicial (Dots), depois typewriter (20ms/char)
+      if (currentTyped === '') {
+        // Pausa com Dots antes de começar a digitar
+        const t = setTimeout(() => setCurrentTyped(' '), demoIdx === 0 ? 900 : 700)
+        return () => clearTimeout(t)
+      }
+      if (currentTyped.length < currentMsg.text.length) {
+        const t = setTimeout(() => setCurrentTyped(currentMsg.text.slice(0, currentTyped.length + 1)), 20)
+        return () => clearTimeout(t)
+      }
+      // Terminou — pausa e avança
+      const t = setTimeout(() => { setDemoIdx(i => i + 1); setCurrentTyped('') }, 1400)
+      return () => clearTimeout(t)
+    }
+  }, [phase, demoIdx, currentTyped])
 
   // Scroll para o fundo sempre que mudar conteúdo
   useEffect(() => {
@@ -270,7 +298,11 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
             {CHAT_DEMO.slice(0, demoIdx).map((m, i) => (
               <Bubble key={i} from={m.from as 'user'|'bot'} text={m.text} />
             ))}
-            {demoIdx < CHAT_DEMO.length && <Dots />}
+            {demoIdx < CHAT_DEMO.length && (
+              currentTyped && currentTyped.trim()
+                ? <Bubble from={CHAT_DEMO[demoIdx].from as 'user'|'bot'} text={currentTyped} />
+                : <Dots />
+            )}
           </div>
         ) : (
           <>
