@@ -458,6 +458,9 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
         @keyframes bounce  { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
         @keyframes pulse2  { 0%,100%{opacity:1} 50%{opacity:.5} }
         @keyframes slideIn { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+        .marquee-track { animation: marquee 40s linear infinite; }
+        .marquee-track:hover { animation-play-state: paused; }
       `}</style>
 
       {/* ══ NAVBAR ══════════════════════════════════════════ */}
@@ -596,6 +599,9 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
         </div>
       </section>
 
+      {/* ══ SCREENSHOTS ══════════════════════════════════════ */}
+      <ScreenCarousel />
+
       {/* ══ VÍDEO ════════════════════════════════════════════ */}
       <section id="video-section" className="bg-[#f5f6ff] py-16 px-5">
         <div className="max-w-3xl mx-auto">
@@ -720,6 +726,132 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
       </section>
 
       {modal && <TrialModal onClose={() => setModal(false)} />}
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SCREEN CAROUSEL — telas do sistema passando automaticamente
+══════════════════════════════════════════════════════════════ */
+
+const SCREENS = [
+  {
+    src: '/screens/screen-trilha.png',
+    label: 'Trilha de aprendizado',
+    caption: 'Módulos progressivos com pontos e conquistas',
+    color: '#000FFF',
+  },
+  {
+    src: '/screens/screen-modulo.png',
+    label: 'Módulos de conteúdo',
+    caption: 'Material rico, estruturado e prático',
+    color: '#6366f1',
+  },
+  {
+    src: '/screens/screen-chat.png',
+    label: 'Bot João — IA integrada',
+    caption: 'Assistente treinado para dúvidas Ultragaz',
+    color: '#0891b2',
+  },
+  {
+    src: '/screens/screen-biblioteca.png',
+    label: 'Biblioteca de materiais',
+    caption: 'PDFs e guias sempre disponíveis para download',
+    color: '#16a34a',
+  },
+  {
+    src: '/screens/screen-login.png',
+    label: 'Acesso seguro',
+    caption: 'Login com e-mail corporativo ou Google',
+    color: '#7c3aed',
+  },
+]
+
+function ScreenCarousel() {
+  const items = [...SCREENS, ...SCREENS]
+
+  return (
+    <section className="py-16 overflow-hidden" style={{ background: 'linear-gradient(180deg, #050a2e 0%, #0d1550 100%)' }}>
+      <div className="text-center mb-10 px-5">
+        <p className="text-xs font-black uppercase tracking-widest text-blue-400 mb-2">
+          A plataforma por dentro
+        </p>
+        <h2 className="text-2xl sm:text-3xl font-black text-white">
+          Tudo que você precisa, em um só lugar
+        </h2>
+        <p className="text-blue-300 text-sm mt-2">
+          Passe o mouse para pausar
+        </p>
+      </div>
+
+      <div className="relative">
+        <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+          style={{ background: 'linear-gradient(90deg, #050a2e, transparent)' }} />
+        <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+          style={{ background: 'linear-gradient(270deg, #050a2e, transparent)' }} />
+
+        <div className="marquee-track flex gap-6 w-max px-8">
+          {items.map((screen, i) => (
+            <ScreenCard key={i} screen={screen} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ScreenCard({ screen }: { screen: typeof SCREENS[0] }) {
+  return (
+    <div className="flex-shrink-0 group cursor-default" style={{ width: '340px' }}>
+      <div
+        className="rounded-2xl overflow-hidden shadow-2xl border border-white/10 transition-transform duration-300 group-hover:scale-[1.03] group-hover:shadow-[0_0_40px_rgba(0,15,255,0.35)]"
+        style={{ background: '#0f172a' }}
+      >
+        {/* Barra do browser */}
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5" style={{ background: '#1e293b' }}>
+          <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
+          <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
+          <span className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
+          <div className="flex-1 mx-3 bg-white/8 rounded-md px-3 py-1">
+            <span className="text-[10px] text-white/30 font-mono">botjoao.com</span>
+          </div>
+        </div>
+
+        {/* Screenshot */}
+        <div className="relative overflow-hidden" style={{ height: '220px', background: '#f5f6ff' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={screen.src}
+            alt={screen.label}
+            className="w-full h-full object-cover object-top"
+            loading="lazy"
+            onError={e => {
+              const el = e.currentTarget
+              el.style.display = 'none'
+              const fb = el.nextElementSibling as HTMLElement | null
+              if (fb) fb.style.display = 'flex'
+            }}
+          />
+          {/* Fallback se imagem não existir */}
+          <div
+            className="absolute inset-0 flex-col gap-3 items-center justify-center"
+            style={{ display: 'none', background: `linear-gradient(135deg, ${screen.color}22, ${screen.color}08)` }}
+          >
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
+              style={{ background: `${screen.color}22` }}>🖥️</div>
+            <p className="text-sm font-bold" style={{ color: screen.color }}>{screen.label}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Legenda */}
+      <div className="mt-4 px-1">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: screen.color }} />
+          <p className="text-sm font-black text-white">{screen.label}</p>
+        </div>
+        <p className="text-xs text-blue-300 pl-4">{screen.caption}</p>
+      </div>
     </div>
   )
 }
