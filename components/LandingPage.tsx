@@ -3,6 +3,13 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import UserMenu from '@/components/UserMenu'
+
+interface Profile {
+  full_name: string | null
+  email: string
+  role: string
+}
 
 const VIDEO_SRC = '/botjoao-demo.mp4'
 
@@ -441,7 +448,7 @@ function AutoplayVideo() {
 }
 
 /* ── Landing Page ─────────────────────────────────────────────── */
-export default function LandingPage() {
+export default function LandingPage({ profile }: { profile?: Profile | null }) {
   const [modal, setModal] = useState(false)
 
   return (
@@ -461,13 +468,17 @@ export default function LandingPage() {
             <div className="hidden sm:block w-px h-5 bg-gray-200" />
             <span className="hidden sm:block text-xs font-bold text-gray-400 uppercase tracking-widest">Bot João</span>
           </div>
-          <Link
-            href="/login"
-            className="text-sm font-bold text-[#000FFF] border-2 border-[#000FFF] rounded-xl px-5 py-2
-              hover:bg-[#000FFF] hover:text-white transition-all duration-200"
-          >
-            Fazer Login
-          </Link>
+          {profile ? (
+            <UserMenu profile={profile} />
+          ) : (
+            <Link
+              href="/login"
+              className="text-sm font-bold text-[#000FFF] border-2 border-[#000FFF] rounded-xl px-5 py-2
+                hover:bg-[#000FFF] hover:text-white transition-all duration-200"
+            >
+              Fazer Login
+            </Link>
+          )}
         </div>
       </header>
 
