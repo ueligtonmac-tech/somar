@@ -49,13 +49,13 @@ export default async function AppLayout({
           <Sidebar profile={safeProfile} trailSections={trailSections ?? []} trailProgress={trailProgress ?? []} />
         </div>
         {/* Coluna principal: TopBar (desktop) + conteúdo */}
-        <div className="flex-1 flex flex-col overflow-hidden print:overflow-visible print:block">
+        <div className="flex-1 min-w-0 flex flex-col overflow-hidden print:overflow-visible print:block">
           {/* TopBar — oculta na impressão */}
           <div className="print:hidden">
             <TopBar profile={safeProfile} />
           </div>
           {/* pt-14 = espaço para header mobile fixo | pb-16 = espaço para barra inferior mobile */}
-          <main className="flex-1 overflow-auto pt-14 pb-16 md:pt-0 md:pb-0 print:overflow-visible print:p-0">{children}</main>
+          <main className="flex-1 overflow-x-hidden overflow-y-auto pt-14 pb-16 md:pt-0 md:pb-0 print:overflow-visible print:p-0">{children}</main>
         </div>
         {/* Bot João desktop — chat flutuante */}
         <div className="hidden md:block print:hidden">

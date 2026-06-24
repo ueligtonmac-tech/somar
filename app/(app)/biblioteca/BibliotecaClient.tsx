@@ -151,7 +151,7 @@ export default function BibliotecaClient({ files }: { files: LibraryFile[] }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full overflow-x-hidden">
       {/* ── Busca ── */}
       <div className="relative">
         <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -318,32 +318,42 @@ export default function BibliotecaClient({ files }: { files: LibraryFile[] }) {
 
 function FileCard({ file }: { file: LibraryFile }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4 hover:border-[#000FFF]/20 hover:shadow-md transition-all group">
-      <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 flex items-center gap-3 hover:border-[#000FFF]/20 hover:shadow-md transition-all group w-full min-w-0">
+      {/* Ícone PDF */}
+      <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="#fecaca" stroke="#ef4444" strokeWidth="1.5"/>
           <polyline points="14 2 14 8 20 8" stroke="#ef4444" strokeWidth="1.5" fill="none"/>
           <text x="6" y="19" fontSize="5.5" fontWeight="700" fill="#ef4444" fontFamily="system-ui">PDF</text>
         </svg>
       </div>
+
+      {/* Texto — min-w-0 garante truncate funcionar */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-gray-900 truncate">{file.title}</p>
-        {file.description && <p className="text-xs text-gray-400 mt-0.5 truncate">{file.description}</p>}
-        {file.file_size && <p className="text-[10px] text-gray-300 mt-0.5">{formatBytes(file.file_size)}</p>}
+        {file.description && (
+          <p className="text-xs text-gray-400 mt-0.5 truncate">{file.description}</p>
+        )}
+        {file.file_size && (
+          <p className="text-[10px] text-gray-300 mt-0.5">{formatBytes(file.file_size)}</p>
+        )}
       </div>
+
+      {/* Botão — só ícone em mobile, texto em desktop */}
       <a
         href={file.file_url}
         target="_blank"
         rel="noopener noreferrer"
         download
-        className="flex items-center gap-1.5 px-4 py-2 bg-[#000FFF] text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors flex-shrink-0"
+        className="flex-shrink-0 flex items-center justify-center gap-1.5 w-9 h-9 md:w-auto md:h-auto md:px-4 md:py-2 bg-[#000FFF] text-white rounded-xl hover:bg-blue-700 transition-colors"
+        aria-label="Baixar"
       >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/>
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
-        Baixar
+        <span className="hidden md:inline text-xs font-bold">Baixar</span>
       </a>
     </div>
   )

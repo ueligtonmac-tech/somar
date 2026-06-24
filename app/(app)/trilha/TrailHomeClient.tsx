@@ -122,35 +122,6 @@ export default function TrailHomeClient({ blocks, sections, progress, badges, to
           </div>
         </div>
 
-        {/* Jornada de conquistas */}
-        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Suas conquistas</p>
-        <div className="relative">
-          <div className="absolute top-5 left-5 right-5 h-0.5 bg-gray-100" />
-          <div
-            className="absolute top-5 left-5 h-0.5 bg-gradient-to-r from-[#6366f1] to-[#000FFF] transition-all duration-1000"
-            style={{ width: earnedCount === 0 ? '0%' : earnedCount >= BADGES.length ? 'calc(100% - 40px)' : `calc(${(earnedCount - 1) / (BADGES.length - 1) * 100}% * (100% - 40px) / 100%)` }}
-          />
-          <div className="flex items-start justify-between relative z-10">
-            {BADGES.map((b, i) => {
-              const earned = earnedBadges.has(b.key)
-              const isNext = !earned && i === earnedCount
-              return (
-                <div key={b.key} title={b.desc} className="flex flex-col items-center gap-1.5" style={{ minWidth: 44 }}>
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all
-                      ${earned ? 'shadow-md' : isNext ? 'ring-2 ring-dashed opacity-60' : 'opacity-20 grayscale'}`}
-                    style={{
-                      background: earned ? b.color : '#f3f4f6',
-                      boxShadow: earned ? `0 0 12px ${b.color}55` : isNext ? `0 0 0 2px ${b.color}` : undefined,
-                    }}
-                  >{b.icon}</div>
-                  <span className={`text-[9px] text-center font-bold leading-tight uppercase tracking-wide ${earned ? 'text-gray-600' : 'text-gray-300'}`}
-                    style={{ maxWidth: 44 }}>{b.label}</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
       </div>
 
       {/* ══ LISTA DE ETAPAS ════════════════════════════════════ */}
