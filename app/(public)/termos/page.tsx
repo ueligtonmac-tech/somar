@@ -67,7 +67,7 @@ export default function TermosPage() {
           <p>
             O <strong>Bot João — Hub Somar</strong> é uma plataforma digital de onboarding e capacitação
             desenvolvida pela <strong>Arkanjia</strong>, operada em regime de licença comercial para a
-            <strong> Ultragaz</strong>, para uso exclusivo de consultores de canais digitais e equipes autorizadas.
+            <strong>Ultragaz</strong>, para uso exclusivo de consultores de canais digitais e equipes autorizadas.
           </p>
           <p>
             A relação jurídica desta plataforma envolve três partes:
@@ -175,7 +175,7 @@ export default function TermosPage() {
             <p>
               Todo o conteúdo acessado nesta plataforma — incluindo materiais de treinamento, processos
               operacionais, informações sobre produtos e respostas do Bot João — é considerado
-              <strong> informação confidencial e proprietária</strong>. O acesso é concedido exclusivamente
+              <strong>informação confidencial e proprietária</strong>. O acesso é concedido exclusivamente
               para fins de capacitação profissional no âmbito da relação com a Ultragaz.
             </p>
           </InfoBox>
