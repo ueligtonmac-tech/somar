@@ -179,27 +179,26 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
     const currentMsg = CHAT_DEMO[demoIdx]
 
     if (currentMsg.from === 'user') {
-      // Mensagem do usuário: aparece rápido, letra a letra (30ms)
+      // Mensagem do usuário: 55ms/char — velocidade de digitação humana
       if (currentTyped.length < currentMsg.text.length) {
-        const t = setTimeout(() => setCurrentTyped(currentMsg.text.slice(0, currentTyped.length + 1)), 30)
+        const t = setTimeout(() => setCurrentTyped(currentMsg.text.slice(0, currentTyped.length + 1)), 55)
         return () => clearTimeout(t)
       }
-      // Terminou de "digitar" — pausa curta e avança
-      const t = setTimeout(() => { setDemoIdx(i => i + 1); setCurrentTyped('') }, 500)
+      // Terminou de "digitar" — pausa antes do bot responder
+      const t = setTimeout(() => { setDemoIdx(i => i + 1); setCurrentTyped('') }, 800)
       return () => clearTimeout(t)
     } else {
-      // Mensagem do bot: pausa inicial (Dots), depois typewriter (20ms/char)
+      // Mensagem do bot: pausa inicial com Dots, depois 45ms/char
       if (currentTyped === '') {
-        // Pausa com Dots antes de começar a digitar
-        const t = setTimeout(() => setCurrentTyped(' '), demoIdx === 0 ? 900 : 700)
+        const t = setTimeout(() => setCurrentTyped(' '), demoIdx === 0 ? 1200 : 1000)
         return () => clearTimeout(t)
       }
       if (currentTyped.length < currentMsg.text.length) {
-        const t = setTimeout(() => setCurrentTyped(currentMsg.text.slice(0, currentTyped.length + 1)), 20)
+        const t = setTimeout(() => setCurrentTyped(currentMsg.text.slice(0, currentTyped.length + 1)), 45)
         return () => clearTimeout(t)
       }
-      // Terminou — pausa e avança
-      const t = setTimeout(() => { setDemoIdx(i => i + 1); setCurrentTyped('') }, 1400)
+      // Terminou — pausa longa antes da próxima mensagem
+      const t = setTimeout(() => { setDemoIdx(i => i + 1); setCurrentTyped('') }, 2000)
       return () => clearTimeout(t)
     }
   }, [phase, demoIdx, currentTyped])
