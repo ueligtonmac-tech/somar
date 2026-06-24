@@ -247,7 +247,7 @@ export default async function BotAdminPage({
                   <p className="text-sm font-semibold text-red-800">Respostas que precisam de atenção</p>
                   <p className="text-xs text-red-500 mt-0.5">
                     <strong>👎 Thumbs Down</strong> — consultor disse que uma resposta específica não ajudou. &nbsp;
-                    <strong>🤔 CSAT Negativo</strong> — conversa avaliada como "poderia ser melhor" ao final. Escreva a resposta correta e envie ao consultor. Os mais urgentes aparecem primeiro.
+                    <strong>🤔 CSAT Negativo</strong> — conversa avaliada como &ldquo;poderia ser melhor&rdquo; ao final. Escreva a resposta correta e envie ao consultor. Os mais urgentes aparecem primeiro.
                   </p>
                 </div>
               </div>

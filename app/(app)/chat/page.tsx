@@ -37,7 +37,7 @@ export default function ChatPage() {
   const [feedbackContexts, setFeedbackContexts] = useState<Record<string, FeedbackState>>({})
   const [csatVisible, setCsatVisible] = useState(false)
   const [csatSent, setCsatSent] = useState(false)
-  const [hasThumbsDown, setHasThumbsDown] = useState(false)
+  const hasThumbsDownRef = useRef(false)
   const csatTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [recording, setRecording] = useState(false)
   const [transcribing, setTranscribing] = useState(false)
@@ -115,7 +115,7 @@ export default function ChatPage() {
               setFeedbackContexts(prev => ({ ...prev, [botMsgId]: { messageId: botMsgId, question: userMsg, answer: fullText, conversationId: finalConvId ?? parsed.conversationId } }))
               if (csatTimerRef.current) clearTimeout(csatTimerRef.current)
               csatTimerRef.current = setTimeout(() => {
-                setHasThumbsDown(had => { if (!had) setCsatVisible(true); return had })
+                if (!hasThumbsDownRef.current) setCsatVisible(true)
               }, 4 * 60 * 1000)
             } else if (parsed.type === 'error') {
               throw new Error(parsed.message)
@@ -182,7 +182,7 @@ export default function ChatPage() {
     if (!ctx || msgFeedbacks[msgId]) return
     setMsgFeedbacks(prev => ({ ...prev, [msgId]: type }))
     if (type === 'down') {
-      setHasThumbsDown(true)
+      hasThumbsDownRef.current = true
       setCsatVisible(false)
       if (csatTimerRef.current) clearTimeout(csatTimerRef.current)
     }

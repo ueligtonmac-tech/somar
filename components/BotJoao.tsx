@@ -106,7 +106,7 @@ function BotJoaoDesktop() {
   const [feedbackContexts, setFeedbackContexts] = useState<Record<string, FeedbackState>>({})
   const [csatVisible, setCsatVisible] = useState(false)
   const [csatSent, setCsatSent] = useState(false)
-  const [hasThumbsDown, setHasThumbsDown] = useState(false)
+  const hasThumbsDownRef = useRef(false)
   const [showBubble, setShowBubble] = useState(false)
   const [recording, setRecording] = useState(false)
   const [transcribing, setTranscribing] = useState(false)
@@ -205,7 +205,7 @@ function BotJoaoDesktop() {
               // Inicia timer de 4 min para CSAT (só se sem 👎)
               if (csatTimerRef.current) clearTimeout(csatTimerRef.current)
               csatTimerRef.current = setTimeout(() => {
-                setHasThumbsDown(had => { if (!had) setCsatVisible(true); return had })
+                if (!hasThumbsDownRef.current) setCsatVisible(true)
               }, 4 * 60 * 1000)
             } else if (parsed.type === 'error') {
               throw new Error(parsed.message)
@@ -274,7 +274,7 @@ function BotJoaoDesktop() {
     if (!ctx || msgFeedbacks[msgId]) return
     setMsgFeedbacks(prev => ({ ...prev, [msgId]: type }))
     if (type === 'down') {
-      setHasThumbsDown(true)
+      hasThumbsDownRef.current = true
       setCsatVisible(false)
       if (csatTimerRef.current) clearTimeout(csatTimerRef.current)
     }
