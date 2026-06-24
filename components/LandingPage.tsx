@@ -777,24 +777,24 @@ function ScreenCarousel() {
   const items = [...SCREENS, ...SCREENS]
 
   return (
-    <section className="py-16 overflow-hidden" style={{ background: 'linear-gradient(180deg, #050a2e 0%, #0d1550 100%)' }}>
+    <section className="py-16 overflow-hidden" style={{ background: 'linear-gradient(135deg, #00CFFF 0%, #00E676 100%)' }}>
       <div className="text-center mb-10 px-5">
-        <p className="text-xs font-black uppercase tracking-widest text-blue-400 mb-2">
+        <p className="text-xs font-black uppercase tracking-widest text-white/70 mb-2">
           A plataforma por dentro
         </p>
-        <h2 className="text-2xl sm:text-3xl font-black text-white">
+        <h2 className="text-2xl sm:text-3xl font-black text-gray-900">
           Tudo que você precisa, em um só lugar
         </h2>
-        <p className="text-blue-300 text-sm mt-2">
+        <p className="text-gray-800/70 text-sm mt-2">
           Passe o mouse para pausar
         </p>
       </div>
 
       <div className="relative">
         <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
-          style={{ background: 'linear-gradient(90deg, #050a2e, transparent)' }} />
+          style={{ background: 'linear-gradient(90deg, #00CFFF, transparent)' }} />
         <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
-          style={{ background: 'linear-gradient(270deg, #050a2e, transparent)' }} />
+          style={{ background: 'linear-gradient(270deg, #00E676, transparent)' }} />
 
         <div className="marquee-track flex gap-6 w-max px-8">
           {items.map((screen, i) => (
@@ -855,10 +855,10 @@ function ScreenCard({ screen }: { screen: typeof SCREENS[0] }) {
       {/* Legenda */}
       <div className="mt-4 px-1">
         <div className="flex items-center gap-2 mb-1">
-          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: screen.color }} />
-          <p className="text-sm font-black text-white">{screen.label}</p>
+          <span className="w-2 h-2 rounded-full shrink-0 bg-white/80" />
+          <p className="text-sm font-black text-gray-900">{screen.label}</p>
         </div>
-        <p className="text-xs text-blue-300 pl-4">{screen.caption}</p>
+        <p className="text-xs text-gray-800/70 pl-4">{screen.caption}</p>
       </div>
     </div>
   )
