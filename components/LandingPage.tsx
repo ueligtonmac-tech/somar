@@ -736,34 +736,40 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
 
 const SCREENS = [
   {
-    src: '/screens/screen-trilha.mp4',
+    src: '/screens/screen-login.mov',
+    label: 'Acesso seguro',
+    caption: 'Login com e-mail corporativo ou Google',
+    color: '#7c3aed',
+  },
+  {
+    src: '/screens/screen-trilha.mov',
     label: 'Trilha de aprendizado',
     caption: 'Módulos progressivos com pontos e conquistas',
     color: '#000FFF',
   },
   {
-    src: '/screens/screen-modulo.mp4',
-    label: 'Módulos de conteúdo',
-    caption: 'Material rico, estruturado e prático',
-    color: '#6366f1',
-  },
-  {
-    src: '/screens/screen-chat.mp4',
-    label: 'Bot João — IA integrada',
-    caption: 'Assistente treinado para dúvidas Ultragaz',
+    src: '/screens/botjoao-avancando.mov',
+    label: 'Bot João em ação',
+    caption: 'IA que responde dúvidas sobre a Ultragaz em tempo real',
     color: '#0891b2',
   },
   {
-    src: '/screens/screen-biblioteca.mp4',
+    src: '/screens/screen-biblioteca.mov',
     label: 'Biblioteca de materiais',
     caption: 'PDFs e guias sempre disponíveis para download',
     color: '#16a34a',
   },
   {
-    src: '/screens/screen-login.mp4',
-    label: 'Acesso seguro',
-    caption: 'Login com e-mail corporativo ou Google',
-    color: '#7c3aed',
+    src: '/screens/screen-escalonamento.mov',
+    label: 'Escalonamento de revendas',
+    caption: 'Visualize o crescimento da sua carteira',
+    color: '#ea580c',
+  },
+  {
+    src: '/screens/botjoao-flutuante.mov',
+    label: 'Assistente sempre disponível',
+    caption: 'Bot João acessível em qualquer tela da plataforma',
+    color: '#6366f1',
   },
 ]
 
@@ -820,7 +826,6 @@ function ScreenCard({ screen }: { screen: typeof SCREENS[0] }) {
         {/* Vídeo da tela */}
         <div className="relative overflow-hidden" style={{ height: '220px', background: '#f5f6ff' }}>
           <video
-            src={screen.src}
             autoPlay
             muted
             loop
@@ -832,7 +837,10 @@ function ScreenCard({ screen }: { screen: typeof SCREENS[0] }) {
               const fb = el.nextElementSibling as HTMLElement | null
               if (fb) fb.style.display = 'flex'
             }}
-          />
+          >
+            <source src={screen.src} type="video/mp4" />
+            <source src={screen.src} type="video/quicktime" />
+          </video>
           {/* Fallback se vídeo não existir */}
           <div
             className="absolute inset-0 flex-col gap-3 items-center justify-center"
