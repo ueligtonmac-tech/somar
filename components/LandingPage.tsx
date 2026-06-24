@@ -761,8 +761,8 @@ const SCREENS = [
   },
   {
     src: '/screens/screen-escalonamento.mp4',
-    label: 'Escalonamento de revendas',
-    caption: 'Visualize o crescimento da sua carteira',
+    label: 'Escalonamento de atendimento',
+    caption: 'Perguntas sem resposta sobem automaticamente para o próximo nível',
     color: '#ea580c',
   },
   {
