@@ -102,8 +102,11 @@ function BotJoaoDesktop() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [conversationId, setConversationId] = useState<string | null>(null)
-  const [feedback, setFeedback] = useState<FeedbackState | null>(null)
-  const [feedbackSent, setFeedbackSent] = useState(false)
+  const [msgFeedbacks, setMsgFeedbacks] = useState<Record<string, 'up' | 'down'>>({})
+  const [feedbackContexts, setFeedbackContexts] = useState<Record<string, FeedbackState>>({})
+  const [csatVisible, setCsatVisible] = useState(false)
+  const [csatSent, setCsatSent] = useState(false)
+  const [hasThumbsDown, setHasThumbsDown] = useState(false)
   const [showBubble, setShowBubble] = useState(false)
   const [recording, setRecording] = useState(false)
   const [transcribing, setTranscribing] = useState(false)
@@ -113,6 +116,7 @@ function BotJoaoDesktop() {
   const audioChunksRef = useRef<Blob[]>([])
   const mimeTypeRef = useRef<string>('')
   const sendMessageRef = useRef<(text: string) => void>(() => {})
+  const csatTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Evita flash no SSR: só renderiza após hidratação
   useEffect(() => { setMounted(true) }, [])
@@ -150,8 +154,8 @@ function BotJoaoDesktop() {
 
     setMessages(prev => [...prev, userMsgObj, { role: 'assistant', content: '', id: botMsgId }])
     setLoading(true)
-    setFeedback(null)
-    setFeedbackSent(false)
+    setCsatVisible(false)
+    if (csatTimerRef.current) clearTimeout(csatTimerRef.current)
 
     try {
       const res = await fetch('/api/chat', {
@@ -197,7 +201,12 @@ function BotJoaoDesktop() {
             } else if (parsed.type === 'done') {
               finalConvId = parsed.conversationId
               setConversationId(parsed.conversationId)
-              setFeedback({ messageId: botMsgId, question: userMsg, answer: fullText, conversationId: finalConvId ?? parsed.conversationId })
+              setFeedbackContexts(prev => ({ ...prev, [botMsgId]: { messageId: botMsgId, question: userMsg, answer: fullText, conversationId: finalConvId ?? parsed.conversationId } }))
+              // Inicia timer de 4 min para CSAT (só se sem 👎)
+              if (csatTimerRef.current) clearTimeout(csatTimerRef.current)
+              csatTimerRef.current = setTimeout(() => {
+                setHasThumbsDown(had => { if (!had) setCsatVisible(true); return had })
+              }, 4 * 60 * 1000)
             } else if (parsed.type === 'error') {
               throw new Error(parsed.message)
             }
@@ -260,15 +269,34 @@ function BotJoaoDesktop() {
     setRecording(false)
   }, [])
 
-  const sendFeedback = async (score: number) => {
-    if (!feedback) return
-    setFeedbackSent(true)
+  const sendThumbsFeedback = async (msgId: string, type: 'up' | 'down') => {
+    const ctx = feedbackContexts[msgId]
+    if (!ctx || msgFeedbacks[msgId]) return
+    setMsgFeedbacks(prev => ({ ...prev, [msgId]: type }))
+    if (type === 'down') {
+      setHasThumbsDown(true)
+      setCsatVisible(false)
+      if (csatTimerRef.current) clearTimeout(csatTimerRef.current)
+    }
     await fetch('/api/chat/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...feedback, score }),
+      body: JSON.stringify({ ...ctx, score: type === 'up' ? 10 : 1 }),
     })
-    setFeedback(null)
+  }
+
+  const sendCsatFeedback = async (useful: boolean) => {
+    setCsatVisible(false)
+    setCsatSent(true)
+    const lastBot = [...messages].reverse().find(m => m.role === 'assistant' && m.id !== 'welcome' && m.content)
+    if (!lastBot) return
+    const ctx = feedbackContexts[lastBot.id]
+    if (!ctx) return
+    await fetch('/api/chat/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...ctx, score: useful ? 10 : 3 }),
+    })
   }
 
   const formatMessage = (content: string) => {
@@ -362,40 +390,66 @@ function BotJoaoDesktop() {
                 </div>
               )
               if (msg.content === '') return null
+              const isBot = msg.role === 'assistant'
+              const showThumbs = isBot && msg.id !== 'welcome' && !loading && feedbackContexts[msg.id]
               return (
                 <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                  {msg.role === 'assistant' && BOT_AVATAR}
-                  <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
-                    msg.role === 'user'
-                      ? 'bg-[#000FFF] text-white rounded-tr-none'
-                      : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none shadow-sm'
-                  }`}>
-                    {formatMessage(msg.content)}
+                  {isBot && BOT_AVATAR}
+                  <div className="flex flex-col gap-1 max-w-[80%]">
+                    <div className={`rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
+                      msg.role === 'user'
+                        ? 'bg-[#000FFF] text-white rounded-tr-none'
+                        : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none shadow-sm'
+                    }`}>
+                      {formatMessage(msg.content)}
+                    </div>
+                    {showThumbs && (
+                      <div className="flex items-center gap-1 pl-1">
+                        {msgFeedbacks[msg.id] ? (
+                          <span className="text-[10px] text-gray-400 italic">
+                            {msgFeedbacks[msg.id] === 'up' ? '✓ Obrigado!' : '✓ Escalado para revisão'}
+                          </span>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => sendThumbsFeedback(msg.id, 'up')}
+                              className="p-1 rounded-md text-gray-300 hover:text-green-500 hover:bg-green-50 transition-colors text-base leading-none"
+                              title="Útil"
+                            >👍</button>
+                            <button
+                              onClick={() => sendThumbsFeedback(msg.id, 'down')}
+                              className="p-1 rounded-md text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors text-base leading-none"
+                              title="Não ajudou"
+                            >👎</button>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )
             })}
 
-            {/* Feedback */}
-            {feedback && !feedbackSent && (
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
-                <p className="text-xs text-gray-500 mb-2 font-semibold">Como foi essa resposta?</p>
-                <div className="flex gap-1 flex-wrap">
-                  {[1,2,3,4,5,6,7,8,9,10].map(score => (
+            {/* CSAT pós-conversa — aparece após 4 min de inatividade sem 👎 */}
+            {csatVisible && !csatSent && (
+              <div className="flex gap-2">
+                {BOT_AVATAR}
+                <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm max-w-[80%]">
+                  <p className="text-sm text-gray-800 mb-3 leading-relaxed">Consegui te ajudar hoje? 😊</p>
+                  <div className="flex gap-2">
                     <button
-                      key={score}
-                      onClick={() => sendFeedback(score)}
-                      className={`w-7 h-7 rounded-lg text-xs font-bold transition-all hover:scale-110 ${
-                        score >= 7 ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-50 text-red-400 hover:bg-red-100'
-                      }`}
-                    >
-                      {score}
-                    </button>
-                  ))}
+                      onClick={() => sendCsatFeedback(true)}
+                      className="flex-1 py-2 rounded-xl bg-green-50 text-green-700 text-xs font-bold hover:bg-green-100 transition-colors border border-green-100"
+                    >✅ Sim, valeu!</button>
+                    <button
+                      onClick={() => sendCsatFeedback(false)}
+                      className="flex-1 py-2 rounded-xl bg-gray-50 text-gray-500 text-xs font-bold hover:bg-gray-100 transition-colors border border-gray-100"
+                    >🤔 Poderia ser melhor</button>
+                  </div>
                 </div>
               </div>
             )}
-            {feedbackSent && (
+            {csatSent && (
               <p className="text-center text-xs text-gray-400 py-1">✓ Obrigado pelo feedback!</p>
             )}
 
