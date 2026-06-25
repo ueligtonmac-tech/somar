@@ -163,8 +163,8 @@ export default async function CertificadoPage() {
               <div className="flex items-end justify-between">
                 <div>
                   <div className="w-40 h-px bg-gray-300 mb-2" />
-                  <p className="text-xs text-gray-400 font-semibold">Equipe Bot João · Arkanjia</p>
-                  <p className="text-[10px] text-gray-300">botjoao.com.br</p>
+                  <p className="text-xs text-gray-400 font-semibold">Equipe Bot João · Ultragaz</p>
+                  <p className="text-[10px] text-gray-300">ultragaz.com.br</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-gray-400 font-semibold uppercase tracking-widest mb-1">Data</p>

@@ -151,7 +151,7 @@ export default function Sidebar({ profile, trailSections = [], trailProgress = [
           <LogoutIcon /> Sair
         </button>
         <div className="pt-2 border-t border-gray-50 mt-1">
-          <p className="text-[10px] text-gray-300 font-medium">© 2026 Arkanjia</p>
+          <p className="text-[10px] text-gray-300 font-medium">© 2026 Ultragaz</p>
           <div className="flex gap-3 mt-0.5">
             <Link href="/politica" className="text-[10px] text-gray-300 hover:text-[#000FFF] transition-colors">Privacidade</Link>
             <Link href="/termos" className="text-[10px] text-gray-300 hover:text-[#000FFF] transition-colors">Termos</Link>

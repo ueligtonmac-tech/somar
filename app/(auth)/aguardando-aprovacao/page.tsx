@@ -150,7 +150,7 @@ export default async function AguardandoAprovacaoPage() {
         </form>
 
         <p style={{ color: '#d1d5db', fontSize: '0.65rem', marginTop: '2rem' }}>
-          © 2026 Arkanjia · Bot João · Ultragaz
+          © 2026 Ultragaz · Bot João
         </p>
       </div>
     </div>

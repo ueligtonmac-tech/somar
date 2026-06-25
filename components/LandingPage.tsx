@@ -778,7 +778,7 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
 
         <div className="mt-12 pt-8 border-t border-gray-100 text-center">
           <p className="text-gray-400 text-xs">
-            © 2026 Arkanjia · Bot João · Ultragaz ·{' '}
+            © 2026 Ultragaz · Bot João ·{' '}
             <Link href="/termos" className="hover:text-[#000FFF] transition-colors">Termos</Link>
             {' '}·{' '}
             <Link href="/politica" className="hover:text-[#000FFF] transition-colors">Privacidade</Link>

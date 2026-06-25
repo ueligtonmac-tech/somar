@@ -299,7 +299,7 @@ function LoginForm() {
               <a href="/politica" style={{ color: '#000FFF', textDecoration: 'none', fontWeight: 700 }}>Privacidade</a>
             </p>
             {/* Linha 3: Copyright */}
-            <p style={{ color: '#d1d5db', fontSize: '0.62rem', margin: '0.25rem 0 0', fontWeight: 500 }}>© 2026 Arkanjia</p>
+            <p style={{ color: '#d1d5db', fontSize: '0.62rem', margin: '0.25rem 0 0', fontWeight: 500 }}>© 2026 Ultragaz</p>
           </div>
         </div>
       </div>

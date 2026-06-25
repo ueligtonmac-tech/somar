@@ -54,37 +54,22 @@ export default function PoliticaPage() {
           </div>
         </div>
         <p className="text-gray-600 text-sm leading-relaxed bg-blue-50 border border-blue-100 rounded-xl p-4">
-          Esta Política de Privacidade descreve como a <strong className="text-gray-900">Arkanjia</strong> — desenvolvedora e operadora da plataforma <strong className="text-gray-900">Bot João — Hub Somar</strong> — coleta, utiliza, armazena e protege os dados pessoais dos usuários, em conformidade com a <strong className="text-gray-900">Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong>, em parceria com a <strong className="text-gray-900">Ultragaz</strong>, controladora dos conteúdos disponibilizados na plataforma.
+          Esta Política de Privacidade descreve como a <strong className="text-gray-900">Ultragaz</strong> coleta, utiliza, armazena e protege os dados pessoais dos usuários da plataforma <strong className="text-gray-900">Bot João — Hub Somar</strong>, em conformidade com a <strong className="text-gray-900">Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong>.
         </p>
       </div>
 
       <div className="space-y-8 text-gray-700 text-sm leading-relaxed">
 
         {/* 1 */}
-        <Section num={1} title="Quem somos e a relação tripartite">
+        <Section num={1} title="Quem somos">
           <p>
-            Esta plataforma envolve três partes com papéis distintos no tratamento de dados:
+            A <strong>Ultragaz</strong> é a responsável pela plataforma <strong>Bot João — Hub Somar</strong>,
+            sistema de onboarding digital utilizado por consultores de canais digitais.
           </p>
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
-              <p className="font-bold text-blue-900 text-xs mb-1">🏗️ Arkanjia</p>
-              <p className="text-xs text-blue-800 leading-relaxed">Operadora técnica. Desenvolve, mantém e opera a plataforma Bot João. Responsável pelo tratamento de dados de acesso, progresso e interações. Representada por <strong>Ueligton Cordeiro</strong> e <strong>Marcos Ledesma</strong>.</p>
-            </div>
-            <div className="bg-orange-50 border border-orange-100 rounded-xl p-3">
-              <p className="font-bold text-orange-900 text-xs mb-1">⛽ Ultragaz</p>
-              <p className="text-xs text-orange-800 leading-relaxed">Controladora de conteúdo. Fornece o conteúdo institucional, treinamentos e base de conhecimento do Bot João. Os dados de inteligência do bot são propriedade da Ultragaz e tratados em seu interesse legítimo.</p>
-            </div>
-            <div className="bg-gray-50 border border-gray-100 rounded-xl p-3">
-              <p className="font-bold text-gray-700 text-xs mb-1">👤 Consultor</p>
-              <p className="text-xs text-gray-600 leading-relaxed">Titular dos dados pessoais. Consultor de canais digitais da Ultragaz que utiliza a plataforma para onboarding e suporte via Bot João.</p>
-            </div>
-          </div>
-          <div className="mt-3 text-xs text-gray-500 bg-gray-50 border border-gray-100 rounded-lg p-3">
-            <strong>Contato Arkanjia:</strong>{' '}
-            <a href="mailto:contato@botjoao.com.br" className="text-[#000FFF] hover:underline">contato@botjoao.com.br</a>
-            {' · '}
-            <a href="https://botjoao.com.br" className="text-[#000FFF] hover:underline">botjoao.com.br</a>
-          </div>
+          <p className="mt-2">
+            Para dúvidas ou solicitações relacionadas a esta política, entre em contato pelos canais
+            oficiais da Ultragaz.
+          </p>
         </Section>
 
         {/* 2 */}
@@ -116,7 +101,7 @@ export default function PoliticaPage() {
           <p>O tratamento dos dados pessoais nesta plataforma é fundamentado nas seguintes bases legais da LGPD:</p>
           <ul className="mt-3 space-y-2 pl-4">
             <li>• <strong>Execução de contrato</strong> (Art. 7º, V) — para a prestação dos serviços de onboarding ao consultor;</li>
-            <li>• <strong>Legítimo interesse</strong> (Art. 7º, IX) — para melhoria contínua do assistente IA e da base de conhecimento da Ultragaz;</li>
+            <li>• <strong>Legítimo interesse</strong> (Art. 7º, IX) — para melhoria contínua do assistente IA e da base de conhecimento;</li>
             <li>• <strong>Consentimento</strong> (Art. 7º, I) — para envio de comunicações, notificações e uso de dados de feedback.</li>
           </ul>
         </Section>
@@ -124,7 +109,7 @@ export default function PoliticaPage() {
         {/* 4 */}
         <Section num={4} title="Como usamos seus dados">
           <ul className="space-y-2 pl-4">
-            <li>• Fornecer acesso à trilha de aprendizado e conteúdos da Ultragaz;</li>
+            <li>• Fornecer acesso à trilha de aprendizado e conteúdos;</li>
             <li>• Registrar e exibir seu progresso nos módulos;</li>
             <li>• Processar suas perguntas via assistente Bot João (IA);</li>
             <li>• Coletar feedbacks (👍/👎 e CSAT) para melhoria do assistente;</li>
@@ -201,9 +186,7 @@ export default function PoliticaPage() {
           </div>
           <p className="mt-3">
             Para exercer qualquer desses direitos, entre em contato pelo e-mail{' '}
-            <a href="mailto:contato@botjoao.com.br" className="text-[#000FFF] hover:underline font-semibold">
-              contato@botjoao.com.br
-            </a>. Responderemos em até <strong>15 dias</strong> conforme exigência da LGPD.
+            pelos canais oficiais da Ultragaz. Responderemos em até <strong>15 dias</strong> conforme exigência da LGPD.
           </p>
         </Section>
 
@@ -240,7 +223,7 @@ export default function PoliticaPage() {
             As perguntas e respostas do Bot João, após avaliação e aprovação pelos gestores, podem ser incorporadas à <strong>base de conhecimento</strong> do assistente. Esses dados de inteligência — incluindo conteúdo treinado, materiais institucionais e aprimoramentos linguísticos — são <strong>propriedade exclusiva da Ultragaz</strong>, que os disponibilizou como insumo da plataforma.
           </p>
           <InfoBox color="orange" icon="⛽" title="Propriedade da Ultragaz">
-            O conteúdo treinado no Bot João (manuais, processos, produtos, terminologia e base de respostas) é patrimônio intelectual da Ultragaz. A Arkanjia atua como operadora técnica, sem adquirir direitos sobre esse conteúdo. A síntese em linguagem natural realizada pela IA não transfere a titularidade dos conteúdos originais.
+            Todo o conteúdo treinado no Bot João (manuais, processos, produtos, terminologia e base de respostas) é patrimônio intelectual da Ultragaz. A síntese em linguagem natural realizada pela IA não transfere a titularidade dos conteúdos originais.
           </InfoBox>
         </Section>
 
@@ -258,21 +241,15 @@ export default function PoliticaPage() {
           </p>
           <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="bg-white border border-gray-100 rounded-xl p-4">
-              <p className="font-bold text-gray-900 text-sm">🏗️ Arkanjia</p>
-              <p className="text-gray-500 text-xs mt-1">Operadora técnica da plataforma</p>
-              <p className="text-xs text-gray-500 mt-1">Responsáveis: Ueligton Cordeiro e Marcos Ledesma</p>
-              <a href="mailto:contato@botjoao.com.br" className="text-[#000FFF] font-semibold text-xs hover:underline mt-1.5 block">
-                contato@botjoao.com.br
-              </a>
-            </div>
-            <div className="bg-orange-50 border border-orange-100 rounded-xl p-4">
-              <p className="font-bold text-orange-900 text-sm">⛽ Ultragaz</p>
-              <p className="text-orange-700 text-xs mt-1">Controladora de conteúdo</p>
-              <p className="text-xs text-orange-600 mt-1">Para questões relativas ao conteúdo institucional e base de conhecimento do Bot João, consulte os canais oficiais da Ultragaz.</p>
+              <p className="font-bold text-gray-900 text-sm">⛽ Ultragaz</p>
+              <p className="text-gray-500 text-xs mt-1">
+                Para dúvidas, solicitações ou exercício de direitos relacionados à proteção de dados,
+                entre em contato pelos canais oficiais da Ultragaz.
+              </p>
             </div>
           </div>
           <p className="mt-3 text-xs text-gray-400">
-            A Arkanjia não nomeia DPO (Encarregado de Proteção de Dados) formalmente neste momento, por se enquadrar nas exceções para micro e pequenas empresas previstas nos arts. 5º, VI e 41 da LGPD. Os responsáveis acima desempenham essa função de forma direta.
+            
           </p>
         </Section>
 
@@ -280,7 +257,7 @@ export default function PoliticaPage() {
 
       {/* Footer */}
       <div className="mt-12 pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-400">
-        <p>© 2026 Arkanjia · Todos os direitos reservados</p>
+        <p>© 2026 Ultragaz · Todos os direitos reservados</p>
         <div className="flex gap-4">
           <Link href="/termos" className="hover:text-[#000FFF] transition-colors">Termos de Uso</Link>
           <Link href="/login" className="hover:text-[#000FFF] transition-colors">Voltar ao app</Link>

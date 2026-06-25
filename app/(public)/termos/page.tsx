@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Termos de Uso · Bot João',
-  description: 'Termos de Uso da plataforma Bot João — Hub Somar Ultragaz, desenvolvida pela Arkanjia.',
+  description: 'Termos de Uso da plataforma Bot João — Hub Somar Ultragaz.',
 }
 
 function Section({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
@@ -63,18 +63,16 @@ export default function TermosPage() {
       <div className="space-y-10 text-gray-700 text-sm leading-relaxed">
 
         {/* 1 */}
-        <Section n={1} title="Sobre a plataforma e as partes envolvidas">
+        <Section n={1} title="Sobre a plataforma">
           <p>
             O <strong>Bot João — Hub Somar</strong> é uma plataforma digital de onboarding e capacitação
-            desenvolvida pela <strong>Arkanjia</strong>, operada em regime de licença comercial para a
-            <strong>Ultragaz</strong>, para uso exclusivo de consultores de canais digitais e equipes autorizadas.
+            operada pela <strong>Ultragaz</strong>, para uso exclusivo de consultores de canais digitais e equipes autorizadas.
           </p>
           <p>
-            A relação jurídica desta plataforma envolve três partes:
+            A plataforma envolve as seguintes partes:
           </p>
           <div className="space-y-2">
             {[
-              ['Arkanjia', 'Desenvolvedora, proprietária da tecnologia e operadora da plataforma (Ueligton Cordeiro e Marcos Ledesma).'],
               ['Ultragaz', 'Contratante e proprietária do conteúdo de conhecimento utilizado na capacitação dos consultores.'],
               ['Consultor (Usuário)', 'Profissional autorizado que utiliza a plataforma para formação e suporte operacional.'],
             ].map(([parte, desc]) => (
@@ -91,7 +89,7 @@ export default function TermosPage() {
           <p>O acesso é restrito a:</p>
           <ul className="space-y-1 pl-4">
             <li>• Consultores de canais digitais Ultragaz devidamente cadastrados e aprovados;</li>
-            <li>• Administradores e membros de equipe autorizados pela Arkanjia ou pela Ultragaz;</li>
+            <li>• Administradores e membros de equipe autorizados pela Ultragaz;</li>
             <li>• Usuários que tenham recebido convite formal e validado de acesso.</li>
           </ul>
           <p>
@@ -102,41 +100,9 @@ export default function TermosPage() {
         </Section>
 
         {/* 3 */}
-        <Section n={3} title="Propriedade intelectual — dupla titularidade">
+        <Section n={3} title="Propriedade intelectual">
 
-          <InfoBox color="amber">
-            <p className="font-bold text-gray-900 mb-2">Atenção — Dois titulares distintos</p>
-            <p>
-              Esta plataforma possui elementos de propriedade intelectual de dois titulares independentes,
-              com proteções e direitos distintos. Nenhuma das partes pode ceder, sublicenciar ou explorar
-              os ativos da outra sem autorização expressa.
-            </p>
-          </InfoBox>
-
-          <div className="rounded-xl border border-gray-100 overflow-hidden">
-            {/* Arkanjia */}
-            <div className="bg-blue-50 px-5 py-4 border-b border-gray-100">
-              <p className="font-black text-[#000FFF] mb-1">🏗 Propriedade da Arkanjia</p>
-              <p className="text-xs text-gray-600 mb-3">
-                Representada por Ueligton Cordeiro e Marcos Ledesma. Protegida pela Lei nº 9.610/1998
-                (Direitos Autorais) e Lei nº 9.279/1996 (Propriedade Industrial).
-              </p>
-              <ul className="space-y-1 text-xs text-gray-700">
-                {[
-                  'Código-fonte, arquitetura e infraestrutura da plataforma',
-                  'Bot João — motor de IA, interface, lógica de processamento e marca',
-                  'Sistema de trilha de aprendizado, gamificação e pontuação',
-                  'Design, identidade visual e experiência de usuário da plataforma',
-                  'Algoritmos de escalonamento, feedback e base de conhecimento vetorial',
-                  'Marca "Bot João", "Hub Somar" e demais denominações da plataforma',
-                  'Infraestrutura de banco de dados, APIs e integrações',
-                ].map(item => (
-                  <li key={item} className="flex gap-2"><span className="text-[#000FFF] font-bold mt-0.5">·</span>{item}</li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Ultragaz */}
+          <div className="rounded-xl border border-orange-100 overflow-hidden">
             <div className="bg-orange-50 px-5 py-4">
               <p className="font-black text-orange-700 mb-1">📋 Propriedade da Ultragaz</p>
               <p className="text-xs text-gray-600 mb-3">
@@ -188,8 +154,7 @@ export default function TermosPage() {
             <li>• Manter a confidencialidade mesmo após o encerramento do acesso à plataforma.</li>
           </ul>
           <p>
-            A violação desta cláusula pode gerar responsabilidade civil e criminal perante a Arkanjia
-            e/ou a Ultragaz, independentemente da existência de dano comprovado.
+            A violação desta cláusula pode gerar responsabilidade civil e criminal perante a Ultragaz, independentemente da existência de dano comprovado.
           </p>
         </Section>
 
@@ -228,19 +193,18 @@ export default function TermosPage() {
         {/* 7 */}
         <Section n={7} title="Limitação de responsabilidade">
           <p>
-            A Arkanjia não se responsabiliza por: (i) decisões tomadas com base exclusiva nas respostas
+            A Ultragaz não se responsabiliza por: (i) decisões tomadas com base exclusiva nas respostas
             do assistente IA; (ii) indisponibilidade temporária do sistema decorrente de manutenção ou
             falhas de terceiros; (iii) danos causados por uso indevido da plataforma pelo próprio usuário;
             (iv) imprecisões no conteúdo gerado pelo Bot João quando este não reflita com exatidão
-            informações oficiais da Ultragaz. A responsabilidade da Arkanjia limita-se ao valor
-            contratualmente estabelecido com a Ultragaz.
+            as informações oficiais da Ultragaz.
           </p>
         </Section>
 
         {/* 8 */}
         <Section n={8} title="Suspensão e encerramento de acesso">
           <p>
-            A Arkanjia e/ou a Ultragaz reservam-se o direito de suspender ou encerrar o acesso de
+            A Ultragaz reserva-se o direito de suspender ou encerrar o acesso de
             qualquer usuário que viole estes Termos, faça uso indevido da plataforma, divulgue
             informações confidenciais ou deixe de atender aos critérios de elegibilidade,
             sem aviso prévio e sem gerar direito a qualquer indenização.
@@ -248,25 +212,19 @@ export default function TermosPage() {
         </Section>
 
         {/* 9 */}
-        <Section n={9} title="Relacionamento entre Arkanjia e Ultragaz">
+        <Section n={9} title="Gestão da plataforma">
           <p>
-            A Arkanjia atua como <strong>prestadora de serviços tecnológicos</strong> para a Ultragaz,
-            desenvolvendo e operando esta plataforma sob contrato de licença e prestação de serviços.
-            Os presentes Termos de Uso regulam a relação entre o usuário (consultor) e a plataforma,
-            não criando vínculo empregatício, societário ou de qualquer outra natureza entre o usuário
-            e a Arkanjia ou a Ultragaz.
-          </p>
-          <p>
-            A gestão do conteúdo de conhecimento inserido na plataforma, bem como as decisões sobre
-            sua atualização e utilização no contexto da capacitação, são de responsabilidade da Ultragaz.
-            A Arkanjia é responsável pela operação técnica, segurança e manutenção da infraestrutura.
+            A Ultragaz é responsável pela gestão do conteúdo de conhecimento inserido na plataforma,
+            bem como pelas decisões sobre sua atualização e utilização no contexto da capacitação.
+            Os presentes Termos regulam a relação entre o usuário (consultor) e a plataforma, não
+            criando vínculo empregatício, societário ou de qualquer outra natureza entre o usuário e a Ultragaz.
           </p>
         </Section>
 
         {/* 10 */}
         <Section n={10} title="Alterações nos termos">
           <p>
-            A Arkanjia pode modificar estes Termos a qualquer momento, com ou sem aviso prévio.
+            A Ultragaz pode modificar estes Termos a qualquer momento, com ou sem aviso prévio.
             As alterações entram em vigor na data de publicação. O uso continuado da plataforma
             após a publicação de alterações constitui aceite das novas condições. Alterações
             substanciais serão comunicadas via notificação na plataforma.
@@ -279,7 +237,7 @@ export default function TermosPage() {
             Estes Termos são regidos pelas leis da República Federativa do Brasil, incluindo a
             Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018), a Lei de Direitos Autorais
             (Lei nº 9.610/1998) e o Código Civil Brasileiro. Eventuais disputas serão submetidas
-            ao foro da comarca de domicílio da Arkanjia, com renúncia expressa a qualquer outro,
+            ao foro da comarca de domicílio da Ultragaz, com renúncia expressa a qualquer outro,
             por mais privilegiado que seja.
           </p>
         </Section>
@@ -287,14 +245,9 @@ export default function TermosPage() {
         {/* 12 */}
         <Section n={12} title="Contato">
           <div className="bg-white border border-gray-100 rounded-xl p-4 space-y-1">
-            <p className="font-bold text-gray-900">Arkanjia</p>
-            <p className="text-gray-500 text-xs">Responsáveis: Ueligton Cordeiro e Marcos Ledesma</p>
-            <a href="mailto:contato@botjoao.com.br" className="text-[#000FFF] font-semibold text-sm hover:underline block">
-              contato@botjoao.com.br
-            </a>
+            <p className="font-bold text-gray-900">Ultragaz</p>
             <p className="text-gray-400 text-xs pt-1">
-              Para notificações de violação de propriedade intelectual, utilize o mesmo canal com o
-              assunto: <em>Notificação Legal — PI</em>.
+              Para dúvidas ou notificações legais, utilize os canais oficiais da Ultragaz.
             </p>
           </div>
         </Section>
@@ -303,7 +256,7 @@ export default function TermosPage() {
 
       {/* Footer */}
       <div className="mt-12 pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-400">
-        <p>© 2026 Arkanjia · Todos os direitos reservados</p>
+        <p>© 2026 Ultragaz · Todos os direitos reservados</p>
         <div className="flex gap-4">
           <Link href="/politica" className="hover:text-[#000FFF] transition-colors">Política de Privacidade</Link>
           <Link href="/login" className="hover:text-[#000FFF] transition-colors">Voltar ao app</Link>

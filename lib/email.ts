@@ -61,7 +61,7 @@ export function templateCadastroPendente(nome: string): string {
         <p style="margin: 0; color: #374151; font-size: 14px; font-weight: 600;">⏳ Aguardando aprovação</p>
         <p style="margin: 4px 0 0; color: #9ca3af; font-size: 13px;">Tempo médio de análise: até 1 dia útil</p>
       </div>
-      <p style="color: #9ca3af; font-size: 12px;">© 2026 Arkanjia — Bot João · Ultragaz</p>
+      <p style="color: #9ca3af; font-size: 12px;">© 2026 Ultragaz · Bot João</p>
     </div>
   `
 }
@@ -134,7 +134,7 @@ export function templateAcessoLiberado(nome: string): string {
 
     <!-- Footer -->
     <p style="text-align:center;color:#9ca3af;font-size:11px;margin-top:24px;">
-      © 2026 Arkanjia · Bot João · Ultragaz<br/>
+      © 2026 Ultragaz · Bot João<br/>
       Este e-mail foi enviado para ${safeName} · <a href="https://botjoao.com.br" style="color:#9ca3af;">botjoao.com.br</a>
     </p>
   </div>
@@ -160,7 +160,7 @@ export function templateNovoUsuarioAdmin(nome: string, email: string): string {
          style="display: inline-block; margin: 16px 0; padding: 12px 28px; background: #000FFF; color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 14px;">
         Aprovar no painel →
       </a>
-      <p style="color: #9ca3af; font-size: 12px;">© 2026 Arkanjia — Bot João · Ultragaz</p>
+      <p style="color: #9ca3af; font-size: 12px;">© 2026 Ultragaz · Bot João</p>
     </div>
   `
 }

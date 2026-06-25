@@ -370,7 +370,7 @@ export default function CompletarCadastroPage() {
         </button>
 
         <p style={{ color: '#d1d5db', fontSize: '0.65rem', textAlign: 'center', marginTop: '1.5rem' }}>
-          © 2026 Arkanjia · Bot João · Ultragaz
+          © 2026 Ultragaz · Bot João
         </p>
       </div>
     </div>
