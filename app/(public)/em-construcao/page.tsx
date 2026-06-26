@@ -1,8 +1,13 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Em breve · Bot João',
+  title: 'Em breve',
   description: 'Plataforma em preparação.',
+  icons: {
+    icon: '/favicon-blank.ico',
+    shortcut: '/favicon-blank.ico',
+    apple: '/favicon-blank.ico',
+  },
 }
 
 export default function EmConstrucaoPage() {
