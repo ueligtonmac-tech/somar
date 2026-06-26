@@ -69,7 +69,8 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // ── 0. Modo em construção — bloqueia tudo exceto a própria página ──
-  if (EM_CONSTRUCAO && pathname !== '/em-construcao') {
+  if (EM_CONSTRUCAO) {
+    if (pathname === '/em-construcao') return supabaseResponse
     return NextResponse.redirect(new URL('/em-construcao', request.url))
   }
 
