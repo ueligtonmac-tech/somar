@@ -50,127 +50,28 @@ const CHAT_DEMO = [
 ]
 
 
-/* ── Modal Trial ─────────────────────────────────────────────── */
-function TrialModal({ onClose }: { onClose: () => void }) {
-  const [name, setName]     = useState('')
-  const [email, setEmail]   = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError]   = useState('')
+/* ── Acesso restrito — redireciona para login ─────────────────── */
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    const res  = await fetch('/api/trial/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email }),
-    })
-    const data = await res.json()
-    setLoading(false)
-    if (!res.ok) {
-      if (data.redirect) { window.location.href = data.redirect; return }
-      setError(data.error || 'Erro ao criar acesso. Tente novamente.')
-      return
-    }
-    console.log('[trial] actionLink:', data.actionLink)
-    window.location.href = data.actionLink
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-      style={{ background: 'rgba(0,5,80,0.72)', backdropFilter: 'blur(6px)' }}
-      onClick={e => e.target === e.currentTarget && onClose()}
-    >
-      <div className="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden">
-        <div className="bg-[#000FFF] px-6 pt-6 pb-5">
-          <div className="flex items-center justify-between mb-4">
-            <Image src="/logo.png" alt="Ultragaz" width={100} height={30} style={{ filter: 'brightness(0) invert(1)', height: 'auto' }} />
-            <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-          <h2 className="text-white font-black text-xl leading-tight">
-            Acesse a demonstração
-          </h2>
-          <p className="text-blue-200 text-sm mt-1">
-            Explore a plataforma completa por 3 dias
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-3">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 text-xs font-semibold rounded-xl px-4 py-2.5">
-              {error}
-            </div>
-          )}
-          <div>
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Seu nome</label>
-            <input
-              type="text" placeholder="Como você se chama?"
-              value={name} onChange={e => setName(e.target.value)}
-              required autoFocus
-              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm font-medium
-                text-gray-900 focus:outline-none focus:border-[#000FFF] transition-colors"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">E-mail</label>
-            <input
-              type="email" placeholder="seu@email.com"
-              value={email} onChange={e => setEmail(e.target.value)}
-              required
-              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm font-medium
-                text-gray-900 focus:outline-none focus:border-[#000FFF] transition-colors"
-            />
-          </div>
-          <button
-            type="submit" disabled={loading}
-            className="w-full bg-[#000FFF] text-white font-black text-sm rounded-xl py-3.5 mt-1
-              hover:bg-[#0009cc] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-          >
-            {loading
-              ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Acessando...</>
-              : '→ Acessar demonstração'
-            }
-          </button>
-          <p className="text-center text-[11px] text-gray-400 leading-relaxed">
-            Ao continuar você concorda com os{' '}
-            <Link href="/termos" className="text-[#000FFF] font-semibold">Termos de Uso</Link>
-            {' '}e{' '}
-            <Link href="/politica" className="text-[#000FFF] font-semibold">Privacidade</Link>
-          </p>
-        </form>
-      </div>
-    </div>
-  )
-}
-
-/* ── Chat demo com API real ───────────────────────────────────── */
+/* ── Chat demo — preview restrito ─────────────────────────────── */
 type Msg = { from: 'user' | 'bot' | 'cta'; text: string }
-type HistoryEntry = { role: 'user' | 'assistant'; content: string }
 
-function DemoChat({ onIdentify }: { onIdentify: () => void }) {
-  const [phase, setPhase]           = useState<'demo' | 'live' | 'done'>('demo')
-  const [demoIdx, setDemoIdx]       = useState(0)   // mensagens completamente exibidas
-  const [demoKey, setDemoKey]       = useState(0)
-  const [currentTyped, setCurrentTyped] = useState('') // chars da msg sendo digitada
-  const [messages, setMessages]     = useState<Msg[]>([])
-  const [history, setHistory]       = useState<HistoryEntry[]>([])
-  const [input, setInput]           = useState('')
-  const [typing, setTyping]         = useState(false)
-  const [exchanges, setExchanges]   = useState(0)
-  const msgsRef   = useRef<HTMLDivElement>(null)
-  const inputRef  = useRef<HTMLInputElement>(null)
+const RESTRICTED_REPLY = 'Será uma satisfação te ajudar! Sou o Bot João, assistente oficial dos consultores Ultragaz. O acesso à plataforma é restrito e será liberado pelos administradores. Faça seu login ou aguarde a aprovação do seu cadastro. 🔐'
 
-  // Animação demo com typewriter natural
+function DemoChat() {
+  const [demoIdx, setDemoIdx]           = useState(0)
+  const [demoKey, setDemoKey]           = useState(0)
+  const [currentTyped, setCurrentTyped] = useState('')
+  const [messages, setMessages]         = useState<Msg[]>([])
+  const [input, setInput]               = useState('')
+  const [typing, setTyping]             = useState(false)
+  const [sent, setSent]                 = useState(false) // usuário já enviou algo
+  const msgsRef  = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Animação demo loop (só enquanto não enviou mensagem)
   useEffect(() => {
-    if (phase !== 'demo') return
+    if (sent) return
 
-    // Todas as mensagens concluídas → aguarda e reinicia
     if (demoIdx >= CHAT_DEMO.length) {
       const t = setTimeout(() => { setDemoIdx(0); setCurrentTyped(''); setDemoKey(k => k + 1) }, 4000)
       return () => clearTimeout(t)
@@ -179,16 +80,13 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
     const currentMsg = CHAT_DEMO[demoIdx]
 
     if (currentMsg.from === 'user') {
-      // Mensagem do usuário: 55ms/char — velocidade de digitação humana
       if (currentTyped.length < currentMsg.text.length) {
         const t = setTimeout(() => setCurrentTyped(currentMsg.text.slice(0, currentTyped.length + 1)), 55)
         return () => clearTimeout(t)
       }
-      // Terminou de "digitar" — pausa antes do bot responder
       const t = setTimeout(() => { setDemoIdx(i => i + 1); setCurrentTyped('') }, 800)
       return () => clearTimeout(t)
     } else {
-      // Mensagem do bot: pausa inicial com Dots, depois 45ms/char
       if (currentTyped === '') {
         const t = setTimeout(() => setCurrentTyped(' '), demoIdx === 0 ? 1200 : 1000)
         return () => clearTimeout(t)
@@ -197,87 +95,44 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
         const t = setTimeout(() => setCurrentTyped(currentMsg.text.slice(0, currentTyped.length + 1)), 45)
         return () => clearTimeout(t)
       }
-      // Terminou — pausa longa antes da próxima mensagem
       const t = setTimeout(() => { setDemoIdx(i => i + 1); setCurrentTyped('') }, 2000)
       return () => clearTimeout(t)
     }
-  }, [phase, demoIdx, currentTyped])
+  }, [sent, demoIdx, currentTyped])
 
-  // Scroll para o fundo sempre que mudar conteúdo
   useEffect(() => {
     const el = msgsRef.current
     if (el) el.scrollTop = el.scrollHeight
   }, [demoIdx, messages, typing])
 
-  const activateChat = () => {
-    if (phase !== 'demo') return
-    const shown = CHAT_DEMO.slice(0, Math.max(demoIdx, 1))
-    setMessages(shown.map(m => ({ from: m.from as 'user' | 'bot', text: m.text })))
-    setPhase('live')
-    setTimeout(() => inputRef.current?.focus(), 50)
-  }
-
-  const sendMessage = async () => {
+  const sendMessage = () => {
     const text = input.trim()
-    if (!text || typing || phase === 'done') return
-    if (phase === 'demo') activateChat()
+    if (!text || typing) return
     setInput('')
+    setSent(true)
 
-    setMessages(prev => [...prev, { from: 'user', text }])
+    // Monta histórico da demo já exibida + mensagem do usuário
+    const demoShown = CHAT_DEMO.slice(0, Math.max(demoIdx, 1)).map(m => ({ from: m.from as 'user'|'bot', text: m.text }))
+    setMessages([...demoShown, { from: 'user', text }])
     setTyping(true)
 
-    const newHistory: HistoryEntry[] = [...history, { role: 'user', content: text }]
+    // Simula digitação da resposta restrita com typewriter
+    let i = 0
+    const reply = RESTRICTED_REPLY
+    setTyping(false)
+    setMessages(prev => [...prev, { from: 'bot', text: '' }])
 
-    try {
-      const res = await fetch('/api/demo/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history }),
+    const tick = () => {
+      i++
+      setMessages(prev => {
+        const copy = [...prev]
+        copy[copy.length - 1] = { from: 'bot', text: reply.slice(0, i) }
+        return copy
       })
-
-      if (!res.ok || !res.body) throw new Error('falha')
-
-      // Adiciona msg vazia do bot e vai preenchendo via stream
-      setTyping(false)
-      setMessages(prev => [...prev, { from: 'bot', text: '' }])
-
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      let full = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        const chunk = decoder.decode(value, { stream: true })
-        full += chunk
-        // Remove markdown: **, __, ##, #, `
-        const clean = full
-          .replace(/\*\*(.+?)\*\*/g, '$1')
-          .replace(/__(.+?)__/g, '$1')
-          .replace(/#{1,6}\s*/g, '')
-          .replace(/`{1,3}([^`]*)`{1,3}/g, '$1')
-          .replace(/\*/g, '')
-          .replace(/_/g, ' ')
-        setMessages(prev => {
-          const copy = [...prev]
-          copy[copy.length - 1] = { from: 'bot', text: clean }
-          return copy
-        })
-      }
-
-      setHistory([...newHistory, { role: 'assistant', content: full }])
-
-      const newExchanges = exchanges + 1
-      setExchanges(newExchanges)
-
-      if (newExchanges >= 2) {
-        setPhase('done')
-        setTimeout(() => setMessages(prev => [...prev, { from: 'cta', text: '' }]), 800)
-      }
-    } catch {
-      setTyping(false)
-      setMessages(prev => [...prev, { from: 'bot', text: 'Ops, tive uma falha. Tente novamente! 😅' }])
+      if (i < reply.length) setTimeout(tick, 28)
+      else setTimeout(() => setMessages(prev => [...prev, { from: 'cta', text: '' }]), 600)
     }
+    setTimeout(tick, 700)
   }
 
   const handleKey = (e: React.KeyboardEvent) => {
@@ -285,14 +140,11 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
   }
 
   return (
-    /* Ocupa exatamente o espaço que o pai definiu — não define própria altura */
     <div className="flex flex-col h-full">
-
-      {/* Área de mensagens com scroll interno */}
       <div ref={msgsRef} className="flex-1 overflow-y-auto flex flex-col gap-2.5"
         style={{ scrollbarWidth: 'none', minHeight: 0 }}>
 
-        {phase === 'demo' ? (
+        {!sent ? (
           <div key={demoKey} className="flex flex-col gap-2.5">
             {CHAT_DEMO.slice(0, demoIdx).map((m, i) => (
               <Bubble key={i} from={m.from as 'user'|'bot'} text={m.text} />
@@ -307,7 +159,7 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
           <>
             {messages.map((m, i) =>
               m.from === 'cta'
-                ? <CtaBlock key={i} onIdentify={onIdentify} />
+                ? <CtaBlock key={i} />
                 : <Bubble key={i} from={m.from as 'user'|'bot'} text={m.text} />
             )}
             {typing && <Dots />}
@@ -315,22 +167,20 @@ function DemoChat({ onIdentify }: { onIdentify: () => void }) {
         )}
       </div>
 
-      {/* Input — altura fixa, sempre presente */}
+      {/* Input */}
       <div className="mt-3 flex items-center gap-2 bg-gray-100 rounded-2xl px-3 py-2 shrink-0">
         <input
           ref={inputRef}
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKey}
-          onFocus={activateChat}
-          disabled={phase === 'done'}
-          placeholder={phase === 'done' ? 'Crie seu acesso para continuar ↑' : 'Experimente perguntar algo...'}
+          placeholder="Digite algo para conhecer o Bot João..."
           className="flex-1 bg-transparent text-[13px] text-gray-700 placeholder-gray-400
-            font-medium outline-none disabled:cursor-not-allowed"
+            font-medium outline-none"
         />
         <button
           onClick={sendMessage}
-          disabled={!input.trim() || typing || phase === 'done'}
+          disabled={!input.trim() || typing}
           className="w-8 h-8 rounded-full bg-[#000FFF] disabled:opacity-25 flex items-center
             justify-center shrink-0 transition-opacity"
         >
@@ -377,7 +227,7 @@ function Dots() {
   )
 }
 
-function CtaBlock({ onIdentify }: { onIdentify: () => void }) {
+function CtaBlock() {
   return (
     <div className="flex justify-start shrink-0" style={{ animation: 'fadeUp 0.4s ease both' }}>
       <div className="w-6 h-6 rounded-full bg-[#000FFF] flex items-center justify-center shrink-0 mr-2 mt-1">
@@ -385,15 +235,15 @@ function CtaBlock({ onIdentify }: { onIdentify: () => void }) {
       </div>
       <div className="bg-blue-50 border border-blue-100 rounded-2xl rounded-bl-sm px-3.5 py-3 max-w-[84%]">
         <p className="text-[12px] text-gray-600 mb-2.5 leading-relaxed">
-          Gostei de conversar! 😊 Para continuar com acesso à trilha completa e ao Bot João treinado com toda a base Ultragaz, crie seu acesso:
+          Será uma satisfação te ajudar! 😊 O acesso completo é restrito a consultores Ultragaz autorizados. Faça login ou aguarde a liberação pelo administrador.
         </p>
-        <button
-          onClick={onIdentify}
+        <Link
+          href="/login"
           className="w-full bg-[#000FFF] text-white text-[12px] font-black rounded-xl px-3 py-2
-            hover:bg-[#0009cc] transition-colors"
+            hover:bg-[#0009cc] transition-colors flex items-center justify-center"
         >
-          → Criar acesso de demonstração
-        </button>
+          → Fazer Login
+        </Link>
       </div>
     </div>
   )
@@ -480,7 +330,6 @@ function AutoplayVideo() {
 
 /* ── Landing Page ─────────────────────────────────────────────── */
 export default function LandingPage({ profile }: { profile?: Profile | null }) {
-  const [modal, setModal] = useState(false)
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: "'Mangueira', system-ui, sans-serif" }}>
@@ -555,13 +404,13 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
                 className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start"
                 style={{ animation: 'fadeUp .6s ease .3s both' }}
               >
-                <button
-                  onClick={() => setModal(true)}
+                <Link
+                  href="/login"
                   className="bg-white text-[#000FFF] font-black text-base rounded-2xl px-8 py-4
-                    hover:bg-blue-50 transition-all duration-200 shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
+                    hover:bg-blue-50 transition-all duration-200 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 text-center"
                 >
-                  → Acessar demonstração
-                </button>
+                  → Fazer Login
+                </Link>
                 <button
                   onClick={() => document.getElementById('video-section')?.scrollIntoView({ behavior: 'smooth' })}
                   className="text-white/80 font-semibold text-sm flex items-center justify-center gap-2
@@ -597,13 +446,13 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
                     <p className="text-sm font-black text-gray-900">Bot João</p>
                     <div className="flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-400" style={{ animation: 'pulse2 2s infinite' }} />
-                      <span className="text-[10px] text-gray-400 font-semibold">Online — experimente aqui</span>
+                      <span className="text-[10px] text-gray-400 font-semibold">Restrito a consultores Ultragaz</span>
                     </div>
                   </div>
                 </div>
                 {/* Chat ocupa o espaço restante exato */}
                 <div className="flex-1 px-5 pb-5 overflow-hidden" style={{ minHeight: 0 }}>
-                  <DemoChat onIdentify={() => setModal(true)} />
+                  <DemoChat />
                 </div>
               </div>
             </div>
@@ -617,7 +466,7 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
           {[
             { value: 12,  suffix: '',   label: 'Módulos de conteúdo' },
             { value: 100, suffix: '%',  label: 'Digital e prático' },
-            { value: 3,   suffix: ' dias', label: 'Para explorar tudo' },
+            { value: 3,   suffix: 'x',     label: 'Mais produtividade' },
             { value: 1,   suffix: '',   label: 'Assistente IA dedicado' },
           ].map(s => (
             <div key={s.label}>
@@ -646,9 +495,9 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
 
       {/* ══ DEMO CHAT MOBILE (só aparece em telas pequenas) ══ */}
       <section className="block lg:hidden bg-[#000FFF] px-5 py-12">
-        <p className="text-xs font-black uppercase tracking-widest text-blue-300 text-center mb-2">Experimente agora</p>
+        <p className="text-xs font-black uppercase tracking-widest text-blue-300 text-center mb-2">Conheça o Bot João</p>
         <h2 className="text-xl font-black text-white text-center mb-6">
-          Converse com o Bot João
+          Seu assistente oficial Ultragaz
         </h2>
         <div className="max-w-sm mx-auto">
           <div
@@ -662,13 +511,13 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
                 <p className="text-sm font-black text-gray-900">Bot João</p>
                 <div className="flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400" style={{ animation: 'pulse2 2s infinite' }} />
-                  <span className="text-[10px] text-gray-400 font-semibold">Online — experimente aqui</span>
+                  <span className="text-[10px] text-gray-400 font-semibold">Restrito a consultores Ultragaz</span>
                 </div>
               </div>
             </div>
             {/* Chat */}
             <div className="flex-1 px-4 pb-4 overflow-hidden" style={{ minHeight: 0 }}>
-              <DemoChat onIdentify={() => setModal(true)} />
+              <DemoChat />
             </div>
           </div>
         </div>
@@ -712,13 +561,13 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
             <p className="text-blue-200 leading-relaxed mb-6">
               Módulos progressivos que se desbloqueiam conforme você avança. Conteúdo prático sobre HUB Somar, Vale Gás, App Ultragaz, AmigU e mais.
             </p>
-            <button
-              onClick={() => setModal(true)}
+            <Link
+              href="/login"
               className="inline-flex items-center gap-2 bg-white text-[#000FFF] font-black text-sm
                 rounded-xl px-6 py-3 hover:bg-blue-50 transition-colors shadow-lg"
             >
-              → Explorar a trilha
-            </button>
+              → Fazer Login
+            </Link>
           </div>
 
           {/* Steps preview */}
@@ -765,16 +614,16 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
           Pronto para conhecer<br />a plataforma?
         </h2>
         <p className="text-gray-500 mb-8 max-w-xs mx-auto">
-          Acesse a demonstração completa e explore todos os recursos do Bot João.
+          Acesso restrito a consultores Ultragaz autorizados. O cadastro é liberado pelos administradores.
         </p>
-        <button
-          onClick={() => setModal(true)}
+        <Link
+          href="/login"
           className="inline-flex items-center gap-2 bg-[#000FFF] text-white font-black text-base
             rounded-2xl px-10 py-4 hover:bg-[#0009cc] transition-all duration-200
             shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
         >
-          → Acessar demonstração
-        </button>
+          → Fazer Login
+        </Link>
 
         <div className="mt-12 pt-8 border-t border-gray-100 text-center">
           <p className="text-gray-400 text-xs">
@@ -786,7 +635,6 @@ export default function LandingPage({ profile }: { profile?: Profile | null }) {
         </div>
       </section>
 
-      {modal && <TrialModal onClose={() => setModal(false)} />}
     </div>
   )
 }
