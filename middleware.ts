@@ -1,6 +1,10 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// ── MODO EM CONSTRUÇÃO — redireciona tudo para /em-construcao ──────────────────
+const EM_CONSTRUCAO = true
+// ───────────────────────────────────────────────────────────────────────────────
+
 const PUBLIC_ROUTES = ['/', '/login', '/cadastro', '/esqueci-senha', '/auth/callback', '/auth/magic', '/auth/signout', '/auth/reset-password', '/politica', '/termos', '/trial-expirado', '/api/trial', '/api/demo']
 const PENDING_ROUTES = ['/completar-cadastro', '/aguardando-aprovacao']
 const ADMIN_ROUTES = ['/admin']
@@ -63,6 +67,11 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
+
+  // ── 0. Modo em construção — bloqueia tudo exceto a própria página ──
+  if (EM_CONSTRUCAO && pathname !== '/em-construcao') {
+    return NextResponse.redirect(new URL('/em-construcao', request.url))
+  }
 
   // ── 1. Rotas públicas — sem autenticação ──
   if (PUBLIC_ROUTES.some(r => pathname === r || (r !== '/' && pathname.startsWith(r)))) {
