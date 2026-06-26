@@ -42,6 +42,13 @@ export default function EmConstrucaoPage() {
           Voltamos<br />em breve.
         </h1>
 
+        {/* Versículo */}
+        <p className="text-white/50 text-sm leading-relaxed italic font-light max-w-sm">
+          &ldquo;Não só isso, mas também nos gloriamos nas tribulações, porque sabemos que a tribulação produz perseverança; a perseverança, um caráter aprovado; e o caráter aprovado, esperança. E a esperança não nos decepciona, porque Deus derramou seu amor em nossos corações, por meio do Espírito Santo que ele nos concedeu.&rdquo;
+          <br />
+          <span className="not-italic font-light text-white/35 text-xs mt-1 block">Romanos 5:3-5</span>
+        </p>
+
         {/* Subtítulo */}
         <p className="text-blue-200 text-base leading-relaxed">
           A plataforma <strong className="text-white">Bot João — Hub Somar</strong> está
